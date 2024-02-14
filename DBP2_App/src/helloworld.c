@@ -17,6 +17,7 @@
  */
 
 #include <stdio.h>
+#include "linux/errno.h"
 
 int main()
 {
