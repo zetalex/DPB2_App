@@ -29,4 +29,4 @@
  
 # Diferenciación de los datos obtenidos del AMS
 
-Se ha podido apreciar que los datos obtenidos por iio:device0 corresponden a datos propios del AMS mientras que los proporcionados por el iio:device1 corresponden con PL y PS SYSMON (para concretar la utilidad de cada dato conviene leer la descripción del driver del AMS ubicada en la carpeta doc del repositorio).
+Se ha podido apreciar que los datos obtenidos por iio:device0 corresponden a datos propios del AMS mientras que los proporcionados por el iio:device1 corresponden con PL y PS SYSMON (para concretar la utilidad de cada dato conviene leer la descripción del driver del AMS ubicada en la carpeta doc del repositorio) %Explicarlo ya que lo tnego a mano y es un momento%.
