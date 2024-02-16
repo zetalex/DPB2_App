@@ -10,7 +10,7 @@
 
 
 
-<h1 align="center"><b>Descripción detallada del trabajo relizado</b></h1>
+<h1 align="center"><b>Descripción detallada del trabajo realizado</b></h1>
 
 
 <h4 align="center"><b>Borja Martínez Sánchez</b></br></h4>
