@@ -19,15 +19,15 @@
 <h3 align="center">Grado en Ingeniería de Tecnologías y Servicios de Telecomunicación</h3>
 
 # Inicialización del entrono sobre el que se trabajará en la placa
-Inciando con el entorno con el que se trbajará sobre la DPB (Data Processing Board) o DPM (Data Processing Module), se empleará PetaLinux, una herramienta de desarrollo de software de Xilinx basada en una versión ligera de Linux.
+Inciando con el entorno con el que se trbajará sobre el DPB (Data Processing Board) o DPM (Data Processing Module), se empleará PetaLinux, una herramienta de desarrollo de software de Xilinx basada en una versión ligera de Linux.
 
-La disponibilidad universal del código fuente de Linux y de infinidad de drivers nos supone una mayor flexibilidad y facilidad para trabajar a nivel de apliciación sobre la DPB. 
+La disponibilidad universal del código fuente de Linux y de infinidad de drivers nos supone una mayor flexibilidad y facilidad para trabajar a nivel de apliciación sobre el DPB. 
 
-Para implementar este sistema operativo (OS) en la DPB se ha empleado el software de Xilinx, Vivado,y mediante el puerto JTAG se ha cargado sobre una eMMC de 16 GB como memoria no volátil, tanto los archivos de arranque pertinentes como la imagen personalizada del proyecto del PetaLinux, posteriormente se ha seleccionado desde la placa a la eMMC como opción principal de arranque. En el proceso de arranque se carga el OS sobre la memoria RAM y se trabaja sobre esta.
+Para implementar este sistema operativo (OS) en el DPB se ha empleado el software de Xilinx, Vivado,y mediante el puerto JTAG se ha cargado sobre una eMMC de 16 GB como memoria no volátil, tanto los archivos de arranque pertinentes como la imagen personalizada del proyecto del PetaLinux, posteriormente se ha seleccionado desde la placa a la eMMC como opción principal de arranque. En el proceso de arranque se carga el OS sobre la memoria RAM y se trabaja sobre esta.
 
-Una vez implementado el OS, se ha de configurar la conexión con la DPB, pese a la posibilidad de mantener la conexión por JTAG, la fuente de comunicación principal de de la DPB va a ser vía Ethernet, por lo que se ha empleado uno de los puertos SFP de los que dispone la DPB para mediante un transceptor SFP realizar una conexión Ethernet con el equipo. Para ello dentro de la modificación del PetaLinux se incluyó la configuración de un PLL a 125 MHz para la correspondiente señal de reloj de Ethernet.
+Una vez implementado el OS, se ha de configurar la conexión con el DPB, pese a la posibilidad de mantener la conexión por JTAG, la fuente de comunicación principal del DPB va a ser vía Ethernet, por lo que se ha empleado uno de los puertos SFP de los que dispone el DPB para mediante un transceptor SFP realizar una conexión Ethernet con el equipo. Para ello dentro de la modificación del PetaLinux se incluyó la configuración de un PLL a 125 MHz para la correspondiente señal de reloj de Ethernet.
 
-Ya configurada la conexión, se ha establecido un servidor DHCP local para asignar una IP fija a al DPB y facilitar la conexión mediante SSH a la placa. Para ello se ha decalrado la subred con una configuración muy básica en el servidor:
+Ya configurada la conexión, se ha establecido un servidor DHCP local para asignar una IP fija al DPB y facilitar la conexión mediante SSH a la placa. Para ello se ha decalrado la subred con una configuración muy básica en el servidor:
 
 ```bash
 subnet 20.0.0.0 netmask 255.255.255.0 {
@@ -35,7 +35,7 @@ subnet 20.0.0.0 netmask 255.255.255.0 {
   option routers 20.0.0.1;
 }
 ```
-Se le ha asignado a la interfaz de red en ceustión la direccion 20.0.0.1 y se ha declarado la subred con un pequeño rango aribtrario y se ha asignado a la DPB la IP fija 20.0.0.33. Cabe destacar que los puertos SFP de la DBP están pensados para emplear puertos de fibra óptica por lo que en ciertas ocasiones el equipo no es capaz de detectar la conexión en el puerto Ethernet empleando cable Ethernet con RJ-45 por lo que se ha de desactivar la interfaz y luego volver a activar y asignar la dirección 20.0.0.1 y se resuelve el problema. 
+Se le ha asignado a la interfaz de red en ceustión la direccion 20.0.0.1 y se ha declarado la subred con un pequeño rango aribtrario y se ha asignado a el DPB la IP fija 20.0.0.33. Cabe destacar que los puertos SFP de la DBP están pensados para emplear puertos de fibra óptica por lo que en ciertas ocasiones el equipo no es capaz de detectar la conexión en el puerto Ethernet empleando cable Ethernet con RJ-45 por lo que se ha de desactivar la interfaz y luego volver a activar y asignar la dirección 20.0.0.1 y se resuelve el problema. 
 
 Con la dirección IP fija ya asignada ya nos es posible acceder a la placa medainte SSH y comunicarnos con esta, para ello empleamos el siguiente comando:
 ```bash
