@@ -101,3 +101,12 @@ Se ha podido apreciar que los datos obtenidos por iio:device0 corresponden a dat
 |              | 33      | VUser2 voltage measurement (supply9).                       | Voltage     | *in_voltage33_raw, in_voltage33_scale*            |
 |              | 34      | VUser3 voltage measurement (supply10).                      | Voltage     | *in_voltage34_raw, in_voltage34_scale*            |
 
+$$
+V_{XX}(V) = in\_voltageXX\_raw * in\_voltageXX\_scale
+$$(1)
+
+$$
+T_{XX}(ºC)= (in\_tempXX\_raw * in\_tempXX\_scale) +in\_tempXX\_offset
+$$(2)
+
+Donde XX define el número de canal seleccionado en tensión o temperatura. El desfase en el caso de la temperatura se suma puesto que se devuelve un número neagtivo.
