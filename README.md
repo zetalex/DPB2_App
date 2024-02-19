@@ -35,16 +35,24 @@ subnet 20.0.0.0 netmask 255.255.255.0 {
   option routers 20.0.0.1;
 }
 ```
-Se le ha asignado a la interfaz de red en ceustión la direccion 20.0.0.1 y se ha declarado la subred con un pequeño rango aribtrario y se ha asignado a la DPB la IP fija 20.0.0.33. Cabe destacar que los puertos SFP de la DBP están pensados para emplear puertos de fibra óptica por lo que en ciertas ocasiones el equipo no es capaz de detectar la conexión en el puerto Ethernet por lo que se ha de desactivar la interfaz y luego volver a activar y asignar la dirección 20.0.0.1 y se resuelve el problema. 
+Se le ha asignado a la interfaz de red en ceustión la direccion 20.0.0.1 y se ha declarado la subred con un pequeño rango aribtrario y se ha asignado a la DPB la IP fija 20.0.0.33. Cabe destacar que los puertos SFP de la DBP están pensados para emplear puertos de fibra óptica por lo que en ciertas ocasiones el equipo no es capaz de detectar la conexión en el puerto Ethernet empleando cable Ethernet con RJ-45 por lo que se ha de desactivar la interfaz y luego volver a activar y asignar la dirección 20.0.0.1 y se resuelve el problema. 
 
 Con la dirección IP fija ya asignada ya nos es posible acceder a la placa medainte SSH y comunicarnos con esta, para ello empleamos el siguiente comando:
 ```bash
 ssh root@20.0.0.33
 #Aquí introduciriamos la contraseña pertinente
 ```
-Para finalizar con el establecimiento del entrono de trabajo únicamente nos quedaría crear el proyecto de aplicación que se va a desarrollar sobre una plataforma personalizada de nuestro proyecto en el software Vitis IDE de Xilinx, se ha nombradp al proyecto de aplicación como DBP2_App.
+Para finalizar con el establecimiento del entrono de trabajo únicamente nos quedaría crear el proyecto de aplicación que se va a desarrollar sobre una plataforma personalizada de nuestro proyecto en el software Vitis IDE de Xilinx, se ha nombrado al proyecto de aplicación como DBP2_App.
 # Protocolo I2C y como está implementado en nuestra placa
+Para conseguir una comunicación entre los diferentes componenetes a tratar de la placa con el terminal se emplea el protocolo I<sup>2</sup>C , un protocolo de comunicación que se basa en un sistema Maestro-Esclavo donde el bus de comunicación se divide en 2 líneas, SCL para el reloj y SDA para los datos, las cuales están conectadas a una resistencia de pull-up cada una por lo que el nivel por defecto es nivel alto .
 
+El funcionamiento de este protocolo consiste en el inicio de la transmisión por parte de el Maestro que conjuntamente indica la dirección del esclavo al que se dirige con una dirección de 7 bits (nosotros contamos con sensores que su dirección es de 6 bits más uno reservado que a nosotros nos sirve para diferenciar de forma física), además se indica con un bit si la operación a desarrollar es lectura o escritura. La transmisión de datos va guiada por la línea de reloj y se transmiten los datos en tamaño byte transmitiendo de MSB a LSB.
+
+Para la operación de escritura sobre el esclavo una vez establecida la comunicación se ha de indicar el registro sobre el que se desea escribir y el dato que se desea escribir. El maestro es el encargado de recibir los correspondientes ACK y NACK durante la comunicación y la secuencia de fin de comunicación.
+
+En la operación de lectura sigue un porceso similar al de escritura indicando el registro que se desea leer y el maestro es el encargado de enviar los correspondientes ACK y NACK durante la comunicación y la secuencia de fin de comunicación.
+
+En nuestro caso el proceso de comunicación se basará en las funciones proporcionadas por las librerías de Linux que nos permiten abrir/cerrar y leer/escribir simplemente llamando a funciones definidas e indicando los argumentos necesarios. Además estaas funciones nos permiten operar con vectores para poder leer o escribir datos consecutivos con una única función.
 
 # Información detallada sobre los sensores disponibles y como se planea emplearlos
  %Hay cosas que explicar%
