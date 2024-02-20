@@ -133,42 +133,55 @@ Registers SFP 0x51
 | 24           | Tx Pwr H Alarm MSB      | 103          | Real Time Tx Power LSB    | 128          |                                |
 | 25           | Tx Pwr H Alarm LSB      |              |                            |              |                                |
 
-| Byte Decimal | Data                                      | Notes                                |
-|--------------|-------------------------------------------|--------------------------------------|
-| 0            | SFP physical device                       |                                      |
-| 1            | SFP function defined by serial ID only    |                                      |
-| 2            | LC optical connector                      |                                      |
-| 6            | 1000BaseSX                                |                                      |
-character |                                      |
-| 11           | Compatible with 8B/10B encoded data |                                      |
-| 12           | 1200Mbps nominal bit rate (1.25Gbps) character |                                      |
-| 13           |       |                               |
-| 14           |      |                               |
-| 15           |                                     |                               |
-| 16           | " " - Vendor Part Number ASCII character |                                      |
-| 17           | 550m of 50/125mm fiber @ 1.25Gbps        |                              |
-| 18           | " " - Vendor Part Number ASCII character |                                      |
-| 19           | 275m of 62.5/125mm fiber @ 1.25Gbps      |                              |
-| 20           | " " - Vendor Part Number ASCII character |                                      |
-| 21           | "A" - Vendor Name ASCII character         |                                      |
-| 22           | "V" - Vendor Name ASCII character         |                                      |
-| 23           | "A" - Vendor Name ASCII character         |                                      |
-| 24           | "G" - Vendor Name ASCII character         |                                      |
-| 25           | "O" - Vendor Name ASCII character         |                                      |
-| 26           | " " - Vendor Name ASCII character         |                                      |
-| 27           | " " - Vendor Name ASCII character         |                                      |
-| 28           | " " - Vendor Name ASCII character         |                                      |
-| 29           | " " - Vendor Name ASCII character         |                                      |
-| 30           | " " - Vendor Name ASCII character         |                                      |
-| 31           | Vendor Serial Number, ASCII               |                              |
-| 32           | Vendor Date Code, ASCII                  |                              |
-| 33           |                                     |                               |
-| 34           |                                    |                                |
-| 35           |                                    |                                |
-| 36           | Checksum for bytes 0-62                   |                              |
-| 37-94        | Vendor Data                               |                                      |
-| 95           | Checksum for bytes 64-94                  |                              |
-| 96 - 255     | 00                                        |                                      |
+| Byte Decimal | Data Notes |
+|--------------|------------|
+| 0 | SFP physical device |
+| 1 | SFP function defined by serial ID only |
+| 2 | LC optical connector |
+| 3 |  |
+| 4 |  |
+| 5 |  |
+| 6 | 1000BaseSX |
+| 7 |  |
+| 8 |  |
+| 9 |  |
+| 10 |  |
+| 11 | Compatible with 8B/10B encoded data |
+| 12 | 1200Mbps nominal bit rate (1.25Gbps) |
+| 13 |  |
+| 14 |  |
+| 15 | |
+| 16 | 550m of 50/125mm fiber @ 1.25Gbps |
+| 17 | 275m of 62.5/125mm fiber @ 1.25Gbps |
+| 18 |  |
+| 19 |  |
+| 20-35 | 'AVGO' - Vendor Name ASCII character |
+| 36 |  |
+| 37 | Vendor OUI |
+| 38 | Vendor OUI |
+| 39 | Vendor OUI |
+| 40-47 | 'AFBR-571' - Vendor Part Number ASCII characters |
+| 48 |  |
+| 49 |  |
+| 50 |  |
+| 51 |  |
+| 52-55 | Vendor Part Number ASCII character |
+| 56-59 | Vendor Revision Number ASCII character |
+| 60 | Hex Byte of Laser Wavelength |
+| 61 | Hex Byte of Laser Wavelength |
+| 62 |  |
+| 63 | Checksum for bytes 0-62 |
+| 64 |  |
+| 65 | Hardware SFP TX_DISABLE, TX_FAULT, & RX_LOS |
+| 66 |  |
+| 67 |  |
+| 68-83 | Vendor Serial Number, ASCII |
+| 84-91 | Vendor Date Code, ASCII |
+| 92 |  |
+| 93 |  |
+| 94 |  |
+| 95 | Checksum for bytes 64-94 |
+
 
 
 
