@@ -25,9 +25,9 @@ La disponibilidad universal del código fuente de Linux y de infinidad de driver
 
 Para implementar este sistema operativo (OS) en la DPB se ha empleado el software de Xilinx, Vivado,y mediante el puerto JTAG se ha cargado sobre una eMMC de 16 GB como memoria no volátil, tanto los archivos de arranque pertinentes como la imagen personalizada del proyecto del PetaLinux, posteriormente se ha seleccionado desde la placa a la eMMC como opción principal de arranque. En el proceso de arranque se carga el OS sobre la memoria RAM y se trabaja sobre esta.
 
-Una vez implementado el OS, se ha de configurar la conexión con la DPB, pese a la posibilidad de mantener la conexión por JTAG, la fuente de comunicación principal de de la DPB va a ser vía Ethernet, por lo que se ha empleado uno de los puertos SFP de los que dispone la DPB para mediante un transceptor SFP realizar una conexión Ethernet con el equipo. Para ello dentro de la modificación del PetaLinux se incluyó la configuración de un PLL a 125 MHz para la correspondiente señal de reloj de Ethernet.
+Una vez implementado el OS, se ha de configurar la conexión con la DPB, pese a la posibilidad de mantener la conexión por JTAG, la fuente de comunicación principal de la DPB va a ser vía Ethernet, por lo que se ha empleado uno de los puertos SFP de los que dispone la DPB para mediante un transceptor SFP realizar una conexión Ethernet con el equipo. Para ello dentro de la modificación del PetaLinux se incluyó la configuración de un PLL a 125 MHz para la correspondiente señal de reloj de Ethernet.
 
-Ya configurada la conexión, se ha establecido un servidor DHCP local para asignar una IP fija a al DPB y facilitar la conexión mediante SSH a la placa. Para ello se ha decalrado la subred con una configuración muy básica en el servidor:
+Ya configurada la conexión, se ha establecido un servidor DHCP local para asignar una IP fija a la DPB y facilitar la conexión mediante SSH a la placa. Para ello se ha decalrado la subred con una configuración muy básica en el servidor:
 
 ```bash
 subnet 20.0.0.0 netmask 255.255.255.0 {
