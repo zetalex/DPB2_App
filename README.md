@@ -61,7 +61,9 @@ En nuestro caso el proceso de comunicación se basará en las funciones proporci
 
 # Información detallada sobre los sensores disponibles y como se planea emplearlos
  %Hay cosas que explicar%
-
+<!---
+Current.Sens
+-->
 | POINTER ADDRESS (Hex) | REGISTER NAME               | DESCRIPTION                                                                                           | BINARY (Power-On Reset)          | HEX (Power-On Reset)    | TYPE | 
 |-----------------------|-----------------------------|-------------------------------------------------------------------------------------------------------|-------------------|---------|---------| 
 | 0                     | Configuration               | All-register reset, shunt and bus voltage ADC conversion times and operating mode.                    | 01110001 00100111 | 7127    | R/W     | 
@@ -85,7 +87,9 @@ En nuestro caso el proceso de comunicación se basará en las funciones proporci
 | FE                    | Manufacturer ID            | Contains unique manufacturer identification number.                                                    | 01010100 01001001 | 5449    | R       | 
 | FF                    | Die ID                      | Contains unique die identification number.                                                             | 00110010 00100000 | 3220    | R       |
 
-
+<!---
+Registers Temp.Sens
+-->
 | Register Address (Hexadecimal) | Register Name         | Default Register Data (Hexadecimal) | Power-Up Default Register Description                                                                                           |
 |-----------------------|-----------------------|--------------------------------------|----------------------------------------------------------------------------------------------------------------------------------|
 | 0x00                  | Capability            | 0x00EF   | Event output deasserts in shutdown I<sup>2</sup>C™ time out 25 ms to 35 ms. Accepts VHV at A0 Pin 0.25°C Resolution . Measures temperature below 0°C ±1°C accuracy over active range Temperature event output |
@@ -97,35 +101,37 @@ En nuestro caso el proceso de comunicación se basará en las funciones proporci
 | 0x06                  | Manufacturer ID       | 0x0054                               | —                                                                                                                       |
 | 0x07                  | Microchip Device ID/ Device Revision  | 0x0601                         | — Microchip Device ID/ Device Revision  0x0602 —                                                                                                                                       
 | 0x09                  | Resolution  | 0x8001                               | Most Significant bit is set by default 0.25°C Measurement Resolution                                                            |
-
+<!---
+Registers SFP 0x51
+-->
 | Byte Decimal | Notes                    | Byte Decimal | Notes                      | Byte Decimal | Notes                           |
 |--------------|--------------------------|--------------|----------------------------|--------------|---------------------------------|
-| 0            | Temp H Alarm MSB1        | 26           | Tx Pwr L Alarm MSB4        | 104          | Real Time Rx PAV MSB5          |
-| 1            | Temp H Alarm LSB1        | 27           | Tx Pwr L Alarm LSB4        | 105          | Real Time Rx PAV LSB5          |
-| 2            | Temp L Alarm MSB1        | 28           | Tx Pwr H Warning MSB4      | 106          |                                |
-| 3            | Temp L Alarm LSB1        | 29           | Tx Pwr H Warning LSB4      | 107          |                                |
-| 4            | Temp H Warning MSB1      | 30           | Tx Pwr L Warning MSB4      | 108          |                                |
-| 5            | Temp H Warning LSB1      | 31           | Tx Pwr L Warning LSB4      | 109          |                                |
-| 6            | Temp L Warning MSB1      | 32           | Rx Pwr H Alarm MSB5        | 110          | Status/Control                  |
-| 7            | Temp L Warning LSB1      | 33           | Rx Pwr H Alarm LSB5        | 111          |                                |
-| 8            | VCC H Alarm MSB2         | 34           | Rx Pwr L Alarm MSB5        | 112          | Flag Bits                       |
-| 9            | VCC H Alarm LSB2         | 35           | Rx Pwr L Alarm LSB5        | 113          | Flag Bit                        |
-| 10           | VCC L Alarm MSB2         | 36           | Rx Pwr H Warning MSB5      | 114          |                                |
-| 11           | VCC L Alarm LSB2         | 37           | Rx Pwr H Warning LSB5      | 115          |                                |
-| 12           | VCC H Warning MSB2       | 38           | Rx Pwr L Warning MSB5      | 116          | Flag Bits                               |
-| 13           | VCC H Warning LSB2       | 39           | Rx Pwr L Warning LSB5      | 117          | Flag Bits                               |
+| 0            | Temp H Alarm MSB        | 26           | Tx Pwr L Alarm MSB        | 104          | Real Time Rx PAV MSB          |
+| 1            | Temp H Alarm LSB        | 27           | Tx Pwr L Alarm LSB        | 105          | Real Time Rx PAV LSB          |
+| 2            | Temp L Alarm MSB        | 28           | Tx Pwr H Warning MSB      | 106          |                                |
+| 3            | Temp L Alarm LSB        | 29           | Tx Pwr H Warning LSB      | 107          |                                |
+| 4            | Temp H Warning MSB      | 30           | Tx Pwr L Warning MSB      | 108          |                                |
+| 5            | Temp H Warning LSB      | 31           | Tx Pwr L Warning LSB      | 109          |                                |
+| 6            | Temp L Warning MSB      | 32           | Rx Pwr H Alarm MSB        | 110          | Status/Control                  |
+| 7            | Temp L Warning LSB      | 33           | Rx Pwr H Alarm LSB        | 111          |                                |
+| 8            | VCC H Alarm MSB         | 34           | Rx Pwr L Alarm MSB        | 112          | Flag Bits                       |
+| 9            | VCC H Alarm LSB         | 35           | Rx Pwr L Alarm LSB        | 113          | Flag Bit                        |
+| 10           | VCC L Alarm MSB         | 36           | Rx Pwr H Warning MSB      | 114          |                                |
+| 11           | VCC L Alarm LSB         | 37           | Rx Pwr H Warning LSB      | 115          |                                |
+| 12           | VCC H Warning MSB       | 38           | Rx Pwr L Warning MSB      | 116          | Flag Bits                               |
+| 13           | VCC H Warning LSB       | 39           | Rx Pwr L Warning LSB      | 117          | Flag Bits                               |
 | 14           |                          |              |                            |              |                                |
 | 15           |                          |              |                            |              |                                |
-| 16           | Tx Bias H Alarm MSB3     | 95           | Checksum for Bytes 0-94    | 120          |                                |
-| 17           | Tx Bias H Alarm LSB3     | 96           | Real Time Temperature MSB1 | 121          |                                |
-| 18           | Tx Bias L Alarm MSB3     | 97           | Real Time Temperature LSB1 | 122          |                                |
-| 19           | Tx Bias L Alarm LSB3     | 98           | Real Time Vcc MSB2         | 123          |                                |
-| 20           | Tx Bias H Warning MSB3   | 99           | Real Time Vcc LSB2         | 124          |                                |
-| 21           | Tx Bias H Warning LSB3   | 100          | Real Time Tx Bias MSB3     | 125          |                                |
-| 22           | Tx Bias L Warning MSB3   | 101          | Real Time Tx Bias LSB3     | 126          |                                |
-| 23           | Tx Bias L Warning LSB3   | 102          | Real Time Tx Power MSB4    | 127          |                                |
-| 24           | Tx Pwr H Alarm MSB4      | 103          | Real Time Tx Power LSB4    | 128          |                                |
-| 25           | Tx Pwr H Alarm LSB4      |              |                            |              |                                |
+| 16           | Tx Bias H Alarm MSB     | 95           | Checksum for Bytes 0-94    | 120          |                                |
+| 17           | Tx Bias H Alarm LSB     | 96           | Real Time Temperature MSB | 121          |                                |
+| 18           | Tx Bias L Alarm MSB    | 97           | Real Time Temperature LSB | 122          |                                |
+| 19           | Tx Bias L Alarm LSB     | 98           | Real Time Vcc MSB         | 123          |                                |
+| 20           | Tx Bias H Warning MSB   | 99           | Real Time Vcc LSB         | 124          |                                |
+| 21           | Tx Bias H Warning LSB   | 100          | Real Time Tx Bias MSB     | 125          |                                |
+| 22           | Tx Bias L Warning MSB   | 101          | Real Time Tx Bias LSB     | 126          |                                |
+| 23           | Tx Bias L Warning LSB   | 102          | Real Time Tx Power MSB    | 127          |                                |
+| 24           | Tx Pwr H Alarm MSB      | 103          | Real Time Tx Power LSB    | 128          |                                |
+| 25           | Tx Pwr H Alarm LSB      |              |                            |              |                                |
 
 
 
