@@ -78,11 +78,8 @@ En nuestro caso el proceso de comunicación se basará en las funciones proporci
 | D                     | Shunt-Voltage Sum          | Contains the summed value of the each of the selected shunt voltage conversions.                       | 00000000 00000000 | 0000    | R       | 
 | E                     | Shunt-Voltage Sum Limit    | Contains limit value to compare to the Shunt Voltage Sum register to determine if the corresponding limit has been exceeded.| 01111111 11111110 | 7FFE    | R/W     | 
 | F                     | Mask/Enable                | Alert configuration, alert status indication, summation control and status.                           | 00000000 00000010 | 0002    | R/W     | 
-| 10                    | Power-Valid Upper Limit    | Contains limit value to compare all bus voltage conversions to
-determine if the Power Valid level has been reached.| 00100111 00010000 | 2710    | R/W     | 
-| 11                    | Power-Valid Lower Limit    | Contains limit value to compare all bus voltage conversions to
-determine if the any voltage rail has dropped below the Power
-Valid range.| 00100011 00101000 | 2328    | R/W     | 
+| 10                    | Power-Valid Upper Limit    | Contains limit value to compare all bus voltage conversions to determine if the Power Valid level has been reached.| 00100111 00010000 | 2710    | R/W     | 
+| 11                    | Power-Valid Lower Limit    | Contains limit value to compare all bus voltage conversions to determine if the any voltage rail has dropped below the Power Valid range.| 00100011 00101000 | 2328    | R/W     | 
 | FE                    | Manufacturer ID            | Contains unique manufacturer identification number.                                                    | 01010100 01001001 | 5449    | R       | 
 | FF                    | Die ID                      | Contains unique die identification number.                                                             | 00110010 00100000 | 3220    | R       |
 
