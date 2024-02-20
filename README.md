@@ -49,7 +49,9 @@ Para conseguir una comunicación entre los diferentes componenetes a tratar de l
 El funcionamiento de este protocolo consiste en el inicio de la transmisión por parte de el Maestro que conjuntamente indica la dirección del esclavo al que se dirige con una dirección de 7 bits (nosotros contamos con sensores que su dirección es de 6 bits más uno reservado que a nosotros nos sirve para diferenciar de forma física), además se indica con un bit si la operación a desarrollar es lectura o escritura. La transmisión de datos va guiada por la línea de reloj y se transmiten los datos en tamaño byte transmitiendo de MSB a LSB.
 
 ![I<sup>2</sup>C Address and Data Frames](/DBP2_App/doc/figures/I2C_ADD_DAT_FRAME.png)
-
+<!---
+Poner caption tanto figuras como Tablas
+-->
 
 Para la operación de escritura sobre el esclavo una vez establecida la comunicación se ha de indicar el registro sobre el que se desea escribir y el dato que se desea escribir. El maestro es el encargado de recibir los correspondientes ACK y NACK durante la comunicación y la secuencia de fin de comunicación.
 
@@ -86,17 +88,15 @@ En nuestro caso el proceso de comunicación se basará en las funciones proporci
 
 | Register Address (Hexadecimal) | Register Name         | Default Register Data (Hexadecimal) | Power-Up Default Register Description                                                                                           |
 |-----------------------|-----------------------|--------------------------------------|----------------------------------------------------------------------------------------------------------------------------------|
-| 0x00                  | Capability            | 0x00EF (MCP9844) 0x00FF (MCP9844A)  | Event output deasserts in shutdown I2C™ time out 25 ms to 35 ms. Accepts VHV at A0 Pin 0.25°C Resolution (MCP9844) 0.0625°C Resolution (MCP9844A) Measures temperature below 0°C ±1°C accuracy over active range Temperature event output |
+| 0x00                  | Capability            | 0x00EF   | Event output deasserts in shutdown I<sup>2</sup>C™ time out 25 ms to 35 ms. Accepts VHV at A0 Pin 0.25°C Resolution . Measures temperature below 0°C ±1°C accuracy over active range Temperature event output |
 | 0x01                  | CONFIG                | 0x0000                               | Comparator mode Active-Low output Event and critical output Output disabled Event not asserted Interrupt cleared Event limits unlocked Critical limit unlocked Continuous conversion 0°C Hysteresis |
-| 0x02                  | TUPPER                | 0x0000                               | 0°C                                                                                                                              |
-| 0x03                  | TLOWER                | 0x0000                               | 0°C                                                                                                                              |
-| 0x04                  | TCRIT                 | 0x0000                               | 0°C                                                                                                                              |
-| 0x05                  | TA                    | 0x0000                               | 0°C                                                                                                                              |
-| 0x06                  | Manufacturer ID       | 0x0054                               | — Microchip                                                                                                                      |
-| 0x07                  | Microchip Device ID/ Device Revision (MCP9844) | 0x0601                         | — Microchip Device ID/ Device Revision (MCP9844A) 0x0602 —                                                                     |
-| 0x08                  | Reserved (MCP9844)    | 0x0601                               | —                                                                                                                                |
-|                       | Resolution (MCP9844A)| 0x8003                               | Most Significant bit is set by default 0.0625°C Measurement Resolution                                                           |
-| 0x09                  | Resolution (MCP9844) | 0x8001                               | Most Significant bit is set by default 0.25°C Measurement Resolution                                                            |
+| 0x02                  | T<sub>UPPER</sub>                 | 0x0000                               | 0°C                                                                                                                              |
+| 0x03                  | T<sub>LOWER</sub>                | 0x0000                               | 0°C                                                                                                                              |
+| 0x04                  | T<sub>CRIT</sub>                  | 0x0000                               | 0°C                                                                                                                              |
+| 0x05                  | T<sub>A</sub>                     | 0x0000                               | 0°C                                                                                                                              |
+| 0x06                  | Manufacturer ID       | 0x0054                               | —                                                                                                                       |
+| 0x07                  | Microchip Device ID/ Device Revision  | 0x0601                         | — Microchip Device ID/ Device Revision  0x0602 —                                                                                                                                       
+| 0x09                  | Resolution  | 0x8001                               | Most Significant bit is set by default 0.25°C Measurement Resolution                                                            |
 
  
 # Obtención de datos del AMS, PS y PL SYSMON y diferenciación por canales
