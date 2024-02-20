@@ -133,6 +133,50 @@ Registers SFP 0x51
 | 24           | Tx Pwr H Alarm MSB      | 103          | Real Time Tx Power LSB    | 128          |                                |
 | 25           | Tx Pwr H Alarm LSB      |              |                            |              |                                |
 
+| Byte Decimal | Data                                      | Notes                                |
+|--------------|-------------------------------------------|--------------------------------------|
+| 0            | SFP physical device                       |                                      |
+| 1            | SFP function defined by serial ID only    |                                      |
+| 2            | LC optical connector                      |                                      |
+| 3            | "A" - Vendor Part Number ASCII character |                                      |
+| 4            | "F" - Vendor Part Number ASCII character |                                      |
+| 5            | "B" - Vendor Part Number ASCII character |                                      |
+| 6            | 1000BaseSX                                |                                      |
+| 7            | "-" - Vendor Part Number ASCII character |                                      |
+| 8            | "E" - Vendor Part Number ASCII character |                                      |
+| 9            | "5" - Vendor Part Number ASCII character |                                      |
+| 10           | "F" - Vendor Part Number ASCII character |                                      |
+| 11           | "7" - Vendor Part Number ASCII character |                                      |
+| 12           | "1" - Vendor Part Number ASCII character |                                      |
+| 13           | Compatible with 8B/10B encoded data      | Note 5                               |
+| 14           | 1200Mbps nominal bit rate (1.25Gbps)     | Note 5                               |
+| 15           | Note 5                                    | Note 5                               |
+| 16           | " " - Vendor Part Number ASCII character |                                      |
+| 17           | 550m of 50/125mm fiber @ 1.25Gbps        | (Note 2)                             |
+| 18           | " " - Vendor Part Number ASCII character |                                      |
+| 19           | 275m of 62.5/125mm fiber @ 1.25Gbps      | (Note 3)                             |
+| 20           | " " - Vendor Part Number ASCII character |                                      |
+| 21           | "A" - Vendor Name ASCII character         |                                      |
+| 22           | "V" - Vendor Name ASCII character         |                                      |
+| 23           | "A" - Vendor Name ASCII character         |                                      |
+| 24           | "G" - Vendor Name ASCII character         |                                      |
+| 25           | "O" - Vendor Name ASCII character         |                                      |
+| 26           | " " - Vendor Name ASCII character         |                                      |
+| 27           | " " - Vendor Name ASCII character         |                                      |
+| 28           | " " - Vendor Name ASCII character         |                                      |
+| 29           | " " - Vendor Name ASCII character         |                                      |
+| 30           | " " - Vendor Name ASCII character         |                                      |
+| 31           | Vendor Serial Number, ASCII               | (Note 8)                             |
+| 32           | Vendor Date Code, ASCII                  | (Note 9)                             |
+| 33           | Note 5                                    | Note 5                               |
+| 34           | Note 5                                    | Note 5                               |
+| 35           | Note 5                                    | Note 5                               |
+| 36           | Checksum for bytes 0-62                   | (Note 7)                             |
+| 37-94        | Vendor Data                               |                                      |
+| 95           | Checksum for bytes 64-94                  | (Note 7)                             |
+| 96 - 255     | 00                                        |                                      |
+
+
 
 
  
