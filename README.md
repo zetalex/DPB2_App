@@ -84,20 +84,19 @@ En nuestro caso el proceso de comunicación se basará en las funciones proporci
 | FF                    | Die ID                      | Contains unique die identification number.                                                             | 00110010 00100000 | 3220    | R       |
 
 
-| Registers         | Default Register Data (Hexadecimal) | Power-Up Default Register Description                                                                         |
-|-------------------|--------------------------------------|----------------------------------------------------------------------------------------------------------------|
-| Address (Hexadecimal) | Register Name                      |                                                                                                                |
-| 0x00              | Capability                           | 0x00EF (MCP9844) 0x00FF (MCP9844A) Event output deasserts in shutdown I2C™ time out 25 ms to 35 ms. Accepts VHV at A0 Pin 0.25°C Resolution (MCP9844) 0.0625°C Resolution (MCP9844A) Measures temperature below 0°C ±1°C accuracy over active range Temperature event output |
-| 0x01              | CONFIG                               | 0x0000 Comparator mode Active-Low output Event and critical output Output disabled Event not asserted Interrupt cleared Event limits unlocked Critical limit unlocked Continuous conversion 0°C Hysteresis |
-| 0x02              | TUPPER                               | 0x0000 0°C                                                                                                     |
-| 0x03              | TLOWER                               | 0x0000 0°C                                                                                                     |
-| 0x04              | TCRIT                                | 0x0000 0°C                                                                                                     |
-| 0x05              | TA                                   | 0x0000 0°C                                                                                                     |
-| 0x06              | Manufacturer ID                      | 0x0054 — Microchip                                                                                             |
-| 0x07              | Microchip Device ID/ Device Revision (MCP9844) | 0x0601 — Microchip Device ID/ Device Revision (MCP9844A) 0x0602 —                                            |
-| 0x08              | Reserved (MCP9844)                   | 0x0601 —                                                                                                       |
-|                   | Resolution (MCP9844A)               | 0x8003 Most Significant bit is set by default 0.0625°C Measurement Resolution                                  |
-| 0x09              | Resolution (MCP9844)                | 0x8001 Most Significant bit is set by default 0.25°C Measurement Resolution                                    |
+| Register Address (Hexadecimal) | Register Name         | Default Register Data (Hexadecimal) | Power-Up Default Register Description                                                                                           |
+|-----------------------|-----------------------|--------------------------------------|----------------------------------------------------------------------------------------------------------------------------------|
+| 0x00                  | Capability            | 0x00EF (MCP9844) 0x00FF (MCP9844A)  | Event output deasserts in shutdown I2C™ time out 25 ms to 35 ms. Accepts VHV at A0 Pin 0.25°C Resolution (MCP9844) 0.0625°C Resolution (MCP9844A) Measures temperature below 0°C ±1°C accuracy over active range Temperature event output |
+| 0x01                  | CONFIG                | 0x0000                               | Comparator mode Active-Low output Event and critical output Output disabled Event not asserted Interrupt cleared Event limits unlocked Critical limit unlocked Continuous conversion 0°C Hysteresis |
+| 0x02                  | TUPPER                | 0x0000                               | 0°C                                                                                                                              |
+| 0x03                  | TLOWER                | 0x0000                               | 0°C                                                                                                                              |
+| 0x04                  | TCRIT                 | 0x0000                               | 0°C                                                                                                                              |
+| 0x05                  | TA                    | 0x0000                               | 0°C                                                                                                                              |
+| 0x06                  | Manufacturer ID       | 0x0054                               | — Microchip                                                                                                                      |
+| 0x07                  | Microchip Device ID/ Device Revision (MCP9844) | 0x0601                         | — Microchip Device ID/ Device Revision (MCP9844A) 0x0602 —                                                                     |
+| 0x08                  | Reserved (MCP9844)    | 0x0601                               | —                                                                                                                                |
+|                       | Resolution (MCP9844A)| 0x8003                               | Most Significant bit is set by default 0.0625°C Measurement Resolution                                                           |
+| 0x09                  | Resolution (MCP9844) | 0x8001                               | Most Significant bit is set by default 0.25°C Measurement Resolution                                                            |
 
  
 # Obtención de datos del AMS, PS y PL SYSMON y diferenciación por canales
