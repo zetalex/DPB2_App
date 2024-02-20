@@ -59,6 +59,30 @@ En nuestro caso el proceso de comunicación se basará en las funciones proporci
 
 # Información detallada sobre los sensores disponibles y como se planea emplearlos
  %Hay cosas que explicar%
+
+ | POINTER ADDRESS (Hex) | REGISTER NAME               | DESCRIPTION                                                                                           | BINARY            | HEX     | TYPE(1) | 
+|-----------------------|-----------------------------|-------------------------------------------------------------------------------------------------------|-------------------|---------|---------| 
+| 0                     | Configuration               | All-register reset, shunt and bus voltage ADC conversion times and operating mode.                    | 01110001 00100111 | 7127    | R/W     | 
+| 1                     | Channel-1 Shunt Voltage    | Averaged shunt voltage value.                                                                        | 00000000 00000000 | 0000    | R       | 
+| 2                     | Channel-1 Bus Voltage      | Averaged bus voltage value.                                                                          | 00000000 00000000 | 0000    | R       | 
+| 3                     | Channel-2 Shunt Voltage    | Averaged shunt voltage value.                                                                        | 00000000 00000000 | 0000    | R       | 
+| 4                     | Channel-2 Bus Voltage      | Averaged bus voltage value.                                                                          | 00000000 00000000 | 0000    | R       | 
+| 5                     | Channel-3 Shunt Voltage    | Averaged shunt voltage value.                                                                        | 00000000 00000000 | 0000    | R       | 
+| 6                     | Channel-3 Bus Voltage      | Averaged bus voltage value.                                                                          | 00000000 00000000 | 0000    | R       | 
+| 7                     | Channel-1 Critical Alert   | Limit Contains limit value to compare each conversion value to determine if the corresponding limit...| 01111111 11111000 | 7FF8    | R/W     | 
+| 8                     | Channel-1 Warning Alert    | Limit Contains limit value to compare to averaged measurement to determine if the corresponding li...| 01111111 11111000 | 7FF8    | R/W     | 
+| 9                     | Channel-2 Critical Alert   | Limit Contains limit value to compare each conversion value to determine if the corresponding limit...| 01111111 11111000 | 7FF8    | R/W     | 
+| A                     | Channel-2 Warning Alert    | Limit Contains limit value to compare to averaged measurement to determine if the corresponding li...| 01111111 11111000 | 7FF8    | R/W     | 
+| B                     | Channel-3 Critical Alert   | Limit Contains limit value to compare each conversion value to determine if the corresponding limit...| 01111111 11111000 | 7FF8    | R/W     | 
+| C                     | Channel-3 Warning Alert    | Limit Contains limit value to compare to averaged measurement to determine if the corresponding li...| 01111111 11111000 | 7FF8    | R/W     | 
+| D                     | Shunt-Voltage Sum          | Contains the summed value of the each of the selected shunt voltage conversions.                       | 00000000 00000000 | 0000    | R       | 
+| E                     | Shunt-Voltage Sum Limit    | Contains limit value to compare to the Shunt Voltage Sum register to determine if the corresponding...| 01111111 11111110 | 7FFE    | R/W     | 
+| F                     | Mask/Enable                | Alert configuration, alert status indication, summation control and status.                           | 00000000 00000010 | 0002    | R/W     | 
+| 10                    | Power-Valid Upper Limit    | Contains limit value to compare all bus voltage conversions to determine if the Power Valid level ...| 00100111 00010000 | 2710    | R/W     | 
+| 11                    | Power-Valid Lower Limit    | Contains limit value to compare all bus voltage conversions to determine if the any voltage rail ha...| 00100011 00101000 | 2328    | R/W     | 
+| FE                    | Manufacturer ID            | Contains unique manufacturer identification number.                                                    | 01010100 01001001 | 5449    | R       | 
+| FF                    | Die ID                      | Contains unique die identification number.                                                             | 00110010 00100000 | 3220    | R       |
+
  
 # Diferenciación de los datos obtenidos del AMS
 
