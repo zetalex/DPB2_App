@@ -102,6 +102,34 @@ Registers Temp.Sens
 | 0x07                  | Microchip Device ID/ Device Revision  | 0x0601                         | — Microchip Device ID/ Device Revision  0x0602 —                                                                                                                                       
 | 0x09                  | Resolution  | 0x8001                               | Most Significant bit is set by default 0.25°C Measurement Resolution                                                            |
 <!---
+Registers SFP 0x50
+-->
+| Byte Decimal | Data Notes |
+|--------------|------------|
+| 0 | SFP physical device |
+| 1 | SFP function defined by serial ID only |
+| 2 | LC optical connector |
+| 6 | 1000BaseSX |
+| 11 | Compatible with 8B/10B encoded data |
+| 12 | 1200Mbps nominal bit rate (1.25Gbps) |
+| 16 | 550m of 50/125mm fiber @ 1.25Gbps |
+| 17 | 275m of 62.5/125mm fiber @ 1.25Gbps |
+| 20-35 | 'AVGO' - Vendor Name ASCII character |
+| 37 | Vendor OUI |
+| 38 | Vendor OUI |
+| 39 | Vendor OUI |
+| 40-47 | 'AFBR-571' - Vendor Part Number ASCII characters |
+| 52-55 | Vendor Part Number ASCII character |
+| 56-59 | Vendor Revision Number ASCII character |
+| 60 | Hex Byte of Laser Wavelength |
+| 61 | Hex Byte of Laser Wavelength |
+| 63 | Checksum for bytes 0-62 |
+| 65 | Hardware SFP TX_DISABLE, TX_FAULT, & RX_LOS |
+| 68-83 | Vendor Serial Number, ASCII |
+| 84-91 | Vendor Date Code, ASCII |
+| 95 | Checksum for bytes 64-94 |
+
+<!---
 Registers SFP 0x51
 -->
 | Byte Decimal | Notes                    | Byte Decimal | Notes                      | Byte Decimal | Notes                           |
@@ -120,8 +148,6 @@ Registers SFP 0x51
 | 11           | VCC L Alarm LSB         | 37           | Rx Pwr H Warning LSB      | 115          |                                |
 | 12           | VCC H Warning MSB       | 38           | Rx Pwr L Warning MSB      | 116          | Flag Bits                               |
 | 13           | VCC H Warning LSB       | 39           | Rx Pwr L Warning LSB      | 117          | Flag Bits                               |
-| 14           |                          |              |                            |              |                                |
-| 15           |                          |              |                            |              |                                |
 | 16           | Tx Bias H Alarm MSB     | 95           | Checksum for Bytes 0-94    | 120          |                                |
 | 17           | Tx Bias H Alarm LSB     | 96           | Real Time Temperature MSB | 121          |                                |
 | 18           | Tx Bias L Alarm MSB    | 97           | Real Time Temperature LSB | 122          |                                |
@@ -133,55 +159,55 @@ Registers SFP 0x51
 | 24           | Tx Pwr H Alarm MSB      | 103          | Real Time Tx Power LSB    | 128          |                                |
 | 25           | Tx Pwr H Alarm LSB      |              |                            |              |                                |
 
-| Byte Decimal | Data Notes |
-|--------------|------------|
-| 0 | SFP physical device |
-| 1 | SFP function defined by serial ID only |
-| 2 | LC optical connector |
-| 3 |  |
-| 4 |  |
-| 5 |  |
-| 6 | 1000BaseSX |
-| 7 |  |
-| 8 |  |
-| 9 |  |
-| 10 |  |
-| 11 | Compatible with 8B/10B encoded data |
-| 12 | 1200Mbps nominal bit rate (1.25Gbps) |
-| 13 |  |
-| 14 |  |
-| 15 | |
-| 16 | 550m of 50/125mm fiber @ 1.25Gbps |
-| 17 | 275m of 62.5/125mm fiber @ 1.25Gbps |
-| 18 |  |
-| 19 |  |
-| 20-35 | 'AVGO' - Vendor Name ASCII character |
-| 36 |  |
-| 37 | Vendor OUI |
-| 38 | Vendor OUI |
-| 39 | Vendor OUI |
-| 40-47 | 'AFBR-571' - Vendor Part Number ASCII characters |
-| 48 |  |
-| 49 |  |
-| 50 |  |
-| 51 |  |
-| 52-55 | Vendor Part Number ASCII character |
-| 56-59 | Vendor Revision Number ASCII character |
-| 60 | Hex Byte of Laser Wavelength |
-| 61 | Hex Byte of Laser Wavelength |
-| 62 |  |
-| 63 | Checksum for bytes 0-62 |
-| 64 |  |
-| 65 | Hardware SFP TX_DISABLE, TX_FAULT, & RX_LOS |
-| 66 |  |
-| 67 |  |
-| 68-83 | Vendor Serial Number, ASCII |
-| 84-91 | Vendor Date Code, ASCII |
-| 92 |  |
-| 93 |  |
-| 94 |  |
-| 95 | Checksum for bytes 64-94 |
+Para interpretar estos datos hemos de tener en cuenta las siguientes alcaraciones del fabricante en función de la magnitud a interpretar:
 
+- **Temperatura (Temp):** Los valores de temperatura se codifican como enteros de 16 bits en complemento a dos, lo que permite representar tanto valores positivos como negativos. Cada unidad en esta representación equivale a 1/256 de grado Celsius (ºC).
+  
+- **Voltaje de Alimentación (VCC):** Este parámetro se representa como un entero de 16 bits sin signo, lo que significa que solo puede tener valores positivos. Cada incremento en este valor corresponde a 100 microvoltios (µV).
+  
+- **Corriente de Polarización del Láser (Tx Bias):** La corriente de polarización del láser se decodifica como un entero de 16 bits sin signo, lo que indica que solo puede ser positiva. Cada incremento en este valor representa 2 microamperios (µA).
+  
+- **Potencia Óptica Promedio Transmitida (Tx Pwr):** Este parámetro se representa como un entero de 16 bits sin signo, donde cada incremento corresponde a 0.1 microvatios (µW) de potencia óptica transmitida.
+  
+- **Potencia Óptica Promedio Recibida (Rx Pwr):** Similar al parámetro anterior, la potencia óptica promedio recibida se codifica como un entero de 16 bits sin signo. Cada unidad de este valor representa 0.1 microvatios (µW) de potencia óptica recibida.
+
+<!---
+SFP Status Table
+-->
+| Bit # | Status/Control Name | Description |
+|-------|----------------------|-------------|
+| 7     | Tx Disable State     | Digital state of SFP Tx Disable Input Pin (1 = Tx_Disable asserted) |
+| 6     | Soft Tx Disable      | Read/write bit for changing digital state of SFP Tx_Disable function |
+| 4     | Rx Rate Select State | Digital state of SFP Rate Select Input Pin (1 = full bandwidth of 155 Mbit) |
+| 2     | Tx Fault State       | Digital state of the SFP Tx Fault Output Pin (1 = Tx Fault asserted) |
+| 1     | Rx LOS State         | Digital state of the SFP LOS Output Pin (1 = LOS asserted) |
+| 0     | Data Ready (Bar)     | Indicates transceiver is powered and real-time sense data is ready (0 = Ready) |
+<!---
+SFP Flags Table
+-->
+| Byte | Bit # | Flag Bit Name | Description |
+|------|-------|---------------|-------------|
+| 112  | 7     | Temp High Alarm | Set when transceiver internal temperature exceeds high alarm threshold. |
+|      | 6     | Temp Low Alarm  | Set when transceiver internal temperature exceeds low alarm threshold. |
+|      | 5     | VCC High Alarm  | Set when transceiver internal supply voltage exceeds high alarm threshold. |
+|      | 4     | VCC Low Alarm   | Set when transceiver internal supply voltage exceeds low alarm threshold. |
+|      | 3     | Tx Bias High Alarm | Set when transceiver laser bias current exceeds high alarm threshold. |
+|      | 2     | Tx Bias Low Alarm | Set when transceiver laser bias current exceeds low alarm threshold. |
+|      | 1     | Tx Power High Alarm | Set when transmitted average optical power exceeds high alarm threshold. |
+|      | 0     | Tx Power Low Alarm | Set when transmitted average optical power exceeds low alarm threshold. |
+| 113  | 7     | Rx Power High Alarm | Set when received P_Avg optical power exceeds high alarm threshold. |
+|      | 6     | Rx Power Low Alarm | Set when received P_Avg optical power exceeds low alarm threshold. |
+|      |   |  |  |
+| 116  | 7     | Temp High Warning | Set when transceiver internal temperature exceeds high warning threshold. |
+|      | 6     | Temp Low Warning | Set when transceiver internal temperature exceeds low warning threshold. |
+|      | 5     | VCC High Warning | Set when transceiver internal supply voltage exceeds high warning threshold. |
+|      | 4     | VCC Low Warning | Set when transceiver internal supply voltage exceeds low warning threshold. |
+|      | 3     | Tx Bias High Warning | Set when transceiver laser bias current exceeds high warning threshold. |
+|      | 2     | Tx Bias Low Warning | Set when transceiver laser bias current exceeds low warning threshold. |
+|      | 1     | Tx Power High Warning | Set when transmitted average optical power exceeds high warning threshold. |
+|      | 0     | Tx Power Low Warning | Set when transmitted average optical power exceeds low warning threshold. |
+| 117  | 7     | Rx Power High Warning | Set when received P_Avg optical power exceeds high warning threshold. |
+|      | 9     | Rx Power Low Warning | Set when received P_Avg optical power exceeds low warning threshold. |
 
 
 
