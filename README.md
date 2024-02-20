@@ -60,7 +60,7 @@ En nuestro caso el proceso de comunicación se basará en las funciones proporci
 # Información detallada sobre los sensores disponibles y como se planea emplearlos
  %Hay cosas que explicar%
 
- | POINTER ADDRESS (Hex) | REGISTER NAME               | DESCRIPTION                                                                                           | BINARY            | HEX     | TYPE(1) | 
+ | POINTER ADDRESS (Hex) | REGISTER NAME               | DESCRIPTION                                                                                           | BINARY (Power-On Reset)          | HEX (Power-On Reset)    | TYPE(1) | 
 |-----------------------|-----------------------------|-------------------------------------------------------------------------------------------------------|-------------------|---------|---------| 
 | 0                     | Configuration               | All-register reset, shunt and bus voltage ADC conversion times and operating mode.                    | 01110001 00100111 | 7127    | R/W     | 
 | 1                     | Channel-1 Shunt Voltage    | Averaged shunt voltage value.                                                                        | 00000000 00000000 | 0000    | R       | 
@@ -69,24 +69,27 @@ En nuestro caso el proceso de comunicación se basará en las funciones proporci
 | 4                     | Channel-2 Bus Voltage      | Averaged bus voltage value.                                                                          | 00000000 00000000 | 0000    | R       | 
 | 5                     | Channel-3 Shunt Voltage    | Averaged shunt voltage value.                                                                        | 00000000 00000000 | 0000    | R       | 
 | 6                     | Channel-3 Bus Voltage      | Averaged bus voltage value.                                                                          | 00000000 00000000 | 0000    | R       | 
-| 7                     | Channel-1 Critical Alert   | Limit Contains limit value to compare each conversion value to determine if the corresponding limit...| 01111111 11111000 | 7FF8    | R/W     | 
-| 8                     | Channel-1 Warning Alert    | Limit Contains limit value to compare to averaged measurement to determine if the corresponding li...| 01111111 11111000 | 7FF8    | R/W     | 
-| 9                     | Channel-2 Critical Alert   | Limit Contains limit value to compare each conversion value to determine if the corresponding limit...| 01111111 11111000 | 7FF8    | R/W     | 
-| A                     | Channel-2 Warning Alert    | Limit Contains limit value to compare to averaged measurement to determine if the corresponding li...| 01111111 11111000 | 7FF8    | R/W     | 
-| B                     | Channel-3 Critical Alert   | Limit Contains limit value to compare each conversion value to determine if the corresponding limit...| 01111111 11111000 | 7FF8    | R/W     | 
-| C                     | Channel-3 Warning Alert    | Limit Contains limit value to compare to averaged measurement to determine if the corresponding li...| 01111111 11111000 | 7FF8    | R/W     | 
+| 7                     | Channel-1 Critical Alert   | Limit Contains limit value to compare each conversion value to determine if the corresponding limit has been exceeded.| 01111111 11111000 | 7FF8    | R/W     | 
+| 8                     | Channel-1 Warning Alert    | Limit Contains limit value to compare to averaged measurement to determine if the corresponding limit has been exceeded.| 01111111 11111000 | 7FF8    | R/W     | 
+| 9                     | Channel-2 Critical Alert   | Limit Contains limit value to compare each conversion value to determine if the corresponding limit has been exceeded.| 01111111 11111000 | 7FF8    | R/W     | 
+| A                     | Channel-2 Warning Alert    | Limit Contains limit value to compare to averaged measurement to determine if the corresponding limit has been exceeded.| 01111111 11111000 | 7FF8    | R/W     | 
+| B                     | Channel-3 Critical Alert   | Limit Contains limit value to compare each conversion value to determine if the corresponding limit has been exceeded.| 01111111 11111000 | 7FF8    | R/W     | 
+| C                     | Channel-3 Warning Alert    | Limit Contains limit value to compare to averaged measurement to determine if the corresponding limit has been exceeded.| 01111111 11111000 | 7FF8    | R/W     | 
 | D                     | Shunt-Voltage Sum          | Contains the summed value of the each of the selected shunt voltage conversions.                       | 00000000 00000000 | 0000    | R       | 
-| E                     | Shunt-Voltage Sum Limit    | Contains limit value to compare to the Shunt Voltage Sum register to determine if the corresponding...| 01111111 11111110 | 7FFE    | R/W     | 
+| E                     | Shunt-Voltage Sum Limit    | Contains limit value to compare to the Shunt Voltage Sum register to determine if the corresponding limit has been exceeded.| 01111111 11111110 | 7FFE    | R/W     | 
 | F                     | Mask/Enable                | Alert configuration, alert status indication, summation control and status.                           | 00000000 00000010 | 0002    | R/W     | 
-| 10                    | Power-Valid Upper Limit    | Contains limit value to compare all bus voltage conversions to determine if the Power Valid level ...| 00100111 00010000 | 2710    | R/W     | 
-| 11                    | Power-Valid Lower Limit    | Contains limit value to compare all bus voltage conversions to determine if the any voltage rail ha...| 00100011 00101000 | 2328    | R/W     | 
+| 10                    | Power-Valid Upper Limit    | Contains limit value to compare all bus voltage conversions to
+determine if the Power Valid level has been reached.| 00100111 00010000 | 2710    | R/W     | 
+| 11                    | Power-Valid Lower Limit    | Contains limit value to compare all bus voltage conversions to
+determine if the any voltage rail has dropped below the Power
+Valid range.| 00100011 00101000 | 2328    | R/W     | 
 | FE                    | Manufacturer ID            | Contains unique manufacturer identification number.                                                    | 01010100 01001001 | 5449    | R       | 
 | FF                    | Die ID                      | Contains unique die identification number.                                                             | 00110010 00100000 | 3220    | R       |
 
  
-# Diferenciación de los datos obtenidos del AMS
+# Obtención de datos del AMS, PS y PL SYSMON y diferenciación por canales
 
-Se ha podido apreciar que los datos obtenidos por iio:device0 corresponden a datos propios del AMS mientras que los proporcionados por el iio:device1 corresponden con PL y PS SYSMON (para concretar la utilidad de cada dato conviene leer la descripción del driver del AMS ubicada en la carpeta doc del repositorio) %Explicarlo ya que lo tnego a mano y es un momento%.
+Debido a los sensores junto con convertidores ADC con los que ha dotado Xilinx a nuestro módulo empleado y sus herrameintas de monitorización de sistemas (SYSMON) podemos acceder mediante el driver de linux "xilinx-ams" a una gran cantidad de información en tiempo real del AMS, del PS y del PL. Esta información se ve diferenciada en distintos canales que se explican en la siguiente tabla:
 
 | Sysmon Block | Channel | Details                                                     | Measurement | File Descriptor                    |
 |--------------|---------|-------------------------------------------------------------|-------------|-----------------------------|
@@ -98,8 +101,8 @@ Se ha podido apreciar que los datos obtenidos por iio:device0 corresponden a dat
 |              | 5       | Voltage measurement for six DDR I/O PLLs, VCC_PSDDR_PLL.    | Voltage     | *in_voltage5_raw, in_voltage5_scale*        |
 |              | 6       | VCC_PSINTFP_DDR voltage measurement.                        | Voltage     | *in_voltage6_raw, in_voltage6_scale*        |
 |--------------|---------|-------------------------------------------------------------|-------------|-----------------------------|
-| PS Sysmon    | 7       | LPD temperature measurement.                                | Temperature | *in_temp7_raw, in_temp7_scale, in_temp7_offset* |
-|              | 8       | FPD temperature measurement (REMOTE).                       | Temperature | *in_temp8_raw, in_temp8_scale, in_temp8_offset* |
+| PS Sysmon    | 7       | LPD temperature measurement.                                | Temperature | *in_temp7_raw, in_temp7_scale, in_temp7_offset, in_temp7_input* |
+|              | 8       | FPD temperature measurement (REMOTE).                       | Temperature | *in_temp8_raw, in_temp8_scale, in_temp8_offset, in_temp8_input* |
 |              | 9       | VCC PS LPD voltage measurement (supply1).                   | Voltage     | *in_voltage9_raw, in_voltage9_scale*        |
 |              | 10      | VCC PS FPD voltage measurement (supply2).                   | Voltage     | *in_voltage10_raw, in_voltage10_scale*         |
 |              | 11      | PS Aux voltage reference (supply3).                         | Voltage     | *in_voltage11_raw, in_voltage11_scale*         |
@@ -112,7 +115,7 @@ Se ha podido apreciar que los datos obtenidos por iio:device0 corresponden a dat
 |              | 18      | VTT_PS_GTR voltage measurement (VPS_MGTRAVTT).              | Voltage     | *in_voltage18_raw, in_voltage18_scale*            |
 |              | 19      | VCC_PSADC voltage measurement.                              | Voltage     | *in_voltage19_raw, in_voltage19_scale*            |
 |--------------|---------|-------------------------------------------------------------|-------------|-----------------------------|
-| PL Sysmon    | 20      | PL temperature measurement.                                 | Temperature | *in_temp20_raw, in_temp20_scale, in_temp20_offset* |
+| PL Sysmon    | 20      | PL temperature measurement.                                 | Temperature | *in_temp20_raw, in_temp20_scale, in_temp20_offset, in_temp20_input* |
 |              | 21      | PL Internal voltage measurement, VCCINT.                    | Voltage     | *in_voltage21_raw, in_voltage21_scale*            |
 |              | 22      | PL Auxiliary voltage measurement, VCCAUX.                   | Voltage     | *in_voltage22_raw, in_voltage22_scale*           |
 |              | 23      | ADC Reference P+ voltage measurement.                      | Voltage     | *in_voltage23_raw, in_voltage23_scale*            |
@@ -127,6 +130,10 @@ Se ha podido apreciar que los datos obtenidos por iio:device0 corresponden a dat
 |              | 32      | VUser1 voltage measurement (supply8).                       | Voltage     | *in_voltage32_raw, in_voltage32_scale*            |
 |              | 33      | VUser2 voltage measurement (supply9).                       | Voltage     | *in_voltage33_raw, in_voltage33_scale*            |
 |              | 34      | VUser3 voltage measurement (supply10).                      | Voltage     | *in_voltage34_raw, in_voltage34_scale*            |
+
+La información obtenida se muestra en código ADC en el archivo *_raw* y se ha de escalar con el valor obtenido en el archivo *_scale*. En el caso de la temperatura se ha de aplicar también un desfase proveniente del archivo *_offset*. 
+
+A continuación se pueden aprecair las expresiones empleadas para pasar los valores leídos a la magnitud correspondiente.
 
 $$
 V_{XX}(V) = (in\_voltageXX\_raw * in\_voltageXX\_scale) * \frac{1}{2^{n\_bits}}
