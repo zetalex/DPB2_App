@@ -98,6 +98,37 @@ En nuestro caso el proceso de comunicación se basará en las funciones proporci
 | 0x07                  | Microchip Device ID/ Device Revision  | 0x0601                         | — Microchip Device ID/ Device Revision  0x0602 —                                                                                                                                       
 | 0x09                  | Resolution  | 0x8001                               | Most Significant bit is set by default 0.25°C Measurement Resolution                                                            |
 
+| Byte Decimal | Notes                    | Byte Decimal | Notes                      | Byte Decimal | Notes                           |
+|--------------|--------------------------|--------------|----------------------------|--------------|---------------------------------|
+| 0            | Temp H Alarm MSB1        | 26           | Tx Pwr L Alarm MSB4        | 104          | Real Time Rx PAV MSB5          |
+| 1            | Temp H Alarm LSB1        | 27           | Tx Pwr L Alarm LSB4        | 105          | Real Time Rx PAV LSB5          |
+| 2            | Temp L Alarm MSB1        | 28           | Tx Pwr H Warning MSB4      | 106          |                                |
+| 3            | Temp L Alarm LSB1        | 29           | Tx Pwr H Warning LSB4      | 107          |                                |
+| 4            | Temp H Warning MSB1      | 30           | Tx Pwr L Warning MSB4      | 108          |                                |
+| 5            | Temp H Warning LSB1      | 31           | Tx Pwr L Warning LSB4      | 109          |                                |
+| 6            | Temp L Warning MSB1      | 32           | Rx Pwr H Alarm MSB5        | 110          | Status/Control                  |
+| 7            | Temp L Warning LSB1      | 33           | Rx Pwr H Alarm LSB5        | 111          |                                |
+| 8            | VCC H Alarm MSB2         | 34           | Rx Pwr L Alarm MSB5        | 112          | Flag Bits                       |
+| 9            | VCC H Alarm LSB2         | 35           | Rx Pwr L Alarm LSB5        | 113          | Flag Bit                        |
+| 10           | VCC L Alarm MSB2         | 36           | Rx Pwr H Warning MSB5      | 114          |                                |
+| 11           | VCC L Alarm LSB2         | 37           | Rx Pwr H Warning LSB5      | 115          |                                |
+| 12           | VCC H Warning MSB2       | 38           | Rx Pwr L Warning MSB5      | 116          | Flag Bits                               |
+| 13           | VCC H Warning LSB2       | 39           | Rx Pwr L Warning LSB5      | 117          | Flag Bits                               |
+| 14           |                          |              |                            |              |                                |
+| 15           |                          |              |                            |              |                                |
+| 16           | Tx Bias H Alarm MSB3     | 95           | Checksum for Bytes 0-94    | 120          |                                |
+| 17           | Tx Bias H Alarm LSB3     | 96           | Real Time Temperature MSB1 | 121          |                                |
+| 18           | Tx Bias L Alarm MSB3     | 97           | Real Time Temperature LSB1 | 122          |                                |
+| 19           | Tx Bias L Alarm LSB3     | 98           | Real Time Vcc MSB2         | 123          |                                |
+| 20           | Tx Bias H Warning MSB3   | 99           | Real Time Vcc LSB2         | 124          |                                |
+| 21           | Tx Bias H Warning LSB3   | 100          | Real Time Tx Bias MSB3     | 125          |                                |
+| 22           | Tx Bias L Warning MSB3   | 101          | Real Time Tx Bias LSB3     | 126          |                                |
+| 23           | Tx Bias L Warning LSB3   | 102          | Real Time Tx Power MSB4    | 127          |                                |
+| 24           | Tx Pwr H Alarm MSB4      | 103          | Real Time Tx Power LSB4    | 128          |                                |
+| 25           | Tx Pwr H Alarm LSB4      |              |                            |              |                                |
+
+
+
  
 # Obtención de datos del AMS, PS y PL SYSMON y diferenciación por canales
 
