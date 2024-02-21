@@ -19,15 +19,15 @@
 <h3 align="center">Grado en Ingeniería de Tecnologías y Servicios de Telecomunicación</h3>
 
 # Inicialización del entrono sobre el que se trabajará en la placa
-Inciando con el entorno con el que se trbajará sobre la DPB (Data Processing Board) o DPM (Data Processing Module), se empleará PetaLinux, una herramienta de desarrollo de software de Xilinx basada en una versión ligera de Linux.
+Inciando con el entorno sobre el que se trabajará sobre la DPB (Data Processing Board) o DPM (Data Processing Module), se empleará PetaLinux, una herramienta de desarrollo de software de Xilinx basada en una versión ligera de Linux.
 
-La disponibilidad universal del código fuente de Linux y de infinidad de drivers nos supone una mayor flexibilidad y facilidad para trabajar a nivel de apliciación sobre la DPB. 
+La disponibilidad universal del código fuente de Linux y de infinidad de drivers de los que dispone Linux nos supone una mayor flexibilidad y facilidad para trabajar a nivel de apliciación sobre la DPB. 
 
-Para implementar este sistema operativo (OS) en la DPB se ha empleado el software de Xilinx, Vivado,y mediante el puerto JTAG se ha cargado sobre una eMMC de 16 GB como memoria no volátil, tanto los archivos de arranque pertinentes como la imagen personalizada del proyecto del PetaLinux, posteriormente se ha seleccionado desde la placa a la eMMC como opción principal de arranque. En el proceso de arranque se carga el OS sobre la memoria RAM y se trabaja sobre esta.
+Para implementar este sistema operativo (OS) en la DPB se ha empleado el software de Xilinx, Vivado,y mediante el puerto JTAG se ha cargado sobre una eMMC de 16 GB como memoria no volátil, tanto los archivos de arranque pertinentes como la imagen personalizada del proyecto del PetaLinux, posteriormente se ha seleccionado, desde la placa, a la eMMC como opción principal de arranque. En el proceso de arranque se carga el OS sobre la memoria RAM y se trabaja sobre esta.
 
-Una vez implementado el OS, se ha de configurar la conexión con la DPB, pese a la posibilidad de mantener la conexión por JTAG, la fuente de comunicación principal de la DPB va a ser vía Ethernet, por lo que se ha empleado uno de los puertos SFP de los que dispone la DPB para mediante un transceptor SFP realizar una conexión Ethernet con el equipo. Para ello dentro de la modificación del PetaLinux se incluyó la configuración de un PLL a 125 MHz para la correspondiente señal de reloj de Ethernet.
+Una vez implementado el OS, se ha de configurar la conexión con la DPB, pese a la posibilidad de mantener la conexión por JTAG, la fuente de comunicación principal de la DPB va a ser vía Ethernet, por lo que se ha empleado uno de los puertos SFP de los que dispone la DPB para, mediante un transceptor SFP, realizar una conexión Ethernet con el equipo. Para ello dentro de la personalización de la versión de PetaLinux se incluyó la configuración de un PLL a 125 MHz para la correspondiente señal de reloj de Ethernet.
 
-Ya configurada la conexión, se ha establecido un servidor DHCP local para asignar una IP fija a la DPB y facilitar la conexión mediante SSH a la placa. Para ello se ha decalrado la subred con una configuración muy básica en el servidor:
+Ya configurada la conexión, se ha establecido un servidor DHCP local para asignar una IP fija a la DPB y facilitar la conexión mediante SSH a la placa. Para ello se ha declarado la subred con una configuración muy básica en el servidor:
 
 ```bash
 subnet 20.0.0.0 netmask 255.255.255.0 {
@@ -35,14 +35,15 @@ subnet 20.0.0.0 netmask 255.255.255.0 {
   option routers 20.0.0.1;
 }
 ```
-Se le ha asignado a la interfaz de red en ceustión la direccion 20.0.0.1 y se ha declarado la subred con un pequeño rango aribtrario y se ha asignado a la DPB la IP fija 20.0.0.33. Cabe destacar que los puertos SFP de la DBP están pensados para emplear puertos de fibra óptica por lo que en ciertas ocasiones el equipo no es capaz de detectar la conexión en el puerto Ethernet empleando cable Ethernet con RJ-45 por lo que se ha de desactivar la interfaz y luego volver a activar y asignar la dirección 20.0.0.1 y se resuelve el problema. 
+Se le ha asignado a la interfaz de red en ceustión la direccion 20.0.0.1 y se ha declarado la subred con un pequeño rango aribtrario y se ha asignado a la DPB la IP fija 20.0.0.33, una dirección fuera del rango puesto que del caso contrario el servidor retornaba un error. Cabe destacar que los puertos SFP de la DBP están pensados para emplear puertos de fibra óptica por lo que en ciertas ocasiones el equipo no es capaz de detectar la conexión en el puerto Ethernet empleando cable Ethernet con RJ-45 por lo que se ha de desactivar la interfaz y luego volver a activar y asignar la dirección 20.0.0.1 y se resuelve el problema, en caso de emplear un puerto de fibra óptica, este problema no surge. 
 
 Con la dirección IP fija ya asignada ya nos es posible acceder a la placa medainte SSH y comunicarnos con esta, para ello empleamos el siguiente comando:
 ```bash
 ssh root@20.0.0.33
 #Aquí introduciriamos la contraseña pertinente
 ```
-Para finalizar con el establecimiento del entrono de trabajo únicamente nos quedaría crear el proyecto de aplicación que se va a desarrollar sobre una plataforma personalizada de nuestro proyecto en el software Vitis IDE de Xilinx, se ha nombrado al proyecto de aplicación como DBP2_App.
+Para finalizar con el establecimiento del entorno de trabajo únicamente nos quedaría crear el proyecto de aplicación que se va a desarrollar sobre una plataforma personalizada de nuestro proyecto, en el software Vitis IDE de Xilinx. Se ha nombrado al proyecto de aplicación como DBP2_App.
+
 # Protocolo I<sup>2</sup>C y como está implementado en nuestra placa
 Para conseguir una comunicación entre los diferentes componenetes a tratar de la placa con el terminal se emplea el protocolo I<sup>2</sup>C , un protocolo de comunicación que se basa en un sistema Maestro-Esclavo donde el bus de comunicación se divide en 2 líneas, SCL para el reloj y SDA para los datos, las cuales están conectadas a una resistencia de pull-up cada una por lo que el nivel por defecto es nivel alto .
 
@@ -58,7 +59,7 @@ Para la operación de escritura sobre el esclavo una vez establecida la comunica
 
 En la operación de lectura sigue un porceso similar al de escritura indicando el registro que se desea leer y el maestro es el encargado de enviar los correspondientes ACK y NACK durante la comunicación y la secuencia de fin de comunicación.
 
-En nuestro caso el proceso de comunicación se basará en las funciones proporcionadas por las librerías de Linux que nos permiten abrir/cerrar y leer/escribir simplemente llamando a funciones definidas e indicando los argumentos necesarios. Además estaas funciones nos permiten operar con vectores para poder leer o escribir datos consecutivos con una única función.
+En nuestro caso el proceso de comunicación se basará en las funciones proporcionadas por las librerías de Linux que nos permiten abrir/cerrar y leer/escribir simplemente llamando a funciones definidas e indicando los argumentos necesarios. Además estas funciones nos permiten operar con vectores para poder leer o escribir datos consecutivos con una única función.
 
 ![I<sup>2</sup>C Address and Data Frames](/DBP2_App/doc/diag/DBLOQUES_I2C.png)
 <figcaption>Estructura del I<sup>2</sup>C de nuestra DPB</figcaption>
@@ -66,18 +67,18 @@ En nuestro caso el proceso de comunicación se basará en las funciones proporci
 
 En el diagrama de bloques previo se puede observar como están estructruados los buses I<sup>2</sup>C de nuestra DPB, el *filename* correspondiente de cada una de las salidas de los buses I<sup>2</sup>C designadas por los multiplexores y las direcciones esclavo de cada módulo con el que se pretende comunicar. 
 
-Como se puede observar los sensores de corriente, los conectores SFP y el sensor de temperatura que pretendemos emplear, todos emplean el protocolo I<sup>2</sup>C para comunciarse. Sin embargo, el sensor de temperatura y los sensores de corrientes emplean registros de 16 bits, mientras que los SFP emplean registros de tamaño 1 byte. El protocolo I<sup>2</sup>C trabaja en tamaño byte por lo que en el caso de los registros de 16 bits implica realizar 2 operaciones consecutivas (ya sea lectura o escritura) sobre la misma dirección de registro mientras que para los registros de 8 bits implicará una única operación por dirección de registro. En nuestro caso, el driver I<sup>2</sup>C de linux nos facilitará en gran medida realizar este tipo de operaciones.
+Como se puede observar los sensores de corriente, los conectores SFP y el sensor de temperatura que pretendemos emplear, todos emplean el protocolo I<sup>2</sup>C para comunciarse. Sin embargo, el sensor de temperatura y los sensores de corrientes emplean registros de 16 bits, mientras que los SFP emplean registros de tamaño 1 byte. El protocolo I<sup>2</sup>C transporta tramas en tamaño byte por lo que en el caso de los registros de 16 bits implica realizar 2 operaciones consecutivas (ya sea lectura o escritura) sobre la misma dirección de registro mientras que para los registros de 8 bits implicará una única operación por dirección de registro. En nuestro caso, el driver I<sup>2</sup>C de linux nos facilitará en gran medida realizar este tipo de operaciones consecutivas.
 
 # Información detallada sobre los sensores disponibles y su utilidad para nuestros intereses
 
-En cuanto a las unidades sensoriales disponibles en nuestra DPB encontramos, como se ha mencionado previamente en el apartado de I<sup>2</sup>C, un sensor de temperatura (MCP9844), varios sensores de corriente y monitorización de la tensión (INA3221) para los transceptores SFP y el SoM y finalmente los propios transceptores SFP nos proveen información de gran relevancia y que conviene monitorizar.
+En cuanto a las unidades sensoriales disponibles en nuestra DPB encontramos, como se ha mencionado previamente en el apartado de I<sup>2</sup>C, un sensor de temperatura (MCP9844), varios sensores de corriente y monitorización de la tensión (INA3221) para los transceptores SFP y el SoM y  los propios transceptores SFP que nos proveen información de gran relevancia sobre su estado de operación y que conviene llevar un seguimiento.
 
 
 ## Sensores de corriente INA3221
 
-Los sensores de corriente instalados en la DPB nos proporciona la posibilidad de monitorizar hasta 3 canales distinitos desde un mismo sensor. Además, nos permite medir la tensión del bus respecto a GND (*Bus Voltage*) o la diferencia de tensión entre los terminales IN+ e IN- de cada canal (*Shunt Voltage*). En nuestro caso entre IN+ e IN- se ha ubicado un elemento resistivo de valor 0.05 $\Omega$ lo cual nos es útil para obtener tanto la corriente como la potencia consumida en este canal.
+Los sensores de corriente instalados en la DPB nos proporciona la posibilidad de monitorizar hasta 3 canales distinitos desde un mismo sensor. Además, nos permite medir la tensión del bus respecto a GND (*Bus Voltage*) o la diferencia de tensión entre los terminales IN+ e IN- de cada canal (*Shunt Voltage*). En nuestro caso entre IN+ e IN- se ha ubicado un elemento resistivo de valor 0.05 $\Omega$ lo cual nos es útil para obtener tanto la corriente como la potencia consumida en cada canal.
 
-Cabe destacar que este sensor nos permite configurar alertas y advertencias para valores de tensión obtenidos en modo de medida *Shunt Voltage* para detectar si la diferencia de tensión enetre terminales de nuestra resistencia excede o no alcanza unos valores determinados y poder actuar como corresponda. También disponemos de una alerta si en el modo de medida *Bus Voltage*, cualquiera de los 3 canales está fuera del rango establecido de tensión tanto si se excede como si se queda corto (se miden todos los canales a la vez salvo que se desactive un canal por completo). Se nos proporciona también la opción de obtener la suma de la *Shunt Voltage* de todos los canales y establecer un límite para configurar una alerta. Todas las alertas y advertencias nombradas se recogen en el registro de *Mask/Enable* donde también se puede habilitar o inhabilitar la suma de la *Shunt Voltage*, las advertencias y las alarmas.
+Cabe destacar que este sensor nos permite configurar alertas y advertencias para valores de tensión obtenidos en modo de medida *Shunt Voltage* para detectar si la diferencia de tensión enetre terminales de nuestra resistencia excede o no alcanza unos valores determinados y poder actuar como corresponda. También disponemos de una alerta si en el modo de medida *Bus Voltage*, que nos informa si todos los canales que se están midiendo tienen una tensión superior a la marcada por los límites o si cualquiera de los canales tiene una tenisón menor al límite inferior. Se nos proporciona también la opción de obtener la suma de la *Shunt Voltage* de todos los canales y establecer un límite para configurar una alerta. Todas las alertas y advertencias nombradas se recogen en el registro de *Mask/Enable* donde también se puede habilitar o inhabilitar la suma de la *Shunt Voltage*, las advertencias y las alarmas.
 
 En la siguiente tabla se pueden observar los registros más influyentes para nuestra aplicación, una pequeña descripción de estos, su valor por defecto y el tipo de registro que es, si es solo de lectura o de lectura y escritura. 
 
@@ -154,7 +155,7 @@ $$
 T_{A}(ºC) = (UpperByte * 2^{4} + LowerByte* 2^{4})-256
 $$(2.2.2)
 
-Donde UpperByte son los bits 15-8 del registro T<sub>A</sub> y LowerByte los bits 7-0 del mismo registro.
+Donde *UpperByte* son los bits 15-8 del registro T<sub>A</sub> y *LowerByte* los bits 7-0 del mismo registro.
 
 En el caso de los límites de temperatura estos vienen definidos por 11 bits, 1 bit que determina el signo y 10 bits para codificar el dato absoluto de temperatura
 
@@ -344,7 +345,7 @@ Debido a los sensores junto con convertidores ADC con los que ha dotado Xilinx a
 
 La información obtenida se muestra en código ADC en el archivo *_raw* y se ha de escalar con el valor obtenido en el archivo *_scale*. En el caso de la temperatura se ha de aplicar también un desfase proveniente del archivo *_offset*. 
 
-A continuación se pueden aprecair las expresiones empleadas para pasar los valores leídos a la magnitud correspondiente.
+A continuación se pueden apreciar las expresiones empleadas para pasar los valores leídos a la magnitud correspondiente.
 
 $$
 V_{XX}(V) = (in\_voltageXX\_raw * in\_voltageXX\_scale) * \frac{1}{2^{n\_bits}}
