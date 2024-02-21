@@ -49,9 +49,10 @@ Para conseguir una comunicación entre los diferentes componenetes a tratar de l
 El funcionamiento de este protocolo consiste en el inicio de la transmisión por parte de el Maestro que conjuntamente indica la dirección del esclavo al que se dirige con una dirección de 7 bits (nosotros contamos con sensores que su dirección es de 6 bits más uno reservado que a nosotros nos sirve para diferenciar de forma física), además se indica con un bit si la operación a desarrollar es lectura o escritura. La transmisión de datos va guiada por la línea de reloj y se transmiten los datos en tamaño byte transmitiendo de MSB a LSB.
 
 ![I<sup>2</sup>C Address and Data Frames](/DBP2_App/doc/figures/I2C_ADD_DAT_FRAME.png)
-<!---
-Poner caption tanto figuras como Tablas
--->
+<figcaption>Marcos de dirección y datos I<sup>2</sup>C</figcaption>
+<br>
+
+
 
 Para la operación de escritura sobre el esclavo una vez establecida la comunicación se ha de indicar el registro sobre el que se desea escribir y el dato que se desea escribir. El maestro es el encargado de recibir los correspondientes ACK y NACK durante la comunicación y la secuencia de fin de comunicación.
 
@@ -59,11 +60,32 @@ En la operación de lectura sigue un porceso similar al de escritura indicando e
 
 En nuestro caso el proceso de comunicación se basará en las funciones proporcionadas por las librerías de Linux que nos permiten abrir/cerrar y leer/escribir simplemente llamando a funciones definidas e indicando los argumentos necesarios. Además estaas funciones nos permiten operar con vectores para poder leer o escribir datos consecutivos con una única función.
 
-# Información detallada sobre los sensores disponibles y como se planea emplearlos
- %Hay cosas que explicar%
+![I<sup>2</sup>C Address and Data Frames](/DBP2_App/doc/diag/DBLOQUES_I2C.png)
+<figcaption>Estructura del I<sup>2</sup>C de nuestra DPB</figcaption>
+<br>
+
+En el diagrama de bloques previo se puede observar como están estructruados los buses I<sup>2</sup>C de nuestra DPB, el *filename* correspondiente de cada una de las salidas de los buses I<sup>2</sup>C designadas por los multiplexores y las direcciones esclavo de cada módulo con el que se pretende comunicar. 
+
+Como se puede observar los sensores de corriente, los conectores SFP y el sensor de temperatura que pretendemos emplear, todos emplean el protocolo I<sup>2</sup>C para comunciarse. Sin embargo, el sensor de temperatura y los sensores de corrientes emplean registros de 16 bits, mientras que los SFP emplean registros de tamaño 1 byte. El protocolo I<sup>2</sup>C trabaja en tamaño byte por lo que en el caso de los registros de 16 bits implica realizar 2 operaciones consecutivas (ya sea lectura o escritura) sobre la misma dirección de registro mientras que para los registros de 8 bits implicará una única operación por dirección de registro. En nuestro caso, el driver I<sup>2</sup>C de linux nos facilitará en gran medida realizar este tipo de operaciones.
+
+# Información detallada sobre los sensores disponibles y su utilidad para nuestros intereses
+
+En cuanto a las unidades sensoriales disponibles en nuestra DPB encontramos, como se ha mencionado previamente en el apartado de I<sup>2</sup>C, un sensor de temperatura (MCP9844), varios sensores de corriente y monitorización de la tensión (INA3221) para los transceptores SFP y el SoM y finalmente los propios transceptores SFP nos proveen información de gran relevancia y que conviene monitorizar.
+
+
+## Sensores de corriente INA3221
+
+Los sensores de corriente instalados en la DPB nos proporciona la posibilidad de monitorizar hasta 3 canales distinitos desde un mismo sensor. Además, nos permite medir la tensión del bus respecto a GND (*Bus Voltage*) o la diferencia de tensión entre los terminales IN+ e IN- de cada canal (*Shunt Voltage*). En nuestro caso entre IN+ e IN- se ha ubicado un elemento resistivo de valor 0.05 $\Omega$ lo cual nos es útil para obtener tanto la corriente como la potencia consumida en este canal.
+
+Cabe destacar que este sensor nos permite configurar alertas y advertencias para valores de tensión obtenidos en modo de medida *Shunt Voltage* para detectar si la diferencia de tensión enetre terminales de nuestra resistencia excede o no alcanza unos valores determinados y poder actuar como corresponda. También disponemos de una alerta si en el modo de medida *Bus Voltage*, cualquiera de los 3 canales está fuera del rango establecido de tensión tanto si se excede como si se queda corto (se miden todos los canales a la vez salvo que se desactive un canal por completo). Se nos proporciona también la opción de obtener la suma de la *Shunt Voltage* de todos los canales y establecer un límite para configurar una alerta. Todas las alertas y advertencias nombradas se recogen en el registro de *Mask/Enable* donde también se puede habilitar o inhabilitar la suma de la *Shunt Voltage*, las advertencias y las alarmas.
+
+En la siguiente tabla se pueden observar los registros más influyentes para nuestra aplicación, una pequeña descripción de estos, su valor por defecto y el tipo de registro que es, si es solo de lectura o de lectura y escritura. 
+
 <!---
 Current.Sens
 -->
+
+
 | POINTER ADDRESS (Hex) | REGISTER NAME               | DESCRIPTION                                                                                           | BINARY (Power-On Reset)          | HEX (Power-On Reset)    | TYPE | 
 |-----------------------|-----------------------------|-------------------------------------------------------------------------------------------------------|-------------------|---------|---------| 
 | 0                     | Configuration               | All-register reset, shunt and bus voltage ADC conversion times and operating mode.                    | 01110001 00100111 | 7127    | R/W     | 
@@ -73,12 +95,12 @@ Current.Sens
 | 4                     | Channel-2 Bus Voltage      | Averaged bus voltage value.                                                                          | 00000000 00000000 | 0000    | R       | 
 | 5                     | Channel-3 Shunt Voltage    | Averaged shunt voltage value.                                                                        | 00000000 00000000 | 0000    | R       | 
 | 6                     | Channel-3 Bus Voltage      | Averaged bus voltage value.                                                                          | 00000000 00000000 | 0000    | R       | 
-| 7                     | Channel-1 Critical Alert   | Limit Contains limit value to compare each conversion value to determine if the corresponding limit has been exceeded.| 01111111 11111000 | 7FF8    | R/W     | 
-| 8                     | Channel-1 Warning Alert    | Limit Contains limit value to compare to averaged measurement to determine if the corresponding limit has been exceeded.| 01111111 11111000 | 7FF8    | R/W     | 
-| 9                     | Channel-2 Critical Alert   | Limit Contains limit value to compare each conversion value to determine if the corresponding limit has been exceeded.| 01111111 11111000 | 7FF8    | R/W     | 
-| A                     | Channel-2 Warning Alert    | Limit Contains limit value to compare to averaged measurement to determine if the corresponding limit has been exceeded.| 01111111 11111000 | 7FF8    | R/W     | 
-| B                     | Channel-3 Critical Alert   | Limit Contains limit value to compare each conversion value to determine if the corresponding limit has been exceeded.| 01111111 11111000 | 7FF8    | R/W     | 
-| C                     | Channel-3 Warning Alert    | Limit Contains limit value to compare to averaged measurement to determine if the corresponding limit has been exceeded.| 01111111 11111000 | 7FF8    | R/W     | 
+| 7                     | Channel-1 Critical Alert   |  Contains limit value to compare each conversion value to determine if the corresponding limit has been exceeded.| 01111111 11111000 | 7FF8    | R/W     | 
+| 8                     | Channel-1 Warning Alert    |  Contains limit value to compare to averaged measurement to determine if the corresponding limit has been exceeded.| 01111111 11111000 | 7FF8    | R/W     | 
+| 9                     | Channel-2 Critical Alert   |  Contains limit value to compare each conversion value to determine if the corresponding limit has been exceeded.| 01111111 11111000 | 7FF8    | R/W     | 
+| A                     | Channel-2 Warning Alert    |  Contains limit value to compare to averaged measurement to determine if the corresponding limit has been exceeded.| 01111111 11111000 | 7FF8    | R/W     | 
+| B                     | Channel-3 Critical Alert   |  Contains limit value to compare each conversion value to determine if the corresponding limit has been exceeded.| 01111111 11111000 | 7FF8    | R/W     | 
+| C                     | Channel-3 Warning Alert    |  Contains limit value to compare to averaged measurement to determine if the corresponding limit has been exceeded.| 01111111 11111000 | 7FF8    | R/W     | 
 | D                     | Shunt-Voltage Sum          | Contains the summed value of the each of the selected shunt voltage conversions.                       | 00000000 00000000 | 0000    | R       | 
 | E                     | Shunt-Voltage Sum Limit    | Contains limit value to compare to the Shunt Voltage Sum register to determine if the corresponding limit has been exceeded.| 01111111 11111110 | 7FFE    | R/W     | 
 | F                     | Mask/Enable                | Alert configuration, alert status indication, summation control and status.                           | 00000000 00000010 | 0002    | R/W     | 
@@ -86,10 +108,24 @@ Current.Sens
 | 11                    | Power-Valid Lower Limit    | Contains limit value to compare all bus voltage conversions to determine if the any voltage rail has dropped below the Power Valid range.| 00100011 00101000 | 2328    | R/W     | 
 | FE                    | Manufacturer ID            | Contains unique manufacturer identification number.                                                    | 01010100 01001001 | 5449    | R       | 
 | FF                    | Die ID                      | Contains unique die identification number.                                                             | 00110010 00100000 | 3220    | R       |
+<figcaption>Registros de los sensores de corriente INA3221 </figcaption>
+<br>
 
+Cabe mencionar que todos los datos de tensión vienen dados en complemento a 2 y emplean 13 bits, el bit 15 del registro (MSB) determina el signo y del bit 14-3 el dato de tensión.
+Para *Shunt Voltage* el rango a escala completa equiavale a 163.8 mV y el LSB a 40 $\mu$V, en el caso de *Bus Voltage* el LSB equivale a 8 mV y pese a que el rango a escala completa del ADC es de 32.76 V, el rango a escala completa en el caso de *Bus Voltage* es de 26 V puesto que no se recomienda aplicar más tensión.
+
+## Sensor de temperatura MCP9844
 <!---
 Registers Temp.Sens
 -->
+El sensor de temepratura MCP9844 nos es una gran herramienta para monitorizar la temperatura del ambiente donde trabaja nuestra DPB, una magnitud esencial a la hora de asegurar un correcto acondicionamiento para el funcionamiento de nuestra eelctrónica.
+
+Este sensor de temperatura nos proporciona la herramienta de los eventos que facilita la monitorización de la temperatura ambiente. El MCP9844 nos permite establecer límites de temperatura, solo modificables si se ha habilitado en el registro de configuración, tanto superiores como inferiores e incluso temperatura crítica (únicamente mayor al límite superior). Ya establecidos lso límites, desde el registro de configuración se pueden habilitar o deshabilitar los eventos y te permite configurar el evento como una interrupción o como una comparación, decidir si el evento sea activo a nivel alto o nivel bajo y decidir si solo se tiene en cuenta el límite de temperatura crítica o se tiene en cuenta todos los límites.
+
+Asimismo, el sensor presenta diversas funcionalidades como la opción de incluir cierto valor de histeresis a los límites de temperatura (solo aplicable en caso de bajada de temperatura), la posibilidad de modificación de la resolución de medida (menor valor de resolución implicará un mayor tiempo de conversión) o la posibilidad de apagar el sensor en caso de que se desee.
+
+A continucaión se presenta una tabla de los registros que presenta este sensor de temperatura y su valor por defecto.
+
 | Register Address (Hexadecimal) | Register Name         | Default Register Data (Hexadecimal) | Power-Up Default Register Description                                                                                           |
 |-----------------------|-----------------------|--------------------------------------|----------------------------------------------------------------------------------------------------------------------------------|
 | 0x00                  | Capability            | 0x00EF   | Event output deasserts in shutdown I<sup>2</sup>C™ time out 25 ms to 35 ms. Accepts VHV at A0 Pin 0.25°C Resolution . Measures temperature below 0°C ±1°C accuracy over active range Temperature event output |
@@ -99,11 +135,44 @@ Registers Temp.Sens
 | 0x04                  | T<sub>CRIT</sub>                  | 0x0000                               | 0°C                                                                                                                              |
 | 0x05                  | T<sub>A</sub>                     | 0x0000                               | 0°C                                                                                                                              |
 | 0x06                  | Manufacturer ID       | 0x0054                               | —                                                                                                                       |
-| 0x07                  | Microchip Device ID/ Device Revision  | 0x0601                         | — Microchip Device ID/ Device Revision  0x0602 —                                                                                                                                       
+| 0x07                  | Microchip Device ID/ Device Revision  | 0x0601                         | —                                                                                                                                       
 | 0x09                  | Resolution  | 0x8001                               | Most Significant bit is set by default 0.25°C Measurement Resolution                                                            |
+
+<figcaption>Registros del sensor de temperatura MCP9844</figcaption>
+<br>
+
+En este caso el dato de temepratura está codificado en complemento a 2 y se presenta como un dato de 13 bits, 1 bit que determina el signo y 12 que determinan el dato de temperatura, por lo que el fabricante nos proporciona las siguientes ecuaciones para obtener el dato en grados centígrados.
+
+
+Si Temperatura $\ge$ 0°C
+$$
+T_{A}(ºC) = (UpperByte * 2^{4} + LowerByte* 2^{4}) 
+$$(2.2.1)
+
+Si Temperatura < 0°C
+$$
+T_{A}(ºC) = (UpperByte * 2^{4} + LowerByte* 2^{4})-256
+$$(2.2.2)
+
+Donde UpperByte son los bits 15-8 del registro T<sub>A</sub> y LowerByte los bits 7-0 del mismo registro.
+
+En el caso de los límites de temperatura estos vienen definidos por 11 bits, 1 bit que determina el signo y 10 bits para codificar el dato absoluto de temperatura
+
+## Transceptores SFP AFBR-5715ALZ
+
+Los transceptores SFP de fibra óptica tienen la función principal ser los puertos de comunicación de la placa. Estos transceptores cuentan con una memoria EEPROM que se divide en dos páginas, las cuales corresponden a las direcciones esclavo I<sup>2</sup>C 0x50 y 0x51 en nuestro caso.
+
+Los SFP recopilan información de magnitudes de gran relevancia en tiempo real y se ubican en la segunda página de la EEPROM (Ox51) como son la temperatura a la que se encuentran, la tensión de alimentación que se les suministra, la corriente de polarización del láser y tanto la potencia óptica transmitida como la recibida. 
+
+En la misma segunda paǵina de la EEPROM de los SFP se halla la posibilidad de configurar alertas y advertencias en función de un rango determinado (modificable por el usuario) para monitorizar el estado de los transceptores SFP.
+
+Pese a que la primera página de la EEPROM se basa principalmente en caracteres identificativos del transceptor como pueden ser el número de parte y revisión o el nombre del vendedor, también podemos encontrar información relevante sobre el estado y funcionamiento del transceptor ya que podemos encontrar en este espacio de la memoria la longitud de onda del láser para saber en que ventana se encuentra trabajando y el registro que nos indica si debido al *hardware* se ha deshabilitado o producido un fallo en la transmisión o si se ha perdido la señal durante la recepción. 
+
+A continuación se presentan varias tablas que representan los registros de la EEPROM de los transceptores SFP.
 <!---
 Registers SFP 0x50
 -->
+
 | Byte Decimal | Data Notes |
 |--------------|------------|
 | 0 | SFP physical device |
@@ -114,12 +183,11 @@ Registers SFP 0x50
 | 12 | 1200Mbps nominal bit rate (1.25Gbps) |
 | 16 | 550m of 50/125mm fiber @ 1.25Gbps |
 | 17 | 275m of 62.5/125mm fiber @ 1.25Gbps |
-| 20-35 | 'AVGO' - Vendor Name ASCII character |
+| 20-35 | 'AVAGO' - Vendor Name ASCII character |
 | 37 | Vendor OUI |
 | 38 | Vendor OUI |
 | 39 | Vendor OUI |
-| 40-47 | 'AFBR-571' - Vendor Part Number ASCII characters |
-| 52-55 | Vendor Part Number ASCII character |
+| 40-55 | 'AFBR-5715ALZ' - Vendor Part Number ASCII characters |
 | 56-59 | Vendor Revision Number ASCII character |
 | 60 | Hex Byte of Laser Wavelength |
 | 61 | Hex Byte of Laser Wavelength |
@@ -128,6 +196,9 @@ Registers SFP 0x50
 | 68-83 | Vendor Serial Number, ASCII |
 | 84-91 | Vendor Date Code, ASCII |
 | 95 | Checksum for bytes 64-94 |
+
+<figcaption>Registros de la página 1 de la EEPROM de los transceptores SFP</figcaption>
+<br>
 
 <!---
 Registers SFP 0x51
@@ -158,10 +229,13 @@ Registers SFP 0x51
 | 23           | Tx Bias L Warning LSB   | 102          | Real Time Tx Power MSB    | 127          |                                |
 | 24           | Tx Pwr H Alarm MSB      | 103          | Real Time Tx Power LSB    | 128          |                                |
 | 25           | Tx Pwr H Alarm LSB      |              |                            |              |                                |
+<figcaption>Registros de la página 2 de la EEPROM de los transceptores SFP</figcaption>
+<br>
 
-Para interpretar estos datos hemos de tener en cuenta las siguientes alcaraciones del fabricante en función de la magnitud a interpretar:
 
-- **Temperatura (Temp):** Los valores de temperatura se codifican como enteros de 16 bits en complemento a dos, lo que permite representar tanto valores positivos como negativos. Cada unidad en esta representación equivale a 1/256 de grado Celsius (ºC).
+Para interpretar estos datos en formato bit hemos de tener en cuenta las siguientes aclaraciones del fabricante en función de la magnitud a interpretar:
+
+ - **Temperatura (Temp):** Los valores de temperatura se codifican como enteros de 16 bits en complemento a dos, lo que permite representar tanto valores positivos como negativos. Cada unidad en esta representación equivale a 1/256 de grado Celsius (ºC).
   
 - **Voltaje de Alimentación (VCC):** Este parámetro se representa como un entero de 16 bits sin signo, lo que significa que solo puede tener valores positivos. Cada incremento en este valor corresponde a 100 microvoltios (µV).
   
@@ -170,6 +244,8 @@ Para interpretar estos datos hemos de tener en cuenta las siguientes alcaracione
 - **Potencia Óptica Promedio Transmitida (Tx Pwr):** Este parámetro se representa como un entero de 16 bits sin signo, donde cada incremento corresponde a 0.1 microvatios (µW) de potencia óptica transmitida.
   
 - **Potencia Óptica Promedio Recibida (Rx Pwr):** Similar al parámetro anterior, la potencia óptica promedio recibida se codifica como un entero de 16 bits sin signo. Cada unidad de este valor representa 0.1 microvatios (µW) de potencia óptica recibida.
+
+Como se puede observar en la tabla de registros de la segunda página de la EEPROM, hay un registro de estado y este describe los siguientes casos.
 
 <!---
 SFP Status Table
@@ -182,9 +258,15 @@ SFP Status Table
 | 2     | Tx Fault State       | Digital state of the SFP Tx Fault Output Pin (1 = Tx Fault asserted) |
 | 1     | Rx LOS State         | Digital state of the SFP LOS Output Pin (1 = LOS asserted) |
 | 0     | Data Ready (Bar)     | Indicates transceiver is powered and real-time sense data is ready (0 = Ready) |
+
+<figcaption>Desglose de los bits de estado de los transceptores SFP</figcaption>
+<br>
 <!---
 SFP Flags Table
 -->
+En cuanto los registros dedicados a las <i>flags</i> se constituyen por las alertas y advertencias mencionadas previamente, en la siguiente tabla se presenta su distribución en los registros pertinentes.
+<br>
+
 | Byte | Bit # | Flag Bit Name | Description |
 |------|-------|---------------|-------------|
 | 112  | 7     | Temp High Alarm | Set when transceiver internal temperature exceeds high alarm threshold. |
@@ -195,6 +277,7 @@ SFP Flags Table
 |      | 2     | Tx Bias Low Alarm | Set when transceiver laser bias current exceeds low alarm threshold. |
 |      | 1     | Tx Power High Alarm | Set when transmitted average optical power exceeds high alarm threshold. |
 |      | 0     | Tx Power Low Alarm | Set when transmitted average optical power exceeds low alarm threshold. |
+|      |   |  |  |
 | 113  | 7     | Rx Power High Alarm | Set when received P_Avg optical power exceeds high alarm threshold. |
 |      | 6     | Rx Power Low Alarm | Set when received P_Avg optical power exceeds low alarm threshold. |
 |      |   |  |  |
@@ -206,10 +289,12 @@ SFP Flags Table
 |      | 2     | Tx Bias Low Warning | Set when transceiver laser bias current exceeds low warning threshold. |
 |      | 1     | Tx Power High Warning | Set when transmitted average optical power exceeds high warning threshold. |
 |      | 0     | Tx Power Low Warning | Set when transmitted average optical power exceeds low warning threshold. |
+|      |   |  |  |
 | 117  | 7     | Rx Power High Warning | Set when received P_Avg optical power exceeds high warning threshold. |
 |      | 9     | Rx Power Low Warning | Set when received P_Avg optical power exceeds low warning threshold. |
 
-
+<figcaption>Desglose de los <i>flags</i> de los transceptores SFP</figcaption>
+<br>
 
 
  
@@ -263,10 +348,10 @@ A continuación se pueden aprecair las expresiones empleadas para pasar los valo
 
 $$
 V_{XX}(V) = (in\_voltageXX\_raw * in\_voltageXX\_scale) * \frac{1}{2^{n\_bits}}
-$$(1)
+$$(3.1)
 
 $$
 T_{XX}(ºC)= (in\_tempXX\_raw + in\_tempXX\_offset) * \frac{in\_tempXX\_scale}{2^{n\_bits}}
-$$(2)
+$$(3.2)
 
 Donde XX define el número de canal seleccionado en tensión o temperatura y "n_bits" define el número de bits del ADC empleado, en nuestro caso 10 bits. El desfase en el caso de la temperatura se suma puesto que se devuelve un número neagtivo.
