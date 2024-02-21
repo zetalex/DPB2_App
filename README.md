@@ -144,12 +144,12 @@ A continucaión se presenta una tabla de los registros que presenta este sensor 
 En este caso el dato de temepratura está codificado en complemento a 2 y se presenta como un dato de 13 bits, 1 bit que determina el signo y 12 que determinan el dato de temperatura, por lo que el fabricante nos proporciona las siguientes ecuaciones para obtener el dato en grados centígrados.
 
 
-Si Temperatura $\ge$ 0°C
+Si la Temperatura $\ge$ 0°C
 $$
 T_{A}(ºC) = (UpperByte * 2^{4} + LowerByte* 2^{4}) 
 $$(2.2.1)
 
-Si Temperatura < 0°C
+Si la Temperatura < 0°C
 $$
 T_{A}(ºC) = (UpperByte * 2^{4} + LowerByte* 2^{4})-256
 $$(2.2.2)
@@ -166,7 +166,7 @@ Los SFP recopilan información de magnitudes de gran relevancia en tiempo real y
 
 En la misma segunda paǵina de la EEPROM de los SFP se halla la posibilidad de configurar alertas y advertencias en función de un rango determinado (modificable por el usuario) para monitorizar el estado de los transceptores SFP.
 
-Pese a que la primera página de la EEPROM se basa principalmente en caracteres identificativos del transceptor como pueden ser el número de parte y revisión o el nombre del vendedor, también podemos encontrar información relevante sobre el estado y funcionamiento del transceptor ya que podemos encontrar en este espacio de la memoria la longitud de onda del láser para saber en que ventana se encuentra trabajando y el registro que nos indica si debido al *hardware* se ha deshabilitado o producido un fallo en la transmisión o si se ha perdido la señal durante la recepción. 
+Pese a que la primera página de la EEPROM se basa principalmente en caracteres identificativos del transceptor como pueden ser el número de parte y revisión o el nombre del vendedor, también podemos encontrar información relevante sobre el estado y funcionamiento del transceptor ya que podemos encontrar en este espacio de la memoria la longitud de onda del láser para saber en que ventana se encuentra trabajando y el registro que nos indica si habilitado mediante *hardware* las señales TX_DISABLE, TX_FAULT y RX_LOS. 
 
 A continuación se presentan varias tablas que representan los registros de la EEPROM de los transceptores SFP.
 <!---
