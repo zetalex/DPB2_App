@@ -50,7 +50,7 @@ Para conseguir una comunicación entre los diferentes componenetes a tratar de l
 El funcionamiento de este protocolo consiste en el inicio de la transmisión por parte de el Maestro que conjuntamente indica la dirección del esclavo al que se dirige con una dirección de 7 bits (nosotros contamos con sensores que su dirección es de 6 bits más uno reservado que a nosotros nos sirve para diferenciar de forma física), además se indica con un bit si la operación a desarrollar es lectura o escritura. La transmisión de datos va guiada por la línea de reloj y se transmiten los datos en tamaño byte transmitiendo de MSB a LSB.
 
 ![I<sup>2</sup>C Address and Data Frames](/DBP2_App/doc/figures/I2C_ADD_DAT_FRAME.png)
-<figcaption>Marcos de dirección y datos I<sup>2</sup>C</figcaption>
+<figcaption>Marcos de direccionamiento y datos I<sup>2</sup>C</figcaption>
 <br>
 
 
