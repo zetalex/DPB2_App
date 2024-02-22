@@ -167,7 +167,7 @@ Los SFP recopilan información de magnitudes de gran relevancia en tiempo real y
 
 En la misma segunda paǵina de la EEPROM de los SFP se halla la posibilidad de emplear alertas y advertencias en función de un rango ya determinado por el fabricante para monitorizar el estado de los transceptores SFP.
 
-Pese a que la primera página de la EEPROM se basa principalmente en caracteres identificativos del transceptor como pueden ser el número de parte y revisión o el nombre del vendedor, también podemos encontrar información relevante sobre el estado y funcionamiento del transceptor ya que podemos encontrar en este espacio de la memoria la longitud de onda del láser para saber en que ventana se encuentra trabajando y el registro que nos indica si habilitado mediante *hardware* las señales TX_DISABLE, TX_FAULT y RX_LOS. 
+Pese a que la primera página de la EEPROM se basa principalmente en caracteres identificativos del transceptor como pueden ser el número de parte y revisión o el nombre del vendedor, también podemos encontrar información relevante sobre el estado y funcionamiento del transceptor ya que podemos encontrar en este espacio de la memoria la longitud de onda del láser para saber en que ventana se encuentra trabajando y el registro que nos indica si se ha configurado mediante *hardware* las señales de estado TX_DISABLE, TX_FAULT y RX_LOS. 
 
 En ambas páginas de la EEPROM encontramos uno o varios registros dedicados a un *Checksum* que nos permitirá comporbar el estado de la propia EEPROM.
 
