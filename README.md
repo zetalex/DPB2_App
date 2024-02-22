@@ -119,9 +119,9 @@ Para *Shunt Voltage* el rango a escala completa equiavale a 163.8 mV y el LSB a 
 <!---
 Registers Temp.Sens
 -->
-El sensor de temepratura MCP9844 nos es una gran herramienta para monitorizar la temperatura del ambiente donde trabaja nuestra DPB, una magnitud esencial a la hora de asegurar un correcto acondicionamiento para el funcionamiento de nuestra eelctrónica.
+El sensor de temepratura MCP9844 nos es una gran herramienta para monitorizar la temperatura del ambiente donde trabaja nuestra DPB, una magnitud esencial a la hora de asegurar un correcto acondicionamiento para el funcionamiento de nuestra electrónica.
 
-Este sensor de temperatura nos proporciona la herramienta de los eventos que facilita la monitorización de la temperatura ambiente. El MCP9844 nos permite establecer límites de temperatura, solo modificables si se ha habilitado en el registro de configuración, tanto superiores como inferiores e incluso temperatura crítica (únicamente mayor al límite superior). Ya establecidos lso límites, desde el registro de configuración se pueden habilitar o deshabilitar los eventos y te permite configurar el evento como una interrupción o como una comparación, decidir si el evento sea activo a nivel alto o nivel bajo y decidir si solo se tiene en cuenta el límite de temperatura crítica o se tiene en cuenta todos los límites.
+Este sensor de temperatura nos proporciona la herramienta de los eventos que facilita la monitorización de la temperatura ambiente. El MCP9844 nos permite establecer límites de temperatura, solo modificables si se ha habilitado en el registro de configuración, tanto superiores como inferiores e incluso temperatura crítica (únicamente mayor al límite superior). Ya establecidos los límites, desde el registro de configuración se pueden habilitar o deshabilitar los eventos y te permite configurar el evento como una interrupción o como una comparación, decidir si el evento sea activo a nivel alto o nivel bajo y decidir si solo se tiene en cuenta el límite de temperatura crítica o se tiene en cuenta todos los límites.
 
 Asimismo, el sensor presenta diversas funcionalidades como la opción de incluir cierto valor de histeresis a los límites de temperatura (solo aplicable en caso de bajada de temperatura), la posibilidad de modificación de la resolución de medida (menor valor de resolución implicará un mayor tiempo de conversión) o la posibilidad de apagar el sensor en caso de que se desee.
 
@@ -165,9 +165,11 @@ Los transceptores SFP de fibra óptica tienen la función principal ser los puer
 
 Los SFP recopilan información de magnitudes de gran relevancia en tiempo real y se ubican en la segunda página de la EEPROM (Ox51) como son la temperatura a la que se encuentran, la tensión de alimentación que se les suministra, la corriente de polarización del láser y tanto la potencia óptica transmitida como la recibida. 
 
-En la misma segunda paǵina de la EEPROM de los SFP se halla la posibilidad de configurar alertas y advertencias en función de un rango determinado (modificable por el usuario) para monitorizar el estado de los transceptores SFP.
+En la misma segunda paǵina de la EEPROM de los SFP se halla la posibilidad de emplear alertas y advertencias en función de un rango ya determinado por el fabricante para monitorizar el estado de los transceptores SFP.
 
 Pese a que la primera página de la EEPROM se basa principalmente en caracteres identificativos del transceptor como pueden ser el número de parte y revisión o el nombre del vendedor, también podemos encontrar información relevante sobre el estado y funcionamiento del transceptor ya que podemos encontrar en este espacio de la memoria la longitud de onda del láser para saber en que ventana se encuentra trabajando y el registro que nos indica si habilitado mediante *hardware* las señales TX_DISABLE, TX_FAULT y RX_LOS. 
+
+En ambas páginas de la EEPROM encontramos uno o varios registros dedicados a un *Checksum* que nos permitirá comporbar el estado de la propia EEPROM.
 
 A continuación se presentan varias tablas que representan los registros de la EEPROM de los transceptores SFP.
 <!---
