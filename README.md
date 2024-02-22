@@ -234,7 +234,7 @@ Registers SFP 0x51
 <br>
 
 
-Para interpretar estos datos en formato bit hemos de tener en cuenta las siguientes aclaraciones del fabricante en función de la magnitud a interpretar:
+Para interpretar los datos de las magnitudes de la página 2 en formato bit hemos de tener en cuenta las siguientes aclaraciones del fabricante en función de la magnitud a interpretar:
 
  - **Temperatura (Temp):** Los valores de temperatura se codifican como enteros de 16 bits en complemento a dos, lo que permite representar tanto valores positivos como negativos. Cada unidad en esta representación equivale a 1/256 de grado Celsius (ºC).
   
@@ -265,7 +265,7 @@ SFP Status Table
 <!---
 SFP Flags Table
 -->
-En cuanto los registros dedicados a las <i>flags</i> se constituyen por las alertas y advertencias mencionadas previamente, en la siguiente tabla se presenta su distribución en los registros pertinentes.
+En cuanto los registros dedicados a las <i>flags</i>, estos contienen los bits indicadores de las alertas y advertencias mencionadas previamente. En la siguiente tabla se presenta su distribución en los registros pertinentes.
 <br>
 
 | Byte | Bit # | Flag Bit Name | Description |
@@ -278,10 +278,10 @@ En cuanto los registros dedicados a las <i>flags</i> se constituyen por las aler
 |      | 2     | Tx Bias Low Alarm | Set when transceiver laser bias current exceeds low alarm threshold. |
 |      | 1     | Tx Power High Alarm | Set when transmitted average optical power exceeds high alarm threshold. |
 |      | 0     | Tx Power Low Alarm | Set when transmitted average optical power exceeds low alarm threshold. |
-|      |   |  |  |
+|------|-------|---------------|-------------|
 | 113  | 7     | Rx Power High Alarm | Set when received P_Avg optical power exceeds high alarm threshold. |
 |      | 6     | Rx Power Low Alarm | Set when received P_Avg optical power exceeds low alarm threshold. |
-|      |   |  |  |
+|------|-------|---------------|-------------|
 | 116  | 7     | Temp High Warning | Set when transceiver internal temperature exceeds high warning threshold. |
 |      | 6     | Temp Low Warning | Set when transceiver internal temperature exceeds low warning threshold. |
 |      | 5     | VCC High Warning | Set when transceiver internal supply voltage exceeds high warning threshold. |
@@ -290,7 +290,7 @@ En cuanto los registros dedicados a las <i>flags</i> se constituyen por las aler
 |      | 2     | Tx Bias Low Warning | Set when transceiver laser bias current exceeds low warning threshold. |
 |      | 1     | Tx Power High Warning | Set when transmitted average optical power exceeds high warning threshold. |
 |      | 0     | Tx Power Low Warning | Set when transmitted average optical power exceeds low warning threshold. |
-|      |   |  |  |
+|------|-------|---------------|-------------|
 | 117  | 7     | Rx Power High Warning | Set when received P_Avg optical power exceeds high warning threshold. |
 |      | 9     | Rx Power Low Warning | Set when received P_Avg optical power exceeds low warning threshold. |
 
@@ -301,7 +301,9 @@ En cuanto los registros dedicados a las <i>flags</i> se constituyen por las aler
  
 # Obtención de datos del AMS, PS y PL SYSMON y diferenciación por canales
 
-Debido a los sensores junto con convertidores ADC con los que ha dotado Xilinx a nuestro módulo empleado y sus herrameintas de monitorización de sistemas (SYSMON) podemos acceder mediante el driver de linux "xilinx-ams" a una gran cantidad de información en tiempo real del AMS, del PS y del PL. Esta información se ve diferenciada en distintos canales que se explican en la siguiente tabla:
+Debido a los sensores junto con convertidores ADC con los que ha dotado Xilinx a nuestro módulo empleado y sus herramientas de monitorización de sistemas (SYSMON) podemos acceder mediante el driver de linux "xilinx-ams" a una gran cantidad de información en tiempo real del AMS, del PS y del PL. 
+
+Esta información se ve diferenciada en distintos canales que se explican en la siguiente tabla.
 
 | Sysmon Block | Channel | Details                                                     | Measurement | File Descriptor                    |
 |--------------|---------|-------------------------------------------------------------|-------------|-----------------------------|
