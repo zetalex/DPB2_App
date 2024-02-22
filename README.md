@@ -18,8 +18,8 @@
 
 <h3 align="center">Grado en Ingeniería de Tecnologías y Servicios de Telecomunicación</h3>
 
-# Inicialización del entrono sobre el que se trabajará en la placa
-Inciando con el entorno sobre el que se trabajará sobre la DPB (Data Processing Board) o DPM (Data Processing Module), se empleará PetaLinux, una herramienta de desarrollo de software de Xilinx basada en una versión ligera de Linux.
+# Inicialización del entorno sobre el que se trabajará en la placa
+Iniciando con el entorno sobre el que se trabajará sobre la DPB (Data Processing Board) o DPM (Data Processing Module), se empleará PetaLinux, una herramienta de desarrollo de software de Xilinx basada en una versión ligera de Linux.
 
 La disponibilidad universal del código fuente de Linux y de infinidad de drivers de los que dispone Linux nos supone una mayor flexibilidad y facilidad para trabajar a nivel de apliciación sobre la DPB. 
 
@@ -35,7 +35,7 @@ subnet 20.0.0.0 netmask 255.255.255.0 {
   option routers 20.0.0.1;
 }
 ```
-Se le ha asignado a la interfaz de red en ceustión la direccion 20.0.0.1 y se ha declarado la subred con un pequeño rango aribtrario y se ha asignado a la DPB la IP fija 20.0.0.33, una dirección fuera del rango puesto que del caso contrario el servidor retornaba un error. Cabe destacar que los puertos SFP de la DBP están pensados para emplear puertos de fibra óptica por lo que en ciertas ocasiones el equipo no es capaz de detectar la conexión en el puerto Ethernet empleando cable Ethernet con RJ-45 por lo que se ha de desactivar la interfaz y luego volver a activar y asignar la dirección 20.0.0.1 y se resuelve el problema, en caso de emplear un puerto de fibra óptica, este problema no surge. 
+Se le ha asignado a la interfaz de red en cuestión la direccion 20.0.0.1 y se ha declarado la subred con un pequeño rango aribtrario y se ha asignado a la DPB la IP fija 20.0.0.33, una dirección fuera del rango puesto que del caso contrario el servidor retornaba un error. Cabe destacar que los puertos SFP de la DBP están pensados para emplear puertos de fibra óptica por lo que en ciertas ocasiones el equipo no es capaz de detectar la conexión en el puerto Ethernet empleando cable Ethernet con RJ-45 por lo que se ha de desactivar la interfaz y luego volver a activar y asignar la dirección 20.0.0.1 y se resuelve el problema, en caso de emplear un puerto de fibra óptica, este problema no surge. 
 
 Con la dirección IP fija ya asignada ya nos es posible acceder a la placa medainte SSH y comunicarnos con esta, para ello empleamos el siguiente comando:
 ```bash
