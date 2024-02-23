@@ -1,5 +1,6 @@
 {
     "files.associations": {
-        "i2c-dev.h": "c"
+        "i2c-dev.h": "c",
+        "i2c.h": "c"
     }
 }
