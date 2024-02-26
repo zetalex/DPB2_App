@@ -18,6 +18,13 @@
 
 <h3 align="center">Grado en Ingeniería de Tecnologías y Servicios de Telecomunicación</h3>
 
+# Tecnología con la cual se va a trabajar
+
+Debido a la cantidad de datos con la que se pretende trabajar y la necesidad de personalización de nuestra placa para nuestra aplicación se ha optado por emplear un SoM, el Zynq UltraScale+ de AMD como MPSoC, un chip que combina un potente sistema de procesado y lógica programable por el usuario. El chip incluye diversos controladores como pueden ser los de puertos UART, I2C o eMMC que nos brindarán comunicación con los periféricos e integra un sistema de monitorización del propio chip y sus subsistemas. Además, el Zynq UltraScale+ cuenta con soporte para ligeros sistemas operativos, lo cual puede suponer un gran beneficio si se explotan las funcionalidades de lso drivers propios del sistema operativo.
+
+
+El Zynq ULtraScale+ irá integrado a una placa diseñada exclusivamente para nuestro proyecto con los periféricos necesarios. Mediante esta implementación de SoM gozaremos de una gran flexibilidad y personalización en nuestro diseño sin renunciar a la capacidad de procesamiento de un chip de alto rendimiento como es el ofrecido por AMD.  
+
 # Inicialización del entorno sobre el que se trabajará en la placa
 Iniciando con el entorno sobre el que se trabajará sobre la DPB (Data Processing Board) o DPM (Data Processing Module), se empleará PetaLinux, una herramienta de desarrollo de software de Xilinx basada en una versión ligera de Linux.
 
@@ -361,4 +368,4 @@ $$(3.2)
 
 Donde XX define el número de canal seleccionado en tensión o temperatura y "n_bits" define el número de bits del ADC empleado, en nuestro caso 10 bits. El desfase en el caso de la temperatura se suma puesto que se devuelve un número negativo.
 
-Xilinx también nos ofrece alarmas aplicadas a las tensiones y temperaturas medidas en los canales previamente mencionados y el driver de Linux nos permite configurar y leer estas alarmas. En el caso de la temperatura solo se dispone de alarmas que se activen en caso de exceder una determinada temperatura mientras que en el caso de al tensión, hay alarmas para casos tanto de tensión excesiva como de tensión insuficeinte.
+Xilinx también nos ofrece alarmas aplicadas a las tensiones y temperaturas medidas en los canales previamente mencionados y el driver de Linux nos permite configurar y leer estas alarmas empleando también la herramienta *iio_event_monitor* del proprio Linux. En el caso de la temperatura solo se dispone de alarmas que se activen en caso de exceder una determinada temperatura mientras que en el caso de al tensión, hay alarmas para casos tanto de tensión excesiva como de tensión insuficeinte.
