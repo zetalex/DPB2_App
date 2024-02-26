@@ -18,12 +18,45 @@
 
 <h3 align="center">Grado en Ingeniería de Tecnologías y Servicios de Telecomunicación</h3>
 
+# Descripción del proyecto y fase a focalizar
+
+Hyper-Kamiokande es un proyecto de un observatorio de neutrinos todavía en construcción (se estima que inicie su funcionamiento en 2027) que tiene lugar en las minas de Kamioka en Japón. Un proyecto el cual pese a darse en Japón, colaboran institutos de investigación de 22 países diferentes. El objetivo de este proyecto es el de buscar la desintegración de protones y detectar neutrinos procedentes de fuentes naturales como la Tierra, la atmósfera, el Sol y el cosmos, así como estudiar las oscilaciones de neutrinos del haz de neutrinos del acelerador artificial.
+
+Se planea que el Hyper-Kamiokande sea el observatorio de neutrinos más grande del mundo superando a su predecesor el Super-Kamiokande, con unas dimensiones de 71 metros de altura y 68 metros de diámetro. El observatorio, lleno de agua ultrapura, contará con alrededor de 40000 tubos fotomultiplicadores como detectores del interior del observatorio y 10000 detectores del exterior del observatorio.
+
+
+
+![Interior del Super-Kamiokande, predecesor del Hyper-Kamiokande](/DBP2_App/doc/figures/SK-Detector.png)
+<figcaption>Interior del Super-Kamiokande, predecesor del Hyper-Kamiokande</figcaption>
+<br>
+
+![Estructura del Hyper-Kamiokande](/DBP2_App/doc/figures/HK-SEC.png)
+<figcaption>Estructura del Hyper-Kamiokande</figcaption>
+<br>
+
+Los PMTs, junto con el resto de la electrónica, irán dentro de vasijas selladas herméticamente y sumergidas en el agua del interior del observatorio.
+
+![Interior de la vasija](/DBP2_App/doc/figures/Vasija.jpg)
+<figcaption>Interior de la vasija</figcaption>
+<br>
+
+![Diagrama de comunicación entre los diferentes módulos de la vasija](/DBP2_App/doc/diag/Bloques_Vasija.jpg)
+<figcaption>Diagrama de comunicación entre los diferentes módulos de la vasija</figcaption>
+<br>
+
+Como se puede apreciar en las figuras previas, la electrónica se concentra en el interior de la vasija, donde la información de los PMTs pasa por unas digitalizadoras hasta la DPB. La DPB es la encargada de comunicar lso diferentes módulos tanto del exterior como del interior de la vasija, hace la función de *hub* dentro de la vasija.
+
+Puesto que la electrónica se halla en un lugar de difícil acceso, pues supondría vaciar de agua el observatorio, se requiere de alta fiabilidad en este proyecto, como mínimo 10 años. Para ello se ha optado por sistemas robustos y se ha de llevar un seguimiento de la electrónica empleada.
+
+En nuestro grupo nos dedicamos al módulo de la DPB y en concreto mi trabajo va dedicado a la fiabilidad de la misma pues consiste en desarrollar un aplicación que emplee todos los subsistemas de sensado y medida disponibles en la DPB para monitorizar el estado de la misma y establecer alarmas y advertencias para casos críticos. 
+
+
 # Tecnología con la cual se va a trabajar
 
-Debido a la cantidad de datos con la que se pretende trabajar y la necesidad de personalización de nuestra placa para nuestra aplicación se ha optado por emplear un SoM, el Zynq UltraScale+ de AMD como MPSoC, un chip que combina un potente sistema de procesado y lógica programable por el usuario. El chip incluye diversos controladores como pueden ser los de puertos UART, I2C o eMMC que nos brindarán comunicación con los periféricos e integra un sistema de monitorización del propio chip y sus subsistemas. Además, el Zynq UltraScale+ cuenta con soporte para ligeros sistemas operativos, lo cual puede suponer un gran beneficio si se explotan las funcionalidades de lso drivers propios del sistema operativo.
+Debido a la cantidad de datos con la que se pretende trabajar y la necesidad de personalización de nuestra placa para nuestra aplicación se ha optado por emplear un SoM empleando el Zynq UltraScale+ de AMD como MPSoC, un chip que combina un potente sistema de procesado y lógica programable por el usuario. El chip incluye diversos controladores como pueden ser los de puertos UART, I2C o eMMC que nos brindarán comunicación con los periféricos e integra un sistema de monitorización del propio chip y sus subsistemas. Además, el Zynq UltraScale+ cuenta con soporte para ligeros sistemas operativos, lo cual puede suponer un gran beneficio si se aprovechan las funcionalidades de los drivers propios del sistema operativo.
 
 
-El Zynq ULtraScale+ irá integrado a una placa diseñada exclusivamente para nuestro proyecto con los periféricos necesarios. Mediante esta implementación de SoM gozaremos de una gran flexibilidad y personalización en nuestro diseño sin renunciar a la capacidad de procesamiento de un chip de alto rendimiento como es el ofrecido por AMD.  
+El SoM irá integrado a una placa diseñada exclusivamente para nuestro proyecto con los periféricos necesarios. Mediante esta implementación de SoM gozaremos de una gran flexibilidad y personalización en nuestro diseño sin renunciar a la capacidad de procesamiento de un chip de alto rendimiento como es el ofrecido por AMD.  
 
 # Inicialización del entorno sobre el que se trabajará en la placa
 Iniciando con el entorno sobre el que se trabajará sobre la DPB (Data Processing Board) o DPM (Data Processing Module), se empleará PetaLinux, una herramienta de desarrollo de software de Xilinx basada en una versión ligera de Linux.
@@ -368,4 +401,8 @@ $$(3.2)
 
 Donde XX define el número de canal seleccionado en tensión o temperatura y "n_bits" define el número de bits del ADC empleado, en nuestro caso 10 bits. El desfase en el caso de la temperatura se suma puesto que se devuelve un número negativo.
 
-Xilinx también nos ofrece alarmas aplicadas a las tensiones y temperaturas medidas en los canales previamente mencionados y el driver de Linux nos permite configurar y leer estas alarmas empleando también la herramienta *iio_event_monitor* del proprio Linux. En el caso de la temperatura solo se dispone de alarmas que se activen en caso de exceder una determinada temperatura mientras que en el caso de al tensión, hay alarmas para casos tanto de tensión excesiva como de tensión insuficeinte.
+Xilinx también nos ofrece alarmas aplicadas a las tensiones y temperaturas medidas en los canales previamente mencionados y el driver de Linux nos permite configurar y leer estas alarmas empleando también la herramienta *iio_event_monitor* del proprio Linux. En el caso de la temperatura solo se dispone de alarmas que se activen en caso de exceder una determinada temperatura mientras que en el caso de al tensión, hay alarmas para casos tanto de tensión excesiva como de tensión insuficiente.
+
+# Flujo de la aplicación y inicio de la programación
+
+Primeramente, antes de aventurarse a la programación de la aplicación 
