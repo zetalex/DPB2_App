@@ -53,7 +53,7 @@ En nuestro grupo nos dedicamos al módulo de la DPB y en concreto mi trabajo va 
 
 # Tecnología con la cual se va a trabajar
 
-Debido a la cantidad de datos con la que se pretende trabajar y la necesidad de personalización de nuestra placa para nuestra aplicación se ha optado por emplear un SoM empleando el Zynq UltraScale+ de AMD como MPSoC, un chip que combina un potente sistema de procesado y lógica programable por el usuario. El chip incluye diversos controladores como pueden ser los de puertos UART, I2C o eMMC que nos brindarán comunicación con los periféricos e integra un sistema de monitorización del propio chip y sus subsistemas. Además, el Zynq UltraScale+ cuenta con soporte para ligeros sistemas operativos, lo cual puede suponer un gran beneficio si se aprovechan las funcionalidades de los *drivers* propios del sistema operativo.
+Debido a la cantidad de datos con la que se pretende trabajar y la necesidad de personalización de nuestra placa para nuestra aplicación se ha optado por emplear un SoM situando como sistema de procesamiento el MPSoC Zynq UltraScale+ de AMD, el cual se combina en el SoM junto con dispositivos lógicos los cuales conforman una lógica programable por el usuario .El MPSoC incluye diversos controladores como pueden ser los de puertos UART, I2C o eMMC que nos brindarán comunicación con los periféricos e integra un sistema de monitorización del propio chip y sus subsistemas. Además, el Zynq UltraScale+ cuenta con soporte para ligeros sistemas operativos, lo cual puede suponer un gran beneficio si se aprovechan las funcionalidades de los *drivers* propios del sistema operativo.
 
 
 El SoM irá integrado a una placa diseñada exclusivamente para nuestro proyecto con los periféricos necesarios. Mediante esta implementación de SoM gozaremos de una gran flexibilidad y personalización en nuestro diseño sin renunciar a la capacidad de procesamiento de un chip de alto rendimiento como es el ofrecido por AMD.  
@@ -405,4 +405,4 @@ Xilinx también nos ofrece alarmas aplicadas a las tensiones y temperaturas medi
 
 # Flujo de la aplicación y inicio de la programación
 
-Primeramente, antes de aventurarse a la programación de la aplicación 
+Primeramente, antes de aventurarse a la programación de la aplicación se ha planteado un flujograma a seguir por la aplicación para asegurar un funcionamiento acorde a nuestras necesidades.
