@@ -53,7 +53,7 @@ En nuestro grupo nos dedicamos al módulo de la DPB y en concreto mi trabajo va 
 
 # Tecnología con la cual se va a trabajar
 
-Debido a la cantidad de datos con la que se pretende trabajar y la necesidad de personalización de nuestra placa para nuestra aplicación se ha optado por emplear un SoM empleando el Zynq UltraScale+ de AMD como MPSoC, un chip que combina un potente sistema de procesado y lógica programable por el usuario. El chip incluye diversos controladores como pueden ser los de puertos UART, I2C o eMMC que nos brindarán comunicación con los periféricos e integra un sistema de monitorización del propio chip y sus subsistemas. Además, el Zynq UltraScale+ cuenta con soporte para ligeros sistemas operativos, lo cual puede suponer un gran beneficio si se aprovechan las funcionalidades de los drivers propios del sistema operativo.
+Debido a la cantidad de datos con la que se pretende trabajar y la necesidad de personalización de nuestra placa para nuestra aplicación se ha optado por emplear un SoM empleando el Zynq UltraScale+ de AMD como MPSoC, un chip que combina un potente sistema de procesado y lógica programable por el usuario. El chip incluye diversos controladores como pueden ser los de puertos UART, I2C o eMMC que nos brindarán comunicación con los periféricos e integra un sistema de monitorización del propio chip y sus subsistemas. Además, el Zynq UltraScale+ cuenta con soporte para ligeros sistemas operativos, lo cual puede suponer un gran beneficio si se aprovechan las funcionalidades de los *drivers* propios del sistema operativo.
 
 
 El SoM irá integrado a una placa diseñada exclusivamente para nuestro proyecto con los periféricos necesarios. Mediante esta implementación de SoM gozaremos de una gran flexibilidad y personalización en nuestro diseño sin renunciar a la capacidad de procesamiento de un chip de alto rendimiento como es el ofrecido por AMD.  
@@ -61,7 +61,7 @@ El SoM irá integrado a una placa diseñada exclusivamente para nuestro proyecto
 # Inicialización del entorno sobre el que se trabajará en la placa
 Iniciando con el entorno sobre el que se trabajará sobre la DPB (Data Processing Board) o DPM (Data Processing Module), se empleará PetaLinux, una herramienta de desarrollo de software de Xilinx basada en una versión ligera de Linux.
 
-La disponibilidad universal del código fuente de Linux y de infinidad de drivers de los que dispone Linux nos supone una mayor flexibilidad y facilidad para trabajar a nivel de apliciación sobre la DPB. 
+La disponibilidad universal del código fuente de Linux y de infinidad de *drivers* de los que dispone Linux nos supone una mayor flexibilidad y facilidad para trabajar a nivel de aplicación sobre la DPB. 
 
 Para implementar este sistema operativo (OS) en la DPB se ha empleado el software de Xilinx, Vivado,y mediante el puerto JTAG se ha cargado sobre una eMMC de 16 GB como memoria no volátil, tanto los archivos de arranque pertinentes como la imagen personalizada del proyecto del PetaLinux, posteriormente se ha seleccionado, desde la placa, a la eMMC como opción principal de arranque. En el proceso de arranque se carga el OS sobre la memoria RAM y se trabaja sobre esta.
 
@@ -75,17 +75,17 @@ subnet 20.0.0.0 netmask 255.255.255.0 {
   option routers 20.0.0.1;
 }
 ```
-Se le ha asignado a la interfaz de red en cuestión la direccion 20.0.0.1 y se ha declarado la subred con un pequeño rango aribtrario y se ha asignado a la DPB la IP fija 20.0.0.33, una dirección fuera del rango puesto que del caso contrario el servidor retornaba un error. Cabe destacar que los puertos SFP de la DBP están pensados para emplear puertos de fibra óptica por lo que en ciertas ocasiones el equipo no es capaz de detectar la conexión en el puerto Ethernet empleando cable Ethernet con RJ-45 por lo que se ha de desactivar la interfaz y luego volver a activar y asignar la dirección 20.0.0.1 y se resuelve el problema, en caso de emplear un puerto de fibra óptica, este problema no surge. 
+Se le ha asignado a la interfaz de red en cuestión la dirección 20.0.0.1 y se ha declarado la subred con un pequeño rango arbitrario y se ha asignado a la DPB la IP fija 20.0.0.33, una dirección fuera del rango puesto que del caso contrario el servidor retornaba un error. Cabe destacar que los puertos SFP de la DBP están pensados para emplear puertos de fibra óptica por lo que en ciertas ocasiones el equipo no es capaz de detectar la conexión en el puerto Ethernet empleando cable Ethernet con RJ-45 por lo que se ha de desactivar la interfaz y luego volver a activar y asignar la dirección 20.0.0.1 y se resuelve el problema, en caso de emplear un puerto de fibra óptica, este problema no surge. 
 
-Con la dirección IP fija ya asignada ya nos es posible acceder a la placa medainte SSH y comunicarnos con esta, para ello empleamos el siguiente comando:
+Con la dirección IP fija ya asignada ya nos es posible acceder a la placa mediante SSH y comunicarnos con esta, para ello empleamos el siguiente comando:
 ```bash
 ssh root@20.0.0.33
-#Aquí introduciriamos la contraseña pertinente
+#Aquí introduciríamos la contraseña pertinente
 ```
 Para finalizar con el establecimiento del entorno de trabajo únicamente nos quedaría crear el proyecto de aplicación que se va a desarrollar sobre una plataforma personalizada de nuestro proyecto, en el software Vitis IDE de Xilinx. Se ha nombrado al proyecto de aplicación como DBP2_App.
 
 # Protocolo I<sup>2</sup>C y como está implementado en nuestra placa
-Para conseguir una comunicación entre los diferentes componenetes a tratar de la placa con el terminal se emplea el protocolo I<sup>2</sup>C , un protocolo de comunicación que se basa en un sistema Maestro-Esclavo donde el bus de comunicación se divide en 2 líneas, SCL para el reloj y SDA para los datos, las cuales están conectadas a una resistencia de pull-up cada una por lo que el nivel por defecto es nivel alto .
+Para conseguir una comunicación entre los diferentes componentes a tratar de la placa con el terminal se emplea el protocolo I<sup>2</sup>C , un protocolo de comunicación que se basa en un sistema Maestro-Esclavo donde el bus de comunicación se divide en 2 líneas, SCL para el reloj y SDA para los datos, las cuales están conectadas a una resistencia de pull-up cada una por lo que el nivel por defecto es nivel alto .
 
 El funcionamiento de este protocolo consiste en el inicio de la transmisión por parte de el Maestro que conjuntamente indica la dirección del esclavo al que se dirige con una dirección de 7 bits (nosotros contamos con sensores que su dirección es de 6 bits más uno reservado que a nosotros nos sirve para diferenciar de forma física), además se indica con un bit si la operación a desarrollar es lectura o escritura. La transmisión de datos va guiada por la línea de reloj y se transmiten los datos en tamaño byte transmitiendo de MSB a LSB.
 
@@ -97,7 +97,7 @@ El funcionamiento de este protocolo consiste en el inicio de la transmisión por
 
 Para la operación de escritura sobre el esclavo una vez establecida la comunicación se ha de indicar el registro sobre el que se desea escribir y el dato que se desea escribir. El maestro es el encargado de recibir los correspondientes ACK y NACK durante la comunicación y la secuencia de fin de comunicación.
 
-En la operación de lectura sigue un porceso similar al de escritura indicando el registro que se desea leer y el maestro es el encargado de enviar los correspondientes ACK y NACK durante la comunicación y la secuencia de fin de comunicación.
+En la operación de lectura sigue un proceso similar al de escritura indicando el registro que se desea leer y el maestro es el encargado de enviar los correspondientes ACK y NACK durante la comunicación y la secuencia de fin de comunicación.
 
 En nuestro caso el proceso de comunicación se basará en las funciones proporcionadas por las librerías de Linux que nos permiten abrir/cerrar y leer/escribir simplemente llamando a funciones definidas e indicando los argumentos necesarios. Además estas funciones nos permiten operar con vectores para poder leer o escribir datos consecutivos con una única función.
 
@@ -105,9 +105,9 @@ En nuestro caso el proceso de comunicación se basará en las funciones proporci
 <figcaption>Estructura del I<sup>2</sup>C de nuestra DPB</figcaption>
 <br>
 
-En el diagrama de bloques previo se puede observar como están estructruados los buses I<sup>2</sup>C de nuestra DPB, el *filename* correspondiente de cada una de las salidas de los buses I<sup>2</sup>C designadas por los multiplexores y las direcciones esclavo de cada módulo con el que se pretende comunicar. 
+En el diagrama de bloques previo se puede observar como están estructurados los buses I<sup>2</sup>C de nuestra DPB, el *filename* correspondiente de cada una de las salidas de los buses I<sup>2</sup>C designadas por los multiplexores y las direcciones esclavo de cada módulo con el que se pretende comunicar. 
 
-Como se puede observar los sensores de corriente, los conectores SFP y el sensor de temperatura que pretendemos emplear, todos emplean el protocolo I<sup>2</sup>C para comunciarse. Sin embargo, el sensor de temperatura y los sensores de corrientes emplean registros de 16 bits, mientras que los SFP emplean registros de tamaño 1 byte. El protocolo I<sup>2</sup>C transporta tramas en tamaño byte por lo que en el caso de los registros de 16 bits implica realizar 2 operaciones consecutivas (ya sea lectura o escritura) sobre la misma dirección de registro mientras que para los registros de 8 bits implicará una única operación por dirección de registro. En nuestro caso, el driver I<sup>2</sup>C de linux nos facilitará en gran medida realizar este tipo de operaciones consecutivas.
+Como se puede observar los sensores de corriente, los conectores SFP y el sensor de temperatura que pretendemos emplear, todos emplean el protocolo I<sup>2</sup>C para comunicarse. Sin embargo, el sensor de temperatura y los sensores de corrientes emplean registros de 16 bits, mientras que los SFP emplean registros de tamaño 1 byte. El protocolo I<sup>2</sup>C transporta tramas en tamaño byte por lo que en el caso de los registros de 16 bits implica realizar 2 operaciones consecutivas (ya sea lectura o escritura) sobre la misma dirección de registro mientras que para los registros de 8 bits implicará una única operación por dirección de registro. En nuestro caso, el *driver* I<sup>2</sup>C de Linux nos facilitará en gran medida realizar este tipo de operaciones consecutivas.
 
 # Información detallada sobre los sensores disponibles y su utilidad para nuestros intereses
 
@@ -118,7 +118,7 @@ En cuanto a las unidades sensoriales disponibles en nuestra DPB encontramos, com
 
 Los sensores de corriente instalados en la DPB nos proporciona la posibilidad de monitorizar hasta 3 canales distinitos desde un mismo sensor. Además, nos permite medir la tensión del bus respecto a GND (*Bus Voltage*) o la diferencia de tensión entre los terminales IN+ e IN- de cada canal (*Shunt Voltage*). En nuestro caso entre IN+ e IN- se ha ubicado un elemento resistivo de valor 0.05 $\Omega$ lo cual nos es útil para obtener tanto la corriente como la potencia consumida en cada canal.
 
-Cabe destacar que este sensor nos permite configurar alertas y advertencias para valores de tensión obtenidos en modo de medida *Shunt Voltage* para detectar si la diferencia de tensión enetre terminales de nuestra resistencia excede o no alcanza unos valores determinados y poder actuar como corresponda. También disponemos de una alerta si en el modo de medida *Bus Voltage*, que nos informa si todos los canales que se están midiendo tienen una tensión superior a la marcada por los límites o si cualquiera de los canales tiene una tenisón menor al límite inferior. Se nos proporciona también la opción de obtener la suma de la *Shunt Voltage* de todos los canales y establecer un límite para configurar una alerta. Todas las alertas y advertencias nombradas se recogen en el registro de *Mask/Enable* donde también se puede habilitar o inhabilitar la suma de la *Shunt Voltage*, las advertencias y las alarmas.
+Cabe destacar que este sensor nos permite configurar alertas y advertencias para valores de tensión obtenidos en modo de medida *Shunt Voltage* para detectar si la diferencia de tensión entre terminales de nuestra resistencia excede o no alcanza unos valores determinados y poder actuar como corresponda. También disponemos de una alerta si en el modo de medida *Bus Voltage*, que nos informa si todos los canales que se están midiendo tienen una tensión superior a la marcada por los límites o si cualquiera de los canales tiene una tensión menor al límite inferior. Se nos proporciona también la opción de obtener la suma de la *Shunt Voltage* de todos los canales y establecer un límite para configurar una alerta. Todas las alertas y advertencias nombradas se recogen en el registro de *Mask/Enable* donde también se puede habilitar o inhabilitar la suma de la *Shunt Voltage*, las advertencias y las alarmas.
 
 En la siguiente tabla se pueden observar los registros más influyentes para nuestra aplicación, una pequeña descripción de estos, su valor por defecto y el tipo de registro que es, si es solo de lectura o de lectura y escritura. 
 
@@ -153,19 +153,19 @@ Current.Sens
 <br>
 
 Cabe mencionar que todos los datos de tensión vienen dados en complemento a 2 y emplean 13 bits, el bit 15 del registro (MSB) determina el signo y del bit 14-3 el dato de tensión.
-Para *Shunt Voltage* el rango a escala completa equiavale a 163.8 mV y el LSB a 40 $\mu$V, en el caso de *Bus Voltage* el LSB equivale a 8 mV y pese a que el rango a escala completa del ADC es de 32.76 V, el rango a escala completa en el caso de *Bus Voltage* es de 26 V puesto que no se recomienda aplicar más tensión.
+Para *Shunt Voltage* el rango a escala completa equivale a 163.8 mV y el LSB a 40 $\mu$V, en el caso de *Bus Voltage* el LSB equivale a 8 mV y pese a que el rango a escala completa del ADC es de 32.76 V, el rango a escala completa en el caso de *Bus Voltage* es de 26 V puesto que no se recomienda aplicar más tensión.
 
 ## Sensor de temperatura MCP9844
 <!---
 Registers Temp.Sens
 -->
-El sensor de temepratura MCP9844 nos es una gran herramienta para monitorizar la temperatura del ambiente donde trabaja nuestra DPB, una magnitud esencial a la hora de asegurar un correcto acondicionamiento para el funcionamiento de nuestra electrónica.
+El sensor de temperatura MCP9844 nos es una gran herramienta para monitorizar la temperatura del ambiente donde trabaja nuestra DPB, una magnitud esencial a la hora de asegurar un correcto acondicionamiento para el funcionamiento de nuestra electrónica.
 
 Este sensor de temperatura nos proporciona la herramienta de los eventos que facilita la monitorización de la temperatura ambiente. El MCP9844 nos permite establecer límites de temperatura, solo modificables si se ha habilitado en el registro de configuración, tanto superiores como inferiores e incluso temperatura crítica (únicamente mayor al límite superior). Ya establecidos los límites, desde el registro de configuración se pueden habilitar o deshabilitar los eventos y te permite configurar el evento como una interrupción o como una comparación, decidir si el evento sea activo a nivel alto o nivel bajo y decidir si solo se tiene en cuenta el límite de temperatura crítica o se tiene en cuenta todos los límites.
 
-Asimismo, el sensor presenta diversas funcionalidades como la opción de incluir cierto valor de histeresis a los límites de temperatura (solo aplicable en caso de bajada de temperatura), la posibilidad de modificación de la resolución de medida (menor valor de resolución implicará un mayor tiempo de conversión) o la posibilidad de apagar el sensor en caso de que se desee.
+Asimismo, el sensor presenta diversas funcionalidades como la opción de incluir cierto valor de histéresis a los límites de temperatura (solo aplicable en caso de bajada de temperatura), la posibilidad de modificación de la resolución de medida (menor valor de resolución implicará un mayor tiempo de conversión) o la posibilidad de apagar el sensor en caso de que se desee.
 
-A continucaión se presenta una tabla de los registros que presenta este sensor de temperatura y su valor por defecto.
+A continuación se presenta una tabla de los registros que presenta este sensor de temperatura y su valor por defecto.
 
 | Register Address (Hexadecimal) | Register Name         | Default Register Data (Hexadecimal) | Power-Up Default Register Description                                                                                           |
 |-----------------------|-----------------------|--------------------------------------|----------------------------------------------------------------------------------------------------------------------------------|
@@ -182,7 +182,7 @@ A continucaión se presenta una tabla de los registros que presenta este sensor 
 <figcaption>Registros del sensor de temperatura MCP9844</figcaption>
 <br>
 
-En este caso el dato de temepratura está codificado en complemento a 2 y se presenta como un dato de 13 bits, 1 bit que determina el signo y 12 que determinan el dato de temperatura, por lo que el fabricante nos proporciona las siguientes ecuaciones para obtener el dato en grados centígrados.
+En este caso el dato de temperatura está codificado en complemento a 2 y se presenta como un dato de 13 bits, 1 bit que determina el signo y 12 que determinan el dato de temperatura, por lo que el fabricante nos proporciona las siguientes ecuaciones para obtener el dato en grados centígrados.
 
 
 Si la Temperatura $\ge$ 0°C
@@ -205,11 +205,11 @@ Los transceptores SFP de fibra óptica tienen la función principal ser los puer
 
 Los SFP recopilan información de magnitudes de gran relevancia en tiempo real y se ubican en la segunda página de la EEPROM (Ox51) como son la temperatura a la que se encuentran, la tensión de alimentación que se les suministra, la corriente de polarización del láser y tanto la potencia óptica transmitida como la recibida. 
 
-En la misma segunda paǵina de la EEPROM de los SFP se halla la posibilidad de emplear alertas y advertencias en función de un rango ya determinado por el fabricante para monitorizar el estado de los transceptores SFP.
+En la misma segunda página de la EEPROM de los SFP se halla la posibilidad de emplear alertas y advertencias en función de un rango ya determinado por el fabricante para monitorizar el estado de los transceptores SFP.
 
 Pese a que la primera página de la EEPROM se basa principalmente en caracteres identificativos del transceptor como pueden ser el número de parte y revisión o el nombre del vendedor, también podemos encontrar información relevante sobre el estado y funcionamiento del transceptor ya que podemos encontrar en este espacio de la memoria la longitud de onda del láser para saber en que ventana se encuentra trabajando y el registro que nos indica si se ha configurado mediante *hardware* las señales de estado TX_DISABLE, TX_FAULT y RX_LOS. 
 
-En ambas páginas de la EEPROM encontramos uno o varios registros dedicados a un *Checksum* que nos permitirá comporbar el estado de la propia EEPROM.
+En ambas páginas de la EEPROM encontramos uno o varios registros dedicados a un *Checksum* que nos permitirá comprobar el estado de la propia EEPROM.
 
 A continuación se presentan varias tablas que representan los registros de la EEPROM de los transceptores SFP.
 <!---
@@ -343,7 +343,7 @@ En cuanto los registros dedicados a las <i>flags</i>, estos contienen los bits i
  
 # Obtención de datos del AMS, PS y PL SYSMON y diferenciación por canales
 
-Debido a los sensores junto con convertidores ADC con los que ha dotado Xilinx a nuestro módulo empleado y sus herramientas de monitorización de sistemas (SYSMON) podemos acceder mediante el driver de linux "xilinx-ams" a una gran cantidad de información en tiempo real del AMS, del PS y del PL. 
+Debido a los sensores junto con convertidores ADC con los que ha dotado Xilinx a nuestro módulo empleado y sus herramientas de monitorización de sistemas (SYSMON) podemos acceder mediante el *driver* de linux "xilinx-ams" a una gran cantidad de información en tiempo real del AMS, del PS y del PL. 
 
 Esta información se ve diferenciada en distintos canales que se explican en la siguiente tabla.
 
@@ -401,7 +401,7 @@ $$(3.2)
 
 Donde XX define el número de canal seleccionado en tensión o temperatura y "n_bits" define el número de bits del ADC empleado, en nuestro caso 10 bits. El desfase en el caso de la temperatura se suma puesto que se devuelve un número negativo.
 
-Xilinx también nos ofrece alarmas aplicadas a las tensiones y temperaturas medidas en los canales previamente mencionados y el driver de Linux nos permite configurar y leer estas alarmas empleando también la herramienta *iio_event_monitor* del proprio Linux. En el caso de la temperatura solo se dispone de alarmas que se activen en caso de exceder una determinada temperatura mientras que en el caso de al tensión, hay alarmas para casos tanto de tensión excesiva como de tensión insuficiente.
+Xilinx también nos ofrece alarmas aplicadas a las tensiones y temperaturas medidas en los canales previamente mencionados y el *driver* de Linux nos permite configurar y leer estas alarmas empleando también la herramienta *iio_event_monitor* del proprio Linux. En el caso de la temperatura solo se dispone de alarmas que se activen en caso de exceder una determinada temperatura mientras que en el caso de al tensión, hay alarmas para casos tanto de tensión excesiva como de tensión insuficiente.
 
 # Flujo de la aplicación y inicio de la programación
 
