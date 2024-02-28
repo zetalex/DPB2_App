@@ -18,6 +18,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include "linux/errno.h"
 
 int main()
@@ -26,6 +27,14 @@ int main()
 	char buffer [sizeof(i)*8+1];
 	snprintf(buffer, sizeof(buffer), "%d",i);
 	printf(buffer);
+	printf("\n");
+	char raw_str[80];
+	strcpy(raw_str, "/sys/bus/iio/devices/iio:device1/in_temp");
+	strcat(raw_str, buffer);
+	strcat(raw_str, "_raw");
+
+	printf(raw_str);
+	printf("\n");
     printf("Hello World\n");
     printf("Hola Mundo\n");
     printf("Añado un print \n");

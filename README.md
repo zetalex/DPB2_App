@@ -248,8 +248,8 @@ Registers SFP 0x51
 -->
 | Byte Decimal | Notes                    | Byte Decimal | Notes                      | Byte Decimal | Notes                           |
 |--------------|--------------------------|--------------|----------------------------|--------------|---------------------------------|
-| 0            | Temp H Alarm MSB        | 26           | Tx Pwr L Alarm MSB        | 104          | Real Time Rx PAV MSB          |
-| 1            | Temp H Alarm LSB        | 27           | Tx Pwr L Alarm LSB        | 105          | Real Time Rx PAV LSB          |
+| 0            | Temp H Alarm MSB        | 26           | Tx Pwr L Alarm MSB        | 104          | Real Time Rx P<sub>AV</sub> MSB          |
+| 1            | Temp H Alarm LSB        | 27           | Tx Pwr L Alarm LSB        | 105          | Real Time Rx P<sub>AV</sub> LSB          |
 | 2            | Temp L Alarm MSB        | 28           | Tx Pwr H Warning MSB      | 106          |                                |
 | 3            | Temp L Alarm LSB        | 29           | Tx Pwr H Warning LSB      | 107          |                                |
 | 4            | Temp H Warning MSB      | 30           | Tx Pwr L Warning MSB      | 108          |                                |

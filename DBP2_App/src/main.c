@@ -1,17 +1,65 @@
+/*
+ * main.c
+ *
+ * @date
+ * @author
+ */
+
 #include <stdio.h>
 #include <unistd.h>
 #include <pthread.h> 
 #include <stdlib.h>
+#include <string.h>
 
 #include "i2c.h"
 #include "linux/errno.h"
 
-#define MPC9844_TEMP_REG 0x05
+#define MPC9844_TEMP_UPPER_LIM_REG 0x2
+#define MPC9844_TEMP_LOWER_LIM_REG 0x3
+#define MPC9844_TEMP_CRIT_LIM_REG 0x4
+#define MPC9844_TEMP_REG 0x5
+#define MPC9844_RES_REG 0x9
+
 #define MPC9844_CONFIG_REG 0x1
+#define MPC9844_MANUF_ID_REG 0x6
+#define MPC9844_DEVICE_ID_REG 0x7
+
 #define SFP_MSB_TEMP_REG 0x60
 #define SFP_LSB_TEMP_REG 0x61
+#define SFP_MSB_VCC_REG 0x62
+#define SFP_LSB_VCC_REG 0x63
+#define SFP_MSB_TXBIAS_REG 0x64
+#define SFP_LSB_TXBIAS_REG 0x65
+#define SFP_MSB_TXPWR_REG 0x66
+#define SFP_LSB_TXPWR_REG 0x67
+#define SFP_MSB_RXPWR_REG 0x68
+#define SFP_LSB_RXPWR_REG 0x69
+
+#define SFP_STAT_REG 0x6E
+#define SFP_FLG1_REG 0x70
+#define SFP_FLG2_REG 0x71
+#define SFP_FLG3_REG 0x74
+#define SFP_FLG4_REG 0x75
+
 #define INA3221_SHUNT_VOLTAGE_1_REG 0x1
 #define INA3221_BUS_VOLTAGE_1_REG 0x2
+#define INA3221_SHUNT_VOLTAGE_2_REG 0x3
+#define INA3221_BUS_VOLTAGE_2_REG 0x4
+#define INA3221_SHUNT_VOLTAGE_3_REG 0x5
+#define INA3221_BUS_VOLTAGE_3_REG 0x6
+
+#define INA3221_SHUNT_VOLTAGE_CRIT1_REG 0x7
+#define INA3221_SHUNT_VOLTAGE_WARN1_REG 0x8
+#define INA3221_SHUNT_VOLTAGE_CRIT1_REG 0x9
+#define INA3221_SHUNT_VOLTAGE_WARN2_REG 0xA
+#define INA3221_SHUNT_VOLTAGE_CRIT3_REG 0xB
+#define INA3221_SHUNT_VOLTAGE_WARN3_REG 0xC
+
+#define INA3221_CONFIG_REG 0x0
+#define INA3221_MASK_ENA_REG 0xF
+#define INA3221_MANUF_ID_REG 0xFE
+#define INA3221_DIE_ID_REG 0xFF
+
 
 int iio_event_monitor_up() {
 
@@ -130,6 +178,56 @@ int xlnx_ams_read_temp(int *chan, int n, float *res){
 			fclose(offset);
 			fclose(scale);
 			res[i] = Temperature;
+			return 0;
+			}
+		}
+
+	}
+
+int xlnx_ams_read_volt(int *chan, int n, float *res){
+	FILE *raw,*scale;
+	for(int i=0;i<n;i++){
+		char buffer [sizeof(chan[i])*8+1];
+		snprintf(buffer, sizeof(buffer), "%d",chan[i]);
+		char raw_str[80];
+		char scale_str[80];
+
+		strcpy(raw_str, "/sys/bus/iio/devices/iio:device1/in_voltage");
+		strcpy(scale_str, "/sys/bus/iio/devices/iio:device1/in_voltage");
+
+		strcat(raw_str, buffer);
+		strcat(scale_str, buffer);
+
+		strcat(raw_str, "_raw");
+		strcat(scale_str, "_scale");
+
+		raw = fopen(raw_str,"r");
+		scale = fopen(scale_str,"r");
+
+		if((raw==NULL)|(scale==NULL)){
+			fclose(raw);
+			fclose(scale); 	/*Any of the files could not be opened*/
+			return -1;
+			}
+		else{
+			fseek(raw, 0, SEEK_END);
+			long fsize = ftell(raw);
+			fseek(raw, 0, SEEK_SET);  /* same as rewind(f); */
+
+			char *raw_string = malloc(fsize + 1);
+			fread(raw_string, fsize, 1, raw);
+
+			fseek(scale, 0, SEEK_END);
+			fsize = ftell(scale);
+			fseek(scale, 0, SEEK_SET);  /* same as rewind(f); */
+
+			char *scale_string = malloc(fsize + 1);
+			fread(scale_string, fsize, 1, scale);
+
+			float Voltage = (atof(scale_string) * atof(raw_string)) / 1024;
+			fclose(raw);
+			fclose(scale);
+			res[i] = Voltage;
 			return 0;
 			}
 		}
