@@ -12,54 +12,163 @@
 #include <string.h>
 
 #include "i2c.h"
+#include "constants.h"
 #include "linux/errno.h"
 
-#define MPC9844_TEMP_UPPER_LIM_REG 0x2
-#define MPC9844_TEMP_LOWER_LIM_REG 0x3
-#define MPC9844_TEMP_CRIT_LIM_REG 0x4
-#define MPC9844_TEMP_REG 0x5
-#define MPC9844_RES_REG 0x9
 
-#define MPC9844_CONFIG_REG 0x1
-#define MPC9844_MANUF_ID_REG 0x6
-#define MPC9844_DEVICE_ID_REG 0x7
 
-#define SFP_MSB_TEMP_REG 0x60
-#define SFP_LSB_TEMP_REG 0x61
-#define SFP_MSB_VCC_REG 0x62
-#define SFP_LSB_VCC_REG 0x63
-#define SFP_MSB_TXBIAS_REG 0x64
-#define SFP_LSB_TXBIAS_REG 0x65
-#define SFP_MSB_TXPWR_REG 0x66
-#define SFP_LSB_TXPWR_REG 0x67
-#define SFP_MSB_RXPWR_REG 0x68
-#define SFP_LSB_RXPWR_REG 0x69
+/************************** Variable Definitions *****************************/
 
-#define SFP_STAT_REG 0x6E
-#define SFP_FLG1_REG 0x70
-#define SFP_FLG2_REG 0x71
-#define SFP_FLG3_REG 0x74
-#define SFP_FLG4_REG 0x75
+struct DPB_I2cSensors{
 
-#define INA3221_SHUNT_VOLTAGE_1_REG 0x1
-#define INA3221_BUS_VOLTAGE_1_REG 0x2
-#define INA3221_SHUNT_VOLTAGE_2_REG 0x3
-#define INA3221_BUS_VOLTAGE_2_REG 0x4
-#define INA3221_SHUNT_VOLTAGE_3_REG 0x5
-#define INA3221_BUS_VOLTAGE_3_REG 0x6
+	struct I2cDevice dev_pcb_temp;
+	struct I2cDevice dev_sfp0_2_volt;
+	struct I2cDevice dev_sfp3_5_volt;
+	struct I2cDevice dev_som_volt;
+	struct I2cDevice dev_sfp0_A0;
+	struct I2cDevice dev_sfp1_A0;
+	struct I2cDevice dev_sfp2_A0;
+	struct I2cDevice dev_sfp3_A0;
+	struct I2cDevice dev_sfp4_A0;
+	struct I2cDevice dev_sfp5_A0;
+	struct I2cDevice dev_sfp0_A2;
+	struct I2cDevice dev_sfp1_A2;
+	struct I2cDevice dev_sfp2_A2;
+	struct I2cDevice dev_sfp3_A2;
+	struct I2cDevice dev_sfp4_A2;
+	struct I2cDevice dev_sfp5_A2;
+	//struct I2cDevice dev_mux0;
+	//struct I2cDevice dev_mux1;
+};
 
-#define INA3221_SHUNT_VOLTAGE_CRIT1_REG 0x7
-#define INA3221_SHUNT_VOLTAGE_WARN1_REG 0x8
-#define INA3221_SHUNT_VOLTAGE_CRIT1_REG 0x9
-#define INA3221_SHUNT_VOLTAGE_WARN2_REG 0xA
-#define INA3221_SHUNT_VOLTAGE_CRIT3_REG 0xB
-#define INA3221_SHUNT_VOLTAGE_WARN3_REG 0xC
+/************************** Function Prototypes ******************************/
 
-#define INA3221_CONFIG_REG 0x0
-#define INA3221_MASK_ENA_REG 0xF
-#define INA3221_MANUF_ID_REG 0xFE
-#define INA3221_DIE_ID_REG 0xFF
+/************************** I2C Devices Functions ******************************/
 
+int init_I2cSensors(){
+
+	int rc;
+
+	dev_pcb_temp.filename = "/dev/i2c-2";
+	dev_pcb_temp.addr = 0x18;
+
+	dev_som_volt.filename = "/dev/i2c-2";
+	dev_som_volt.addr = 0x40;
+	dev_sfp0_2_volt.filename = "/dev/i2c-3";
+	dev_sfp0_2_volt.addr = 0x40;
+	dev_sfp3_5_volt.filename = "/dev/i2c-3";
+	dev_sfp3_5_volt.addr = 0x41;
+
+	dev_sfp0_A0.filename = "/dev/i2c-6";
+	dev_sfp0_A0.addr = 0x50;
+	dev_sfp1_A0.filename = "/dev/i2c-10";
+	dev_sfp1_A0.addr = 0x50;
+	dev_sfp2_A0.filename = "/dev/i2c-8";
+	dev_sfp2_A0.addr = 0x50;
+	dev_sfp3_A0.filename = "/dev/i2c-12";
+	dev_sfp3_A0.addr = 0x50;
+	dev_sfp4_A0.filename = "/dev/i2c-9";
+	dev_sfp4_A0.addr = 0x50;
+	dev_sfp5_A0.filename = "/dev/i2c-13";
+	dev_sfp5_A0.addr = 0x50;
+
+	dev_sfp0_A2.filename = "/dev/i2c-6";
+	dev_sfp0_A2.addr = 0x51;
+	dev_sfp1_A2.filename = "/dev/i2c-10";
+	dev_sfp1_A2.addr = 0x51;
+	dev_sfp2_A2.filename = "/dev/i2c-8";
+	dev_sfp2_A2.addr = 0x51;
+	dev_sfp3_A2.filename = "/dev/i2c-12";
+	dev_sfp3_A2.addr = 0x51;
+	dev_sfp4_A2.filename = "/dev/i2c-9";
+	dev_sfp4_A2.addr = 0x51;
+	dev_sfp5_A2.filename = "/dev/i2c-13";
+	dev_sfp5_A2.addr = 0x51;
+
+
+	rc = i2c_start(&DPB_I2cSensors.dev_pcb_temp);
+	if (rc) {
+		printf("failed to start i2c device\r\n");
+		return rc;
+	}
+	rc = i2c_start(&DPB_I2cSensors.dev_sfp0_2_volt);
+		if (rc) {
+			printf("failed to start i2c device\r\n");
+			return rc;
+		}
+	rc = i2c_start(&DPB_I2cSensors.dev_sfp3_5_volt);
+		if (rc) {
+			printf("failed to start i2c device\r\n");
+			return rc;
+		}
+	rc = i2c_start(&DPB_I2cSensors.dev_som_volt);
+		if (rc) {
+			printf("failed to start i2c device\r\n");
+			return rc;
+		}
+	rc = i2c_start(&DPB_I2cSensors.dev_sfp0_A0);
+		if (rc) {
+			printf("failed to start i2c device\r\n");
+			return rc;
+		}
+	rc = i2c_start(&DPB_I2cSensors.dev_sfp1_A0);
+		if (rc) {
+			printf("failed to start i2c device\r\n");
+			return rc;
+		}
+	rc = i2c_start(&DPB_I2cSensors.dev_sfp2_A0);
+		if (rc) {
+			printf("failed to start i2c device\r\n");
+			return rc;
+		}
+	rc = i2c_start(&DPB_I2cSensors.dev_sfp3_A0);
+		if (rc) {
+			printf("failed to start i2c device\r\n");
+			return rc;
+		}
+	rc = i2c_start(&DPB_I2cSensors.dev_sfp4_A0);
+		if (rc) {
+			printf("failed to start i2c device\r\n");
+			return rc;
+		}
+	rc = i2c_start(&DPB_I2cSensors.dev_sfp5_A0);
+		if (rc) {
+			printf("failed to start i2c device\r\n");
+			return rc;
+		}
+	rc = i2c_start(&DPB_I2cSensors.dev_sfp0_A2);
+		if (rc) {
+			printf("failed to start i2c device\r\n");
+			return rc;
+		}
+	rc = i2c_start(&DPB_I2cSensors.dev_sfp1_A2);
+		if (rc) {
+			printf("failed to start i2c device\r\n");
+			return rc;
+		}
+	rc = i2c_start(&DPB_I2cSensors.dev_sfp2_A2);
+		if (rc) {
+			printf("failed to start i2c device\r\n");
+			return rc;
+		}
+	rc = i2c_start(&DPB_I2cSensors.dev_sfp3_A2);
+		if (rc) {
+			printf("failed to start i2c device\r\n");
+			return rc;
+		}
+	rc = i2c_start(&DPB_I2cSensors.dev_sfp4_A2);
+		if (rc) {
+			printf("failed to start i2c device\r\n");
+			return rc;
+		}
+	rc = i2c_start(&DPB_I2cSensors.dev_sfp5_A2);
+		if (rc) {
+			printf("failed to start i2c device\r\n");
+			return rc;
+		}
+}
+
+/************************** IIO_EVENT_MONITOR Functions ******************************/
 
 int iio_event_monitor_up() {
 
@@ -73,56 +182,11 @@ int iio_event_monitor_up() {
 
 }
 
-float mpc9844_read_temperature(struct I2cDevice *dev) {
-	int rc;
-	uint8_t temp_buf[2] = {0,0};
-	uint8_t temp_reg = MPC9844_TEMP_REG;
-	float Temperature;
-
-	// Write temperature address in register pointer
-	rc = i2c_write(dev,&temp_reg,1);
-	if(rc < 0)
-		return rc;
-
-	// Read MSB and LSB of ambient temperature
-	rc = i2c_read(dev,temp_buf,2);
-	if(rc < 0)
-			return rc;
-
-	temp_buf[0] = temp_buf[0] & 0x1F;	//Clear Flag bits
-	if ((temp_buf[0] & 0x10) == 0x10){//TA 0°C
-		temp_buf[0] = temp_buf[0] & 0x0F; //Clear SIGN
-		Temperature = (temp_buf[0] * 16 + (float)temp_buf[1] / 16) - 256; //TA 0°C
-	}
-	else
-		Temperature = (temp_buf[0] * 16 + (float)temp_buf[1] / 16); //Temperature = Ambient Temperature (°C)
-	return Temperature;
-}
-
-float sfp_avago_read_temperature(struct I2cDevice *dev) {
-	int rc;
-	uint8_t temp_buf[2] = {0,0};
-	uint8_t temp_reg = SFP_MSB_TEMP_REG;
-	float Temperature;
-
-	// Read MSB of SFP temperature
-	rc = i2c_readn_reg(dev,temp_reg,temp_buf,1);
-	if(rc < 0)
-		return rc;
-
-	// Read LSB of SFP temperature
-	temp_reg = SFP_LSB_TEMP_REG;
-	rc = i2c_readn_reg(dev,temp_reg,&temp_buf[1],1);
-	if(rc < 0)
-		return rc;
-
-	Temperature = (float) ((int) (temp_buf[0] << 8)  + temp_buf[1]) / 256;
-	return Temperature;
-}
-
+/************************** AMS Functions ******************************/
 int xlnx_ams_read_temp(int *chan, int n, float *res){
 	FILE *raw,*offset,*scale;
 	for(int i=0;i<n;i++){
+
 		char buffer [sizeof(chan[i])*8+1];
 		snprintf(buffer, sizeof(buffer), "%d",chan[i]);
 		char raw_str[80];
@@ -146,12 +210,14 @@ int xlnx_ams_read_temp(int *chan, int n, float *res){
 		scale = fopen(scale_str,"r");
 
 		if((raw==NULL)|(offset==NULL)|(scale==NULL)){
+
 			fclose(raw);
 			fclose(offset);
 			fclose(scale); 	/*Any of the files could not be opened*/
 			return -1;
 			}
 		else{
+
 			fseek(raw, 0, SEEK_END);
 			long fsize = ftell(raw);
 			fseek(raw, 0, SEEK_SET);  /* same as rewind(f); */
@@ -187,6 +253,7 @@ int xlnx_ams_read_temp(int *chan, int n, float *res){
 int xlnx_ams_read_volt(int *chan, int n, float *res){
 	FILE *raw,*scale;
 	for(int i=0;i<n;i++){
+
 		char buffer [sizeof(chan[i])*8+1];
 		snprintf(buffer, sizeof(buffer), "%d",chan[i]);
 		char raw_str[80];
@@ -205,11 +272,13 @@ int xlnx_ams_read_volt(int *chan, int n, float *res){
 		scale = fopen(scale_str,"r");
 
 		if((raw==NULL)|(scale==NULL)){
+
 			fclose(raw);
 			fclose(scale); 	/*Any of the files could not be opened*/
 			return -1;
 			}
 		else{
+
 			fseek(raw, 0, SEEK_END);
 			long fsize = ftell(raw);
 			fseek(raw, 0, SEEK_SET);  /* same as rewind(f); */
@@ -234,47 +303,342 @@ int xlnx_ams_read_volt(int *chan, int n, float *res){
 
 	}
 
+/************************** Temp.Sensor Functions ******************************/
+int mpc9844_read_temperature(float *res) {
+	int rc = 0;
+	struct I2cDevice dev = DPB_I2cSensors.dev_pcb_temp;
+	uint8_t temp_buf[2] = {0,0};
+	uint8_t temp_reg = MPC9844_TEMP_REG;
 
-float ina3221_get_som_voltage(struct I2cDevice *dev){
-	int rc;
-	uint8_t voltage_buf[2] = {0,0};
-	uint8_t voltage_reg = INA3221_BUS_VOLTAGE_1_REG;
-	float voltage;
 
-	// Write bus voltage channel 1 address in register pointer
-	rc = i2c_write(dev,&voltage_reg,1);
+	// Write temperature address in register pointer
+	rc = i2c_write(dev,&temp_reg,1);
 	if(rc < 0)
 		return rc;
 
-	// Read MSB and LSB of voltage
-	rc = i2c_read(dev,voltage_buf,2);
+	// Read MSB and LSB of ambient temperature
+	rc = i2c_read(dev,temp_buf,2);
 	if(rc < 0)
 			return rc;
-	int voltage_int = (int)(voltage_buf[0] << 8) + (voltage_buf[1]);
-	voltage_int = voltage_int / 8;
-	voltage = voltage_int * 8e-3;
-	return voltage;
+
+	temp_buf[0] = temp_buf[0] & 0x1F;	//Clear Flag bits
+	if ((temp_buf[0] & 0x10) == 0x10){//TA 0°C
+		temp_buf[0] = temp_buf[0] & 0x0F; //Clear SIGN
+		res[0] = (temp_buf[0] * 16 + (float)temp_buf[1] / 16) - 256; //TA 0°C
+	}
+	else
+		res[0] = (temp_buf[0] * 16 + (float)temp_buf[1] / 16); //Temperature = Ambient Temperature (°C)
+	return rc;
 }
 
-float ina3221_get_som_current(struct I2cDevice *dev){
-	int rc;
-	uint8_t voltage_buf[2] = {0,0};
-	uint8_t voltage_reg = INA3221_SHUNT_VOLTAGE_1_REG;
-	float voltage;
+/************************** SFP Functions ******************************/
+int sfp_avago_read_temperature(int n, float *res) {
+	int rc = 0;
+	uint8_t temp_buf[2] = {0,0};
+	uint8_t temp_reg = SFP_MSB_TEMP_REG;
 
-	// Write shunt voltage channel 1 address in register pointer
-	rc = i2c_write(dev,&voltage_reg,1);
+	struct I2cDevice dev;
+
+	switch(n){
+		case DEV_SFP0:
+			dev = DPB_I2cSensors.dev_sfp0_A2;
+		break;
+		case DEV_SFP1:
+			dev = DPB_I2cSensors.dev_sfp1_A2;
+		break;
+		case DEV_SFP2:
+			dev = DPB_I2cSensors.dev_sfp2_A2;
+		break;
+		case DEV_SFP3:
+				dev = DPB_I2cSensors.dev_sfp3_A2;
+			break;
+		case DEV_SFP4:
+				dev = DPB_I2cSensors.dev_sfp4_A2;
+			break;
+		case DEV_SFP5:
+				dev = DPB_I2cSensors.dev_sfp5_A2;
+			break;
+		default:
+			return -EINVAL;
+		break;
+		}
+
+	// Read MSB of SFP temperature
+	rc = i2c_readn_reg(dev,temp_reg,temp_buf,1);
 	if(rc < 0)
 		return rc;
 
-	// Read MSB and LSB of voltage
-	rc = i2c_read(dev,voltage_buf,2);
+	// Read LSB of SFP temperature
+	temp_reg = SFP_LSB_TEMP_REG;
+	rc = i2c_readn_reg(dev,temp_reg,&temp_buf[1],1);
 	if(rc < 0)
+		return rc;
+
+	res [0] = (float) ((int) (temp_buf[0] << 8)  + temp_buf[1]) / 256;
+	return rc;
+}
+
+int sfp_avago_read_voltage(int n, float *res) {
+	int rc = 0;
+	uint8_t voltage_buf[2] = {0,0};
+	uint8_t voltage_reg = SFP_MSB_VCC_REG;
+
+	struct I2cDevice dev;
+
+	switch(n){
+		case DEV_SFP0:
+			dev = DPB_I2cSensors.dev_sfp0_A2;
+		break;
+		case DEV_SFP1:
+			dev = DPB_I2cSensors.dev_sfp1_A2;
+		break;
+		case DEV_SFP2:
+			dev = DPB_I2cSensors.dev_sfp2_A2;
+		break;
+		case DEV_SFP3:
+				dev = DPB_I2cSensors.dev_sfp3_A2;
+			break;
+		case DEV_SFP4:
+				dev = DPB_I2cSensors.dev_sfp4_A2;
+			break;
+		case DEV_SFP5:
+				dev = DPB_I2cSensors.dev_sfp5_A2;
+			break;
+		default:
+			return -EINVAL;
+		break;
+		}
+
+	// Read MSB of SFP VCC
+	rc = i2c_readn_reg(dev,voltage_reg,voltage_buf,1);
+	if(rc < 0)
+		return rc;
+
+	// Read LSB of SFP VCC
+	voltage_reg = SFP_LSB_VCC_REG;
+	rc = i2c_readn_reg(dev,voltage_reg,&voltage_buf[1],1);
+	if(rc < 0)
+		return rc;
+
+	res [0] = (float) ((uint16_t) (voltage_buf[0] << 8)  + voltage_buf[1]) * 1e-4;
+	return rc;
+}
+
+int sfp_avago_read_lbias_current(int n, float *res) {
+	int rc = 0;
+	uint8_t current_reg[2] = {0,0};
+	uint8_t current_buf = SFP_MSB_TXBIAS_REG;
+
+	struct I2cDevice dev;
+
+	switch(n){
+		case DEV_SFP0:
+			dev = DPB_I2cSensors.dev_sfp0_A2;
+		break;
+		case DEV_SFP1:
+			dev = DPB_I2cSensors.dev_sfp1_A2;
+		break;
+		case DEV_SFP2:
+			dev = DPB_I2cSensors.dev_sfp2_A2;
+		break;
+		case DEV_SFP3:
+				dev = DPB_I2cSensors.dev_sfp3_A2;
+			break;
+		case DEV_SFP4:
+				dev = DPB_I2cSensors.dev_sfp4_A2;
+			break;
+		case DEV_SFP5:
+				dev = DPB_I2cSensors.dev_sfp5_A2;
+			break;
+		default:
+			return -EINVAL;
+		break;
+		}
+
+	// Read MSB of SFP Laser Bias Current
+	rc = i2c_readn_reg(dev,current_reg,current_buf,1);
+	if(rc < 0)
+		return rc;
+
+	// Read LSB of SFP Laser Bias Current
+	current_reg = SFP_LSB_TXBIAS_REG;
+	rc = i2c_readn_reg(dev,current_reg,&current_buf[1],1);
+	if(rc < 0)
+		return rc;
+
+	res [0] = (float) ((uint16_t) (current_buf[0] << 8)  + current_buf[1]) * 2e-6;
+	return rc;
+}
+
+int sfp_avago_read_tx_av_optical_pwr(int n, float *res) {
+	int rc = 0;
+	uint8_t power_reg[2] = {0,0};
+	uint8_t power_buf = SFP_MSB_TXPWR_REG;
+
+	struct I2cDevice dev;
+
+	switch(n){
+		case DEV_SFP0:
+			dev = DPB_I2cSensors.dev_sfp0_A2;
+		break;
+		case DEV_SFP1:
+			dev = DPB_I2cSensors.dev_sfp1_A2;
+		break;
+		case DEV_SFP2:
+			dev = DPB_I2cSensors.dev_sfp2_A2;
+		break;
+		case DEV_SFP3:
+				dev = DPB_I2cSensors.dev_sfp3_A2;
+			break;
+		case DEV_SFP4:
+				dev = DPB_I2cSensors.dev_sfp4_A2;
+			break;
+		case DEV_SFP5:
+				dev = DPB_I2cSensors.dev_sfp5_A2;
+			break;
+		default:
+			return -EINVAL;
+		break;
+		}
+
+	// Read MSB of SFP Laser Bias Current
+	rc = i2c_readn_reg(dev,power_reg,power_buf,1);
+	if(rc < 0)
+		return rc;
+
+	// Read LSB of SFP Laser Bias Current
+	power_reg = SFP_LSB_TXPWR_REG;
+	rc = i2c_readn_reg(dev,power_reg,&power_buf[1],1);
+	if(rc < 0)
+		return rc;
+
+	res [0] = (float) ((uint16_t) (power_buf[0] << 8)  + power_buf[1]) * 1e-7;
+	return rc;
+}
+
+int sfp_avago_read_rx_av_optical_pwr(int n, float *res) {
+	int rc = 0;
+	uint8_t power_reg[2] = {0,0};
+	uint8_t power_buf = SFP_MSB_RXPWR_REG;
+
+	struct I2cDevice dev;
+
+	switch(n){
+		case DEV_SFP0:
+			dev = DPB_I2cSensors.dev_sfp0_A2;
+		break;
+		case DEV_SFP1:
+			dev = DPB_I2cSensors.dev_sfp1_A2;
+		break;
+		case DEV_SFP2:
+			dev = DPB_I2cSensors.dev_sfp2_A2;
+		break;
+		case DEV_SFP3:
+				dev = DPB_I2cSensors.dev_sfp3_A2;
+			break;
+		case DEV_SFP4:
+				dev = DPB_I2cSensors.dev_sfp4_A2;
+			break;
+		case DEV_SFP5:
+				dev = DPB_I2cSensors.dev_sfp5_A2;
+			break;
+		default:
+			return -EINVAL;
+		break;
+		}
+
+	// Read MSB of SFP Laser Bias Current
+	rc = i2c_readn_reg(dev,power_reg,power_buf,1);
+	if(rc < 0)
+		return rc;
+
+	// Read LSB of SFP Laser Bias Current
+	power_reg = SFP_LSB_RXPWR_REG;
+	rc = i2c_readn_reg(dev,power_reg,&power_buf[1],1);
+	if(rc < 0)
+		return rc;
+
+	res [0] = (float) ((uint16_t) (power_buf[0] << 8)  + power_buf[1]) * 1e-7;
+	return rc;
+}
+
+/************************** Volt. and Curr. Sensor Functions ******************************/
+int ina3221_get_voltage(int n, float *res){
+	int rc = 0;
+	uint8_t voltage_buf[2] = {0,0};
+	uint8_t voltage_reg = INA3221_BUS_VOLTAGE_1_REG;
+	struct I2cDevice dev;
+
+	switch(n){
+		case DEV_SFP0_2_VOLT:
+			dev = DPB_I2cSensors.dev_sfp0_2_volt;
+		break;
+		case DEV_SFP3_5_VOLT:
+			dev = DPB_I2cSensors.dev_sfp3_5_volt;
+		break;
+		case DEV_SOM_VOLT:
+			dev = DPB_I2cSensors.dev_som_volt;
+		break;
+		default:
+			return -EINVAL;
+		break;
+	}
+	for (int i=0;i<3;i++){
+		voltage_reg = voltage_reg + 2*i;
+		// Write bus voltage channel 1 address in register pointer
+		rc = i2c_write(dev,&voltage_reg,1);
+		if(rc < 0)
 			return rc;
-	int voltage_int = (int)(voltage_buf[0] << 8) + (voltage_buf[1]);
-	voltage_int = voltage_int / 8;
-	voltage = voltage_int * 40e-6;
-	return voltage / 0.05; //Shunt resistor of 0.05 Ohms in the DPB2
+
+	// Read MSB and LSB of voltage
+		rc = i2c_read(dev,voltage_buf,2);
+		if(rc < 0)
+			return rc;
+
+		int voltage_int = (int)(voltage_buf[0] << 8) + (voltage_buf[1]);
+		voltage_int = voltage_int / 8;
+		res[i] = voltage_int * 8e-3;
+	}
+	return rc;
+}
+
+int ina3221_get_current(int n, float *res){
+	int rc = 0;
+	uint8_t voltage_buf[2] = {0,0};
+	uint8_t voltage_reg = INA3221_SHUNT_VOLTAGE_1_REG;
+	struct I2cDevice dev;
+
+	switch(n){
+		case DEV_SFP0_2_VOLT:
+				dev = DPB_I2cSensors.dev_sfp0_2_volt;
+		break;
+		case DEV_SFP3_5_VOLT:
+				dev = DPB_I2cSensors.dev_sfp3_5_volt;
+		break;
+		case DEV_SOM_VOLT:
+				dev = DPB_I2cSensors.dev_som_volt;
+		break;
+		default:
+			return -EINVAL;
+		break;
+		}
+	for (int i=0;i<3;i++){
+		voltage_reg = voltage_reg + 2*i;
+		// Write shunt voltage channel 1 address in register pointer
+		rc = i2c_write(dev,&voltage_reg,1);
+		if(rc < 0)
+			return rc;
+
+		// Read MSB and LSB of voltage
+		rc = i2c_read(dev,voltage_buf,2);
+		if(rc < 0)
+			return rc;
+
+		int voltage_int = (int)(voltage_buf[0] << 8) + (voltage_buf[1]);
+		voltage_int = voltage_int / 8;
+		res[i] = (voltage_int * 40e-6) / 0.05 ;
+		}
+	return rc;
 }
 
 /*int main(){

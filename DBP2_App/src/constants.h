@@ -1,0 +1,130 @@
+/************************** Constant Definitions *****************************/
+
+/******************************************************************************
+* Temperature Sensor Register Set - Temperature value, alarm value and alarm flags.
+****************************************************************************/
+#define MPC9844_TEMP_UPPER_LIM_REG 0x2
+#define MPC9844_TEMP_LOWER_LIM_REG 0x3
+#define MPC9844_TEMP_CRIT_LIM_REG 0x4
+#define MPC9844_TEMP_REG 0x5
+/******************************************************************************
+* Temperature Sensor Register Set - Configuration and resolution value.
+****************************************************************************/
+#define MPC9844_RES_REG 0x9
+#define MPC9844_CONFIG_REG 0x1
+/******************************************************************************
+* Temperature Sensor Register Set - Manufacturer and device ID.
+****************************************************************************/
+#define MPC9844_MANUF_ID_REG 0x6
+#define MPC9844_DEVICE_ID_REG 0x7
+/******************************************************************************
+* SFP Register Set - Real Time Magnitudes.
+****************************************************************************/
+#define SFP_MSB_TEMP_REG 0x60
+#define SFP_LSB_TEMP_REG 0x61
+#define SFP_MSB_VCC_REG 0x62
+#define SFP_LSB_VCC_REG 0x63
+#define SFP_MSB_TXBIAS_REG 0x64
+#define SFP_LSB_TXBIAS_REG 0x65
+#define SFP_MSB_TXPWR_REG 0x66
+#define SFP_LSB_TXPWR_REG 0x67
+#define SFP_MSB_RXPWR_REG 0x68
+#define SFP_LSB_RXPWR_REG 0x69
+/******************************************************************************
+* SFP Register Set - Alarms.
+****************************************************************************/
+#define SFP_MSB_HTEMP_ALARM_REG 0x0
+#define SFP_LSB_HTEMP_ALARM_REG 0x1
+#define SFP_MSB_LTEMP_ALARM_REG 0x2
+#define SFP_LSB_LTEMP_ALARM_REG 0x3
+#define SFP_MSB_HVCC_ALARM_REG 0x8
+#define SFP_LSB_HVCC_ALARM_REG 0x9
+#define SFP_MSB_LVCC_ALARM_REG 0xA
+#define SFP_LSB_LVCC_ALARM_REG 0xB
+#define SFP_MSB_HTXBIAS_ALARM_REG 0x10
+#define SFP_LSB_HTXBIAS_ALARM_REG 0x11
+#define SFP_MSB_LTXBIAS_ALARM_REG 0x12
+#define SFP_LSB_LTXBIAS_ALARM_REG 0x13
+#define SFP_MSB_HTXPWR_ALARM_REG 0x18
+#define SFP_LSB_HTXPWR_ALARM_REG 0x19
+#define SFP_MSB_LTXPWR_ALARM_REG 0x1A
+#define SFP_LSB_LTXPWR_ALARM_REG 0x1B
+#define SFP_MSB_HRXPWR_ALARM_REG 0x20
+#define SFP_LSB_HRXPWR_ALARM_REG 0x21
+#define SFP_MSB_LRXPWR_ALARM_REG 0x22
+#define SFP_LSB_LRXPWR_ALARM_REG 0x23
+/******************************************************************************
+* SFP Register Set - Warnings.
+****************************************************************************/
+#define SFP_MSB_HTEMP_WARN_REG 0x4
+#define SFP_LSB_HTEMP_WARN_REG 0x5
+#define SFP_MSB_LTEMP_WARN_REG 0x6
+#define SFP_LSB_LTEMP_WARN_REG 0x7
+#define SFP_MSB_HVCC_WARN_REG 0xC
+#define SFP_LSB_HVCC_WARN_REG 0xD
+#define SFP_MSB_LVCC_WARN_REG 0xE
+#define SFP_LSB_LVCC_WARN_REG 0xF
+#define SFP_MSB_HTXBIAS_WARN_REG 0x14
+#define SFP_LSB_HTXBIAS_WARN_REG 0x15
+#define SFP_MSB_LTXBIAS_WARN_REG 0x16
+#define SFP_LSB_LTXBIAS_WARN_REG 0x17
+#define SFP_MSB_HTXPWR_WARN_REG 0xC
+#define SFP_LSB_HTXPWR_WARN_REG 0xD
+#define SFP_MSB_LTXPWR_WARN_REG 0xE
+#define SFP_LSB_LTXPWR_WARN_REG 0xF
+#define SFP_MSB_HRXPWR_WARN_REG 0x24
+#define SFP_LSB_HRXPWR_WARN_REG 0x25
+#define SFP_MSB_LRXPWR_WARN_REG 0x26
+#define SFP_LSB_LRXPWR_WARN_REG 0x27
+/******************************************************************************
+* SFP Register Set - Status and flags.
+****************************************************************************/
+#define SFP_STAT_REG 0x6E
+#define SFP_FLG1_REG 0x70
+#define SFP_FLG2_REG 0x71
+#define SFP_FLG3_REG 0x74
+#define SFP_FLG4_REG 0x75
+/******************************************************************************
+* Voltage and Current Sensor Register Set - Shunt and bus voltages
+****************************************************************************/
+#define INA3221_SHUNT_VOLTAGE_1_REG 0x1
+#define INA3221_BUS_VOLTAGE_1_REG 0x2
+#define INA3221_SHUNT_VOLTAGE_2_REG 0x3
+#define INA3221_BUS_VOLTAGE_2_REG 0x4
+#define INA3221_SHUNT_VOLTAGE_3_REG 0x5
+#define INA3221_BUS_VOLTAGE_3_REG 0x6
+/******************************************************************************
+* Voltage and Current Sensor Register Set - Warnings and critical alerts
+****************************************************************************/
+#define INA3221_SHUNT_VOLTAGE_CRIT1_REG 0x7
+#define INA3221_SHUNT_VOLTAGE_WARN1_REG 0x8
+#define INA3221_SHUNT_VOLTAGE_CRIT1_REG 0x9
+#define INA3221_SHUNT_VOLTAGE_WARN2_REG 0xA
+#define INA3221_SHUNT_VOLTAGE_CRIT3_REG 0xB
+#define INA3221_SHUNT_VOLTAGE_WARN3_REG 0xC
+/******************************************************************************
+* Voltage and Current Sensor Register Set - Device Configuration, alert status configuration and enabling
+****************************************************************************/
+#define INA3221_CONFIG_REG 0x0
+#define INA3221_MASK_ENA_REG 0xF
+/******************************************************************************
+* Voltage and Current Sensor Register Set - Manufacturer and device ID.
+****************************************************************************/
+#define INA3221_MANUF_ID_REG 0xFE
+#define INA3221_DIE_ID_REG 0xFF
+/******************************************************************************
+*SFP set.
+****************************************************************************/
+#define DEV_SFP0 0x0
+#define DEV_SFP1 0x1
+#define DEV_SFP2 0x2
+#define DEV_SFP3 0x3
+#define DEV_SFP4 0x4
+#define DEV_SFP5 0x5
+/******************************************************************************
+*INA3221 set.
+****************************************************************************/
+#define DEV_SFP0_2_VOLT 0x0
+#define DEV_SFP3_5_VOLT 0x1
+#define DEV_SOM_VOLT 0x2
+
