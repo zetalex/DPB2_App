@@ -17,10 +17,15 @@
  */
 
 #include <stdio.h>
+#include <stdlib.h>
 #include "linux/errno.h"
 
 int main()
 {
+	int i = 34;
+	char buffer [sizeof(i)*8+1];
+	snprintf(buffer, sizeof(buffer), "%d",i);
+	printf(buffer);
     printf("Hello World\n");
     printf("Hola Mundo\n");
     printf("Añado un print \n");

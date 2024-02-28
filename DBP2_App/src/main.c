@@ -6,7 +6,12 @@
 #include "i2c.h"
 #include "linux/errno.h"
 
-
+#define MPC9844_TEMP_REG 0x05
+#define MPC9844_CONFIG_REG 0x1
+#define SFP_MSB_TEMP_REG 0x60
+#define SFP_LSB_TEMP_REG 0x61
+#define INA3221_SHUNT_VOLTAGE_1_REG 0x1
+#define INA3221_BUS_VOLTAGE_1_REG 0x2
 
 int iio_event_monitor_up() {
 
@@ -69,54 +74,68 @@ float sfp_avago_read_temperature(struct I2cDevice *dev) {
 
 int xlnx_ams_read_temp(int *chan, int n, float *res){
 	FILE *raw,*offset,*scale;
-	for(i=0;i<n;i++){
+	for(int i=0;i<n;i++){
 		char buffer [sizeof(chan[i])*8+1];
-		itoa(chan[i],buffer,10);
+		snprintf(buffer, sizeof(buffer), "%d",chan[i]);
 		char raw_str[80];
 		char offset_str[80];
 		char scale_str[80];
+
 		strcpy(raw_str, "/sys/bus/iio/devices/iio:device1/in_temp");
 		strcpy(offset_str, "/sys/bus/iio/devices/iio:device1/in_temp");
 		strcpy(scale_str, "/sys/bus/iio/devices/iio:device1/in_temp");
+
 		strcat(raw_str, buffer);
 		strcat(offset_str, buffer);
 		strcat(scale_str, buffer);
+
 		strcat(raw_str, "_raw");
 		strcat(offset_str, "_offset");
 		strcat(scale_str, "_scale");
+
 		raw = fopen(raw_str,"r");
 		offset = fopen(offset_str,"r");
 		scale = fopen(scale_str,"r");
 
-		fseek(raw, 0, SEEK_END);
-		long fsize = ftell(raw);
-		fseek(raw, 0, SEEK_SET);  /* same as rewind(f); */
+		if((raw==NULL)|(offset==NULL)|(scale==NULL)){
+			fclose(raw);
+			fclose(offset);
+			fclose(scale); 	/*Any of the files could not be opened*/
+			return -1;
+			}
+		else{
+			fseek(raw, 0, SEEK_END);
+			long fsize = ftell(raw);
+			fseek(raw, 0, SEEK_SET);  /* same as rewind(f); */
 
-		char *raw_string = malloc(fsize + 1);
-		fread(raw_string, fsize, 1, raw);
+			char *raw_string = malloc(fsize + 1);
+			fread(raw_string, fsize, 1, raw);
 
-		fseek(offset, 0, SEEK_END);
-		fsize = ftell(offset);
-		fseek(offset, 0, SEEK_SET);  /* same as rewind(f); */
+			fseek(offset, 0, SEEK_END);
+			fsize = ftell(offset);
+			fseek(offset, 0, SEEK_SET);  /* same as rewind(f); */
 
-		char *offset_string = malloc(fsize + 1);
-		fread(offset_string, fsize, 1, offset);
+			char *offset_string = malloc(fsize + 1);
+			fread(offset_string, fsize, 1, offset);
 
-		fseek(scale, 0, SEEK_END);
-		fsize = ftell(scale);
-		fseek(scale, 0, SEEK_SET);  /* same as rewind(f); */
+			fseek(scale, 0, SEEK_END);
+			fsize = ftell(scale);
+			fseek(scale, 0, SEEK_SET);  /* same as rewind(f); */
 
-		char *scale_string = malloc(fsize + 1);
-		fread(scale_string, fsize, 1, scale);
+			char *scale_string = malloc(fsize + 1);
+			fread(scale_string, fsize, 1, scale);
 
-		float Temperature = (atof(scale_string) * (atof(raw_string) + atof(offset_string))) >> 10;
-		fclose(raw);
-		fclose(offset);
-		fclose(scale);
-		res[i] = Temperature;
-		return Temperature;
+			float Temperature = (atof(scale_string) * (atof(raw_string) + atof(offset_string))) / 1024;
+			fclose(raw);
+			fclose(offset);
+			fclose(scale);
+			res[i] = Temperature;
+			return 0;
+			}
+		}
+
 	}
-}
+
 
 float ina3221_get_som_voltage(struct I2cDevice *dev){
 	int rc;
@@ -160,9 +179,9 @@ float ina3221_get_som_current(struct I2cDevice *dev){
 	return voltage / 0.05; //Shunt resistor of 0.05 Ohms in the DPB2
 }
 
-int main(){
+/*int main(){
 
-		struct I2cDevice dev_pcb_temp, dev_sfp0, dev_sfp02, dev_sfp35, dev_sfp1, dev_sfp2, dev_sfp3, dev_sfp4,dev_sfp4,dev_mux0, dev_mux1,dev_som_volt;
+		struct I2cDevice dev_pcb_temp, dev_sfp0, dev_sfp02_volt, dev_sfp35_volt, dev_sfp1, dev_sfp2, dev_sfp3, dev_sfp4,dev_sfp5,dev_mux0, dev_mux1,dev_som_volt;
 		float ams_temp[64];
 		float ams_volt[64];
 		int ams_chan[64];
@@ -191,4 +210,4 @@ int main(){
 
 
 	return 0;
-}
+}*/
