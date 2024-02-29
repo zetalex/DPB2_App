@@ -21,7 +21,7 @@
 #include <string.h>
 #include "linux/errno.h"
 
-int main()
+/*int main()
 {
 	int i = 34;
 	char buffer [sizeof(i)*8+1];
@@ -41,4 +41,4 @@ int main()
 
 
     return 0;
-}
+}*/

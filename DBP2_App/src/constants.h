@@ -79,6 +79,9 @@
 /******************************************************************************
 * SFP Register Set - Status and flags.
 ****************************************************************************/
+#define SFP_PHYS_DEV 0x0
+#define SFP_FUNCT 0x1
+#define SFP_CHECKSUM2_A0 0x40
 #define SFP_STAT_REG 0x6E
 #define SFP_FLG1_REG 0x70
 #define SFP_FLG2_REG 0x71
@@ -98,7 +101,7 @@
 ****************************************************************************/
 #define INA3221_SHUNT_VOLTAGE_CRIT1_REG 0x7
 #define INA3221_SHUNT_VOLTAGE_WARN1_REG 0x8
-#define INA3221_SHUNT_VOLTAGE_CRIT1_REG 0x9
+#define INA3221_SHUNT_VOLTAGE_CRIT2_REG 0x9
 #define INA3221_SHUNT_VOLTAGE_WARN2_REG 0xA
 #define INA3221_SHUNT_VOLTAGE_CRIT3_REG 0xB
 #define INA3221_SHUNT_VOLTAGE_WARN3_REG 0xC
