@@ -12,6 +12,7 @@
 #include <string.h>
 
 #include "i2c.h"
+#include "timer.h"
 #include "constants.h"
 #include "linux/errno.h"
 
@@ -133,17 +134,16 @@ int init_voltSensor (struct I2cDevice *dev) {
 
 }
 
-int checksum_check(struct I2cDevice *dev, uint8_t *byte_buf, uint8_t ini_reg, uint8_t checksum_val){
+int checksum_check(struct I2cDevice *dev,uint8_t ini_reg, uint8_t checksum_val, int size){
 	int rc = 0;
-	int size = sizeof(byte_buf);
 	int sum = 0;
+	uint8_t byte_buf[size] ;
 
 	rc = i2c_readn_reg(dev,ini_reg,byte_buf,1);
 			if(rc < 0)
 				return rc;
-
 	for(int n=1;n<size;n++){
-	ini_reg += n;
+	ini_reg ++;
 	rc = i2c_readn_reg(dev,ini_reg,&byte_buf[n],1);
 		if(rc < 0)
 			return rc;
@@ -164,11 +164,8 @@ int checksum_check(struct I2cDevice *dev, uint8_t *byte_buf, uint8_t ini_reg, ui
 
 int init_SFP_A0(struct I2cDevice *dev) {
 	int rc = 0;
-	uint8_t checksum1_buf[31] ;
-	uint8_t checksum2_buf[63] ;
 	uint8_t SFPphys_reg = SFP_PHYS_DEV;
 	uint8_t SFPphys_buf[2] = {0,0};
-
 
 	rc = i2c_start(dev);
 		if (rc) {
@@ -188,10 +185,10 @@ int init_SFP_A0(struct I2cDevice *dev) {
 			printf("Device ID does not match the corresponding device: SFP-Avago\r\n");
 			return rc;
 	}
-	rc = checksum_check(dev,checksum1_buf, SFP_PHYS_DEV,0x7F);
+	rc = checksum_check(dev, SFP_PHYS_DEV,0x7F,63);
 	if(rc < 0)
 				return rc;
-	rc = checksum_check(dev,checksum2_buf, SFP_CHECKSUM2_A0,0xFA);
+	rc = checksum_check(dev, SFP_CHECKSUM2_A0,0xFA,31);
 	if(rc < 0)
 				return rc;
 	return 0;
@@ -199,13 +196,12 @@ int init_SFP_A0(struct I2cDevice *dev) {
 }
 int init_SFP_A2(struct I2cDevice *dev) {
 	int rc = 0;
-	uint8_t checksum_buf[95] ;
 
 	rc = i2c_start(dev);
 		if (rc) {
 			return rc;
 		}
-	rc = checksum_check(dev,checksum_buf,SFP_MSB_HTEMP_ALARM_REG,0x61);
+	rc = checksum_check(dev,SFP_MSB_HTEMP_ALARM_REG,0x61,95);
 	if(rc < 0)
 				return rc;
 	return 0;
@@ -286,7 +282,7 @@ int init_I2cSensors(struct DPB_I2cSensors *data){
 			printf("Failed to start i2c device: SFP 0 - EEPROM page A2h\r\n");
 			return rc;
 		}
-	rc = init_SFP_A0(&data->dev_sfp1_A0);
+	/*rc = init_SFP_A0(&data->dev_sfp1_A0);
 		if (rc) {
 			printf("Failed to start i2c device: SFP 1 - EEPROM page A0h\r\n");
 			return rc;
@@ -335,7 +331,7 @@ int init_I2cSensors(struct DPB_I2cSensors *data){
 		if (rc) {
 			printf("Failed to start i2c device: SFP 5 - EEPROM page A2h\r\n");
 			return rc;
-		}
+		}*/
 	return 0;
 }
 
@@ -366,9 +362,11 @@ int stop_I2cSensors(struct DPB_I2cSensors *data){
 /************************** IIO_EVENT_MONITOR Functions ******************************/
 
 int iio_event_monitor_up() {
+	int rc = 0;
+	//int rc =execl("/run/media/mmcblk0p1/IIO_MONITOR","/run/media/mmcblk0p1/IIO_MONITOR.elf","/dev/iio:device1",NULL);
 
-	if(system("/run/media/mmcblk0p1/IIO_MONITOR.elf '/dev/iio:device1' &") ){
-		//printf("\nError executing iio_event_monitor.\n");
+	if(rc){
+		printf("\nError executing iio_event_monitor.\n");
 		return -1;
 	}
 	else {
@@ -523,7 +521,7 @@ int mpc9844_read_temperature(struct DPB_I2cSensors *data,float *res) {
 	}
 	else
 		res[0] = (temp_buf[0] * 16 + (float)temp_buf[1] / 16); //Temperature = Ambient Temperature (°C)
-	return rc;
+	return 0;
 }
 
 /************************** SFP Functions ******************************/
@@ -570,7 +568,7 @@ int sfp_avago_read_temperature(struct DPB_I2cSensors *data,int n, float *res) {
 		return rc;
 
 	res [0] = (float) ((int) (temp_buf[0] << 8)  + temp_buf[1]) / 256;
-	return rc;
+	return 0;
 }
 
 int sfp_avago_read_voltage(struct DPB_I2cSensors *data,int n, float *res) {
@@ -616,7 +614,7 @@ int sfp_avago_read_voltage(struct DPB_I2cSensors *data,int n, float *res) {
 		return rc;
 
 	res [0] = (float) ((uint16_t) (voltage_buf[0] << 8)  + voltage_buf[1]) * 1e-4;
-	return rc;
+	return 0;
 }
 
 int sfp_avago_read_lbias_current(struct DPB_I2cSensors *data,int n, float *res) {
@@ -662,7 +660,7 @@ int sfp_avago_read_lbias_current(struct DPB_I2cSensors *data,int n, float *res) 
 		return rc;
 
 	res[0] = (float) ((uint16_t) (current_buf[0] << 8)  + current_buf[1]) * 2e-6;
-	return rc;
+	return 0;
 }
 
 int sfp_avago_read_tx_av_optical_pwr(struct DPB_I2cSensors *data,int n, float *res) {
@@ -708,7 +706,7 @@ int sfp_avago_read_tx_av_optical_pwr(struct DPB_I2cSensors *data,int n, float *r
 		return rc;
 
 	res[0] = (float) ((uint16_t) (power_buf[0] << 8)  + power_buf[1]) * 1e-7;
-	return rc;
+	return 0;
 }
 
 int sfp_avago_read_rx_av_optical_pwr(struct DPB_I2cSensors *data,int n, float *res) {
@@ -754,7 +752,7 @@ int sfp_avago_read_rx_av_optical_pwr(struct DPB_I2cSensors *data,int n, float *r
 		return rc;
 
 	res[0] = (float) ((uint16_t) (power_buf[0] << 8)  + power_buf[1]) * 1e-7;
-	return rc;
+	return 0;
 }
 
 /************************** Volt. and Curr. Sensor Functions ******************************/
@@ -794,7 +792,7 @@ int ina3221_get_voltage(struct DPB_I2cSensors *data,int n, float *res){
 		voltage_int = voltage_int / 8;
 		res[i] = voltage_int * 8e-3;
 	}
-	return rc;
+	return 0;
 }
 
 int ina3221_get_current(struct DPB_I2cSensors *data,int n, float *res){
@@ -833,44 +831,40 @@ int ina3221_get_current(struct DPB_I2cSensors *data,int n, float *res){
 		voltage_int = voltage_int / 8;
 		res[i] = (voltage_int * 40e-6) / 0.05 ;
 		}
-	return rc;
+	return 0;
 }
 
-int main(){
-		struct DPB_I2cSensors data;
-		int rc ;
+static int thread_1_count;
 
-		float ams_temp[1];
-		float ams_volt[1];
-		int temp_chan[1] = {7};
-		int volt_chan[1] = {10};
 
-		float volt_sfp0_2[3];
-		float volt_sfp3_5[3];
-		float volt_som[3];
+static void *thread_1(void *arg,struct DPB_I2cSensors data)
+{
+	struct periodic_info info;
+	int rc ;
 
-		float curr_sfp0_2[3];
-		float curr_sfp3_5[3];
-		float curr_som[3];
+	float ams_temp[1];
+	float ams_volt[1];
+	int temp_chan[1] = {7};
+	int volt_chan[1] = {10};
 
-		float temp[1];
-		float sfp_temp[1];
-		float sfp_txpwr[1];
-		float sfp_rxpwr[1];
-		float sfp_vcc[1];
-		float sfp_txbias[1];
+	float volt_sfp0_2[3];
+	float volt_sfp3_5[3];
+	float volt_som[3];
 
-		rc = init_I2cSensors(&data);
+	float curr_sfp0_2[3];
+	float curr_sfp3_5[3];
+	float curr_som[3];
 
-		if (rc) {
-			printf("Error\r\n");
-			return rc;
-		}
-		rc = iio_event_monitor_up();
-		if (rc) {
-			printf("Error\r\n");
-			return rc;
-		}
+	float temp[1];
+	float sfp_temp[1];
+	float sfp_txpwr[1];
+	float sfp_rxpwr[1];
+	float sfp_vcc[1];
+	float sfp_txbias[1];
+
+	printf("Thread 1 period 1000s\n");
+	rc = make_periodic(1000000, &info);
+	while (1) {
 		rc = mpc9844_read_temperature(&data,temp);
 		if (rc) {
 			printf("Error\r\n");
@@ -901,7 +895,6 @@ int main(){
 			printf("Error\r\n");
 			return rc;
 		}
-
 
 		rc = ina3221_get_voltage(&data,0,volt_sfp0_2);
 		if (rc) {
@@ -943,16 +936,41 @@ int main(){
 			printf("Error\r\n");
 			return rc;
 		}
-		printf("Temperatura AMS - Canal 7: %f \n",ams_temp[0]);
-		printf("Tensión AMS - Canal 10: %f \n",ams_volt[0]);
+		printf("Temperatura AMS - Canal 7: %f ºC - Iteración: %d\n",ams_temp[0],thread_1_count);
+		printf("Tensión AMS - Canal 10: %f V - Iteración: %d\n",ams_volt[0],thread_1_count);
 
-		printf("Tensión SFP0-2 - Canal 1: %f \n",volt_sfp0_2[0]);
-		printf("Tensión SFP3-5 - Canal 1: %f \n",volt_sfp3_5[0]);
-		printf("Tensión SoM - Canal 1: %f \n",volt_som[0]);
+		printf("Tensión SFP0-2 - Canal 1: %f V - Iteración: %d\n",volt_sfp0_2[0],thread_1_count);
+		printf("Tensión SFP3-5 - Canal 1: %f V - Iteración: %d\n",volt_sfp3_5[0],thread_1_count);
+		printf("Tensión SoM - Canal 1: %f V - Iteración: %d\n",volt_som[0],thread_1_count);
 
-		printf("Corriente SFP0-2 - Canal 1: %f \n",curr_sfp0_2[0]);
-		printf("Corriente SFP3-5 - Canal 1: %f \n",curr_sfp3_5[0]);
-		printf("Corriente SoM - Canal 1: %f \n",curr_som[0]);
+		printf("Corriente SFP0-2 - Canal 1: %f A - Iteración: %d\n",curr_sfp0_2[0],thread_1_count);
+		printf("Corriente SFP3-5 - Canal 1: %f A - Iteración: %d\n",curr_sfp3_5[0],thread_1_count);
+		printf("Corriente SoM - Canal 1: %f A - Iteración: %d\n",curr_som[0],thread_1_count);
+		thread_1_count++;
+		wait_period(&info);
+	}
+	return NULL;
+}
+
+int main(){
+		struct DPB_I2cSensors data;
+		int rc;
+
+		pthread_t t_1;
+		sigset_t alarm_sig;
+		int i;
+
+		rc = init_I2cSensors(&data);
+
+		if (rc) {
+			printf("Error\r\n");
+			return rc;
+		}
+		rc = iio_event_monitor_up();
+		if (rc) {
+			printf("Error\r\n");
+			return rc;
+		}
 
 		stop_I2cSensors(&data);
 
