@@ -104,7 +104,7 @@ int main(int argc, char *argv[])
 
 	printf("Periodic threads using POSIX timers\n");
 
-	/* Block all real time signals so they can be used for the timers.
+	 Block all real time signals so they can be used for the timers.
 	   Note: this has to be done in main() before any threads are created
 	   so they all inherit the same mask. Doing it later is subject to
 	   race conditions

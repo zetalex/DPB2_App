@@ -12,7 +12,7 @@
 #include <string.h>
 
 #include "i2c.h"
-#include "timer.h"
+#include "timer.c"
 #include "constants.h"
 #include "linux/errno.h"
 
@@ -837,7 +837,7 @@ int ina3221_get_current(struct DPB_I2cSensors *data,int n, float *res){
 static int thread_1_count;
 
 
-static void *thread_1(void *arg,struct DPB_I2cSensors data)
+static void *thread_1(void *arg)
 {
 	struct periodic_info info;
 	int rc ;
@@ -862,79 +862,88 @@ static void *thread_1(void *arg,struct DPB_I2cSensors data)
 	float sfp_vcc[1];
 	float sfp_txbias[1];
 
-	printf("Thread 1 period 1000s\n");
+	struct DPB_I2cSensors data;
+
+	rc = init_I2cSensors(&data);
+
+	if (rc) {
+		printf("Error\r\n");
+		return NULL;
+	}
+
+	printf("Thread 1 period 1s\n");
 	rc = make_periodic(1000000, &info);
 	while (1) {
 		rc = mpc9844_read_temperature(&data,temp);
 		if (rc) {
 			printf("Error\r\n");
-			return rc;
+			return NULL;
 		}
 		rc = sfp_avago_read_temperature(&data,0,sfp_temp);
 		if (rc) {
 			printf("Error\r\n");
-			return rc;
+			return NULL;
 		}
 		rc = sfp_avago_read_voltage(&data,0,sfp_vcc);
 		if (rc) {
 			printf("Error\r\n");
-			return rc;
+			return NULL;
 		}
 		rc = sfp_avago_read_lbias_current(&data,0,sfp_txbias);
 		if (rc) {
 			printf("Error\r\n");
-			return rc;
+			return NULL;
 		}
 		rc = sfp_avago_read_tx_av_optical_pwr(&data,0,sfp_txpwr);
 		if (rc) {
 			printf("Error\r\n");
-			return rc;
+			return NULL;
 		}
 		rc = sfp_avago_read_rx_av_optical_pwr(&data,0,sfp_rxpwr);
 		if (rc) {
 			printf("Error\r\n");
-			return rc;
+			return NULL;
 		}
 
 		rc = ina3221_get_voltage(&data,0,volt_sfp0_2);
 		if (rc) {
 			printf("Error\r\n");
-			return rc;
+			return NULL;
 		}
 		rc = ina3221_get_voltage(&data,1,volt_sfp3_5);
 		if (rc) {
 			printf("Error\r\n");
-			return rc;
+			return NULL;
 		}
 		rc = ina3221_get_voltage(&data,2,volt_som);
 		if (rc) {
 			printf("Error\r\n");
-			return rc;
+			return NULL;
 		}
 		rc = ina3221_get_current(&data,0,curr_sfp0_2);
 		if (rc) {
 			printf("Error\r\n");
-			return rc;
+			return NULL;
 		}
 		rc = ina3221_get_current(&data,1,curr_sfp3_5);
 		if (rc) {
 			printf("Error\r\n");
-			return rc;
+			return NULL;
 		}
 		rc = ina3221_get_current(&data,2,curr_som);
 		if (rc) {
 			printf("Error\r\n");
-			return rc;
+			return NULL;
 		}
 		rc = xlnx_ams_read_temp(temp_chan,1,ams_temp);
 		if (rc) {
 			printf("Error\r\n");
-			return rc;
+			return NULL;
 		}
 		rc = xlnx_ams_read_volt(volt_chan,1,ams_volt);
 		if (rc) {
 			printf("Error\r\n");
-			return rc;
+			return NULL;
 		}
 		printf("Temperatura AMS - Canal 7: %f ºC - Iteración: %d\n",ams_temp[0],thread_1_count);
 		printf("Tensión AMS - Canal 10: %f V - Iteración: %d\n",ams_volt[0],thread_1_count);
@@ -949,30 +958,30 @@ static void *thread_1(void *arg,struct DPB_I2cSensors data)
 		thread_1_count++;
 		wait_period(&info);
 	}
+	//stop_I2cSensors(&data);
 	return NULL;
 }
 
 int main(){
-		struct DPB_I2cSensors data;
-		int rc;
 
 		pthread_t t_1;
 		sigset_t alarm_sig;
 		int i;
 
-		rc = init_I2cSensors(&data);
-
-		if (rc) {
-			printf("Error\r\n");
-			return rc;
-		}
-		rc = iio_event_monitor_up();
+		int rc = iio_event_monitor_up();
 		if (rc) {
 			printf("Error\r\n");
 			return rc;
 		}
 
-		stop_I2cSensors(&data);
+		sigemptyset(&alarm_sig);
+		for (i = SIGRTMIN; i <= SIGRTMAX; i++)
+			sigaddset(&alarm_sig, i);
+		sigprocmask(SIG_BLOCK, &alarm_sig, NULL);
+
+		pthread_create(&t_1, NULL, thread_1, NULL);
+
+		//stop_I2cSensors(&data);
 
 	return 0;
 }
