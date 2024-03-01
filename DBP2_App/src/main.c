@@ -18,7 +18,7 @@
 
 
 
-/************************** Variable Definitions *****************************/
+/************************** Main Struct Definition *****************************/
 
 struct DPB_I2cSensors{
 
@@ -437,7 +437,7 @@ int xlnx_ams_read_temp(int *chan, int n, float *res){
 			fclose(offset);
 			fclose(scale);
 			res[i] = Temperature;
-			return 0;
+			//return 0;
 			}
 		}
 		return 0;
@@ -490,7 +490,7 @@ int xlnx_ams_read_volt(int *chan, int n, float *res){
 			fclose(raw);
 			fclose(scale);
 			res[i] = Voltage;
-			return 0;
+			//return 0;
 			}
 		}
 	return 0;
@@ -777,7 +777,8 @@ int ina3221_get_voltage(struct DPB_I2cSensors *data,int n, float *res){
 		break;
 	}
 	for (int i=0;i<3;i++){
-		voltage_reg = voltage_reg + 2*i;
+		if(i)
+			voltage_reg = voltage_reg + 2;
 		// Write bus voltage channel 1 address in register pointer
 		rc = i2c_write(&dev,&voltage_reg,1);
 		if(rc < 0)
@@ -816,7 +817,8 @@ int ina3221_get_current(struct DPB_I2cSensors *data,int n, float *res){
 		break;
 		}
 	for (int i=0;i<3;i++){
-		voltage_reg = voltage_reg + 2*i;
+		if(i)
+		voltage_reg = voltage_reg + 2;
 		// Write shunt voltage channel 1 address in register pointer
 		rc = i2c_write(&dev,&voltage_reg,1);
 		if(rc < 0)
@@ -834,18 +836,18 @@ int ina3221_get_current(struct DPB_I2cSensors *data,int n, float *res){
 	return 0;
 }
 
-static int thread_1_count;
+static int monitoring_thread_count;
 
-
-static void *thread_1(void *arg)
+static void *monitoring_thread(void *arg)
 {
 	struct periodic_info info;
 	int rc ;
+	struct DPB_I2cSensors *data = arg;
 
 	float ams_temp[1];
 	float ams_volt[1];
-	int temp_chan[1] = {7};
-	int volt_chan[1] = {10};
+	int temp_chan[2] = {7,8};
+	int volt_chan[18] = {0,1,2,3,4,5,6,9,10,11,12,13,14,15,16,17,18,19};
 
 	float volt_sfp0_2[3];
 	float volt_sfp3_5[3];
@@ -862,100 +864,109 @@ static void *thread_1(void *arg)
 	float sfp_vcc[1];
 	float sfp_txbias[1];
 
-	struct DPB_I2cSensors data;
+	//struct DPB_I2cSensors data;
 
-	rc = init_I2cSensors(&data);
 
-	if (rc) {
-		printf("Error\r\n");
-		return NULL;
-	}
-
-	printf("Thread 1 period 1s\n");
-	rc = make_periodic(1000000, &info);
+	printf("Monitoring thread period: %ds\n",MONIT_THREAD_TIME/1000000);
+	rc = make_periodic(MONIT_THREAD_TIME, &info);
 	while (1) {
-		rc = mpc9844_read_temperature(&data,temp);
+		rc = mpc9844_read_temperature(data,temp);
 		if (rc) {
 			printf("Error\r\n");
 			return NULL;
 		}
-		rc = sfp_avago_read_temperature(&data,0,sfp_temp);
+		rc = sfp_avago_read_temperature(data,0,sfp_temp);
 		if (rc) {
 			printf("Error\r\n");
 			return NULL;
 		}
-		rc = sfp_avago_read_voltage(&data,0,sfp_vcc);
+		rc = sfp_avago_read_voltage(data,0,sfp_vcc);
 		if (rc) {
 			printf("Error\r\n");
 			return NULL;
 		}
-		rc = sfp_avago_read_lbias_current(&data,0,sfp_txbias);
+		rc = sfp_avago_read_lbias_current(data,0,sfp_txbias);
 		if (rc) {
 			printf("Error\r\n");
 			return NULL;
 		}
-		rc = sfp_avago_read_tx_av_optical_pwr(&data,0,sfp_txpwr);
+		rc = sfp_avago_read_tx_av_optical_pwr(data,0,sfp_txpwr);
 		if (rc) {
 			printf("Error\r\n");
 			return NULL;
 		}
-		rc = sfp_avago_read_rx_av_optical_pwr(&data,0,sfp_rxpwr);
+		rc = sfp_avago_read_rx_av_optical_pwr(data,0,sfp_rxpwr);
 		if (rc) {
 			printf("Error\r\n");
 			return NULL;
 		}
 
-		rc = ina3221_get_voltage(&data,0,volt_sfp0_2);
+		rc = ina3221_get_voltage(data,0,volt_sfp0_2);
 		if (rc) {
 			printf("Error\r\n");
 			return NULL;
 		}
-		rc = ina3221_get_voltage(&data,1,volt_sfp3_5);
+		rc = ina3221_get_voltage(data,1,volt_sfp3_5);
 		if (rc) {
 			printf("Error\r\n");
 			return NULL;
 		}
-		rc = ina3221_get_voltage(&data,2,volt_som);
+		rc = ina3221_get_voltage(data,2,volt_som);
 		if (rc) {
 			printf("Error\r\n");
 			return NULL;
 		}
-		rc = ina3221_get_current(&data,0,curr_sfp0_2);
+		rc = ina3221_get_current(data,0,curr_sfp0_2);
 		if (rc) {
 			printf("Error\r\n");
 			return NULL;
 		}
-		rc = ina3221_get_current(&data,1,curr_sfp3_5);
+		rc = ina3221_get_current(data,1,curr_sfp3_5);
 		if (rc) {
 			printf("Error\r\n");
 			return NULL;
 		}
-		rc = ina3221_get_current(&data,2,curr_som);
+		rc = ina3221_get_current(data,2,curr_som);
 		if (rc) {
 			printf("Error\r\n");
 			return NULL;
 		}
-		rc = xlnx_ams_read_temp(temp_chan,1,ams_temp);
+		rc = xlnx_ams_read_temp(temp_chan,2,ams_temp);
 		if (rc) {
 			printf("Error\r\n");
 			return NULL;
 		}
-		rc = xlnx_ams_read_volt(volt_chan,1,ams_volt);
+		rc = xlnx_ams_read_volt(volt_chan,18,ams_volt);
 		if (rc) {
 			printf("Error\r\n");
 			return NULL;
 		}
-		printf("Temperatura AMS - Canal 7: %f ºC - Iteración: %d\n",ams_temp[0],thread_1_count);
-		printf("Tensión AMS - Canal 10: %f V - Iteración: %d\n",ams_volt[0],thread_1_count);
-
-		printf("Tensión SFP0-2 - Canal 1: %f V - Iteración: %d\n",volt_sfp0_2[0],thread_1_count);
-		printf("Tensión SFP3-5 - Canal 1: %f V - Iteración: %d\n",volt_sfp3_5[0],thread_1_count);
-		printf("Tensión SoM - Canal 1: %f V - Iteración: %d\n",volt_som[0],thread_1_count);
-
-		printf("Corriente SFP0-2 - Canal 1: %f A - Iteración: %d\n",curr_sfp0_2[0],thread_1_count);
-		printf("Corriente SFP3-5 - Canal 1: %f A - Iteración: %d\n",curr_sfp3_5[0],thread_1_count);
-		printf("Corriente SoM - Canal 1: %f A - Iteración: %d\n",curr_som[0],thread_1_count);
-		thread_1_count++;
+		for(int m = 0; m<2;m++){
+			printf("Temperatura AMS - Canal %d: %f ºC - Iteración: %d\n",temp_chan[m],ams_temp[m],monitoring_thread_count);
+		}
+		printf("\n");
+		for(int n = 0; n<18;n++){
+			printf("Tensión AMS - Canal %d: %f V - Iteración: %d\n",volt_chan[n],ams_volt[n],monitoring_thread_count);
+		}
+		printf("\n");
+		for(int j=0;j<3;j++){
+		printf("Tensión SFP0-2 - Canal %d: %f V - Iteración: %d\n",j+1,volt_sfp0_2[j],monitoring_thread_count);
+		printf("Corriente SFP0-2 - Canal %d: %f A - Iteración: %d\n",j+1,curr_sfp0_2[j],monitoring_thread_count);
+		printf("Potencia consumida SFP0-2 - Canal %d: %f W - Iteración: %d\n",j+1,curr_sfp0_2[j]*volt_sfp0_2[j],monitoring_thread_count);
+		}
+		printf("\n");
+		for(int k=0;k<3;k++){
+		printf("Tensión SFP3-5 - Canal %d: %f V - Iteración: %d\n",k+1,volt_sfp3_5[k],monitoring_thread_count);
+		printf("Corriente SFP3-5 - Canal %d: %f A - Iteración: %d\n",k+1,curr_sfp3_5[k],monitoring_thread_count);
+		printf("Potencia consumida SFP3-5 - Canal %d: %f W - Iteración: %d\n",k+1,curr_sfp3_5[k]*volt_sfp3_5[k],monitoring_thread_count);
+		}
+		printf("\n");
+		for(int l=0;l<3;l++){
+		printf("Tensión SoM - Canal %d: %f V - Iteración: %d\n",l+1,volt_som[l],monitoring_thread_count);
+		printf("Corriente SoM - Canal %d: %f A - Iteración: %d\n",l+1,curr_som[l],monitoring_thread_count);
+		printf("Potencia consumida SoM - Canal %d: %f W - Iteración: %d\n",l+1,curr_som[l]*volt_som[l],monitoring_thread_count);
+		}
+		monitoring_thread_count++;
 		wait_period(&info);
 	}
 	//stop_I2cSensors(&data);
@@ -967,8 +978,17 @@ int main(){
 		pthread_t t_1;
 		sigset_t alarm_sig;
 		int i;
+		int rc;
+		struct DPB_I2cSensors data;
 
-		int rc = iio_event_monitor_up();
+		rc = init_I2cSensors(&data); //Initialize i2c sensors
+
+		if (rc) {
+			printf("Error\r\n");
+			return 0;
+		}
+
+		rc = iio_event_monitor_up(); //Initialize iio event monitor
 		if (rc) {
 			printf("Error\r\n");
 			return rc;
@@ -979,7 +999,7 @@ int main(){
 			sigaddset(&alarm_sig, i);
 		sigprocmask(SIG_BLOCK, &alarm_sig, NULL);
 
-		pthread_create(&t_1, NULL, thread_1, NULL);
+		pthread_create(&t_1, NULL, monitoring_thread,(void *)&data); //Create thread 1 - monitors magnitudes every second
 
 		//stop_I2cSensors(&data);
 		while(1){
