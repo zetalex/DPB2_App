@@ -982,6 +982,7 @@ int main(){
 		pthread_create(&t_1, NULL, thread_1, NULL);
 
 		//stop_I2cSensors(&data);
-
+		while(1){
+		}
 	return 0;
 }
