@@ -18,56 +18,56 @@
 
 <h3 align="center">Grado en Ingeniería de Tecnologías y Servicios de Telecomunicación</h3>
 
-# Descripción del proyecto y fase a focalizar
+# Description of the project and phase to focus on
 
-Hyper-Kamiokande es un proyecto de un observatorio de neutrinos todavía en construcción (se estima que inicie su funcionamiento en 2027) que tiene lugar en las minas de Kamioka en Japón. Un proyecto el cual pese a darse en Japón, colaboran institutos de investigación de 22 países diferentes. El objetivo de este proyecto es el de buscar la desintegración de protones y detectar neutrinos procedentes de fuentes naturales como la Tierra, la atmósfera, el Sol y el cosmos, así como estudiar las oscilaciones de neutrinos del haz de neutrinos del acelerador artificial.
+Hyper-Kamiokande is a neutrino observatory project still under construction (estimated to start operation in 2027), which takes place in the Kamioka mines in Japan. Although the project is based in Japan, it involves research institutes from 22 different countries. The aim of the project is to search for proton decays and detect neutrinos from natural sources such as the Earth, the atmosphere, the Sun and the cosmos, as well as to study neutrino oscillations from the neutrino beam of the artificial accelerator.
 
-Se planea que el Hyper-Kamiokande sea el observatorio de neutrinos más grande del mundo superando a su predecesor el Super-Kamiokande, con unas dimensiones de 71 metros de altura y 68 metros de diámetro. El observatorio, lleno de agua ultrapura, contará con alrededor de 40000 tubos fotomultiplicadores como detectores del interior del observatorio y 10000 detectores del exterior del observatorio.
+Hyper-Kamiokande is planned to be the world's largest neutrino observatory, surpassing its predecessor Super-Kamiokande, which is 71 metres high and 68 metres in diameter. The observatory, filled with ultrapure water, will have about 40,000 photomultiplier tubes as detectors inside the observatory and 10,000 detectors outside the observatory.
 
 
 
 ![Interior del Super-Kamiokande, predecesor del Hyper-Kamiokande](/DBP2_App/doc/figures/SK-Detector.png)
-<figcaption>Interior del Super-Kamiokande, predecesor del Hyper-Kamiokande</figcaption>
+<figcaption>Interior of the Super-Kamiokande, predecessor of the Hyper-Kamiokande</figcaption>.
 <br>
 
 ![Estructura del Hyper-Kamiokande](/DBP2_App/doc/figures/HK-SEC.png)
-<figcaption>Estructura del Hyper-Kamiokande</figcaption>
+<figcaption>Structure of the Hyper-Kamiokande</figcaption>.
 <br>
 
-Los PMTs, junto con el resto de la electrónica, irán dentro de vasijas selladas herméticamente y sumergidas en el agua del interior del observatorio.
+The PMTs, along with the rest of the electronics, will be housed in hermetically sealed vessels submerged in the water inside the observatory.
 
 ![Interior de la vasija](/DBP2_App/doc/figures/Vasija.jpg)
-<figcaption>Interior de la vasija</figcaption>
+<figcaption>Interior of the vessel</figcaption>
 <br>
 
 ![Diagrama de comunicación entre los diferentes módulos de la vasija](/DBP2_App/doc/diag/Bloques_Vasija.jpg)
-<figcaption>Diagrama de comunicación entre los diferentes módulos de la vasija</figcaption>
-<br>
+<figcaption>Diagram of communication between the different modules of the vessel</figcaption>.
+<br> 
 
-Como se puede apreciar en las figuras previas, la electrónica se concentra en el interior de la vasija, donde la información de los PMTs pasa por unas digitalizadoras hasta la DPB. La DPB es la encargada de comunicar lso diferentes módulos tanto del exterior como del interior de la vasija, hace la función de *hub* dentro de la vasija.
+As can be seen in the previous figures, the electronics are concentrated inside the vessel, where the information from the PMTs passes through digitisers to the DPB. The DPB is responsible for communicating the different modules both outside and inside the vessel, it acts as a hub inside the vessel.
 
-Puesto que la electrónica se halla en un lugar de difícil acceso, pues supondría vaciar de agua el observatorio, se requiere de alta fiabilidad en este proyecto, como mínimo 10 años. Para ello se ha optado por sistemas robustos y se ha de llevar un seguimiento de la electrónica empleada.
+Since the electronics are located in a place that is difficult to access, as it would mean emptying the observatory of water, high reliability is required in this project, at least 10 years. For this reason, robust systems have been chosen and the electronics used must be monitored.
 
-En nuestro grupo nos dedicamos al módulo de la DPB y en concreto mi trabajo va dedicado a la fiabilidad de la misma pues consiste en desarrollar un aplicación que emplee todos los subsistemas de sensado y medida disponibles en la DPB para monitorizar el estado de la misma y establecer alarmas y advertencias para casos críticos. 
-
-
-# Tecnología con la cual se va a trabajar
-
-Debido a la cantidad de datos con la que se pretende trabajar y la necesidad de personalización de nuestra placa para nuestra aplicación se ha optado por emplear un SoM situando como sistema de procesamiento el MPSoC Zynq UltraScale+ de AMD, el cual se combina en el SoM junto con dispositivos lógicos los cuales conforman una lógica programable por el usuario .El MPSoC incluye diversos controladores como pueden ser los de puertos UART, I2C o eMMC que nos brindarán comunicación con los periféricos e integra un sistema de monitorización del propio chip y sus subsistemas. Además, el Zynq UltraScale+ cuenta con soporte para ligeros sistemas operativos, lo cual puede suponer un gran beneficio si se aprovechan las funcionalidades de los *drivers* propios del sistema operativo.
+In our group we are dedicated to the DPB module and specifically my work is dedicated to the reliability of the DPB, as it consists of developing an application that uses all the sensing and measurement subsystems available in the DPB to monitor its status and establish alarms and warnings for critical cases.
 
 
-El SoM irá integrado a una placa diseñada exclusivamente para nuestro proyecto con los periféricos necesarios. Mediante esta implementación de SoM gozaremos de una gran flexibilidad y personalización en nuestro diseño sin renunciar a la capacidad de procesamiento de un chip de alto rendimiento como es el ofrecido por AMD.  
+# Technology with which is going to be used
 
-# Inicialización del entorno sobre el que se trabajará en la placa
-Iniciando con el entorno sobre el que se trabajará sobre la DPB (Data Processing Board) o DPM (Data Processing Module), se empleará PetaLinux, una herramienta de desarrollo de software de Xilinx basada en una versión ligera de Linux.
+Due to the amount of data we intend to work with and the need to customise our board for our application, we have chosen to use a SoM with the AMD Zynq UltraScale+ MPSoC as the processing system, which is combined in the SoM together with logic devices which form a user-programmable logic. The MPSoC includes various controllers such as UART, I2C or eMMC ports which provide communication with the peripherals and integrates a monitoring system for the chip itself and its subsystems. In addition, the Zynq UltraScale+ has support for lightweight operating systems, which can be a great benefit if you take advantage of the functionality of the operating system's own drivers.
 
-La disponibilidad universal del código fuente de Linux y de infinidad de *drivers* de los que dispone Linux nos supone una mayor flexibilidad y facilidad para trabajar a nivel de aplicación sobre la DPB. 
+The SoM will be integrated on a board designed exclusively for our project with the necessary peripherals. With this SoM implementation, we will enjoy great flexibility and customisation in our design without sacrificing the processing power of a high-performance chip such as the one offered by AMD.
 
-Para implementar este sistema operativo (OS) en la DPB se ha empleado el software de Xilinx, Vivado,y mediante el puerto JTAG se ha cargado sobre una eMMC de 16 GB como memoria no volátil, tanto los archivos de arranque pertinentes como la imagen personalizada del proyecto del PetaLinux, posteriormente se ha seleccionado, desde la placa, a la eMMC como opción principal de arranque. En el proceso de arranque se carga el OS sobre la memoria RAM y se trabaja sobre esta.
+# Initialisation of the environment to be used on the board
+Starting with the environment to work on the DPB (Data Processing Board) or DPM (Data Processing Module), we will use PetaLinux, a Xilinx software development tool based on a light version of Linux.
 
-Una vez implementado el OS, se ha de configurar la conexión con la DPB, pese a la posibilidad de mantener la conexión por JTAG, la fuente de comunicación principal de la DPB va a ser vía Ethernet, por lo que se ha empleado uno de los puertos SFP de los que dispone la DPB para, mediante un transceptor SFP, realizar una conexión Ethernet con el equipo. Para ello dentro de la personalización de la versión de PetaLinux se incluyó la configuración de un PLL a 125 MHz para la correspondiente señal de reloj de Ethernet.
+The universal availability of the Linux source code and the infinite number of drivers available in Linux gives us greater flexibility and ease of working at the application level on the DPB.
 
-Ya configurada la conexión, se ha establecido un servidor DHCP local para asignar una IP fija a la DPB y facilitar la conexión mediante SSH a la placa. Para ello se ha declarado la subred con una configuración muy básica en el servidor:
+To implement this operating system (OS) on the DPB we have used the Xilinx software, Vivado, and through the JTAG port we have loaded on a 16 GB eMMC as non-volatile memory, both the relevant boot files and the custom image of the PetaLinux project, then we have selected, from the board, the eMMC as the main boot option. In the boot process, the OS is loaded onto the RAM and the RAM is worked on.
+
+Once the OS has been implemented, the connection with the DPB has to be configured. Despite the possibility of maintaining the connection via JTAG, the main source of communication of the DPB is going to be via Ethernet, so one of the SFP ports of the DPB has been used to make an Ethernet connection with the equipment by means of an SFP transceiver. For this purpose, the configuration of a 125 MHz PLL for the corresponding Ethernet clock signal was included in the customisation of the PetaLinux version.
+
+
+Once the connection has been configured, a local DHCP server has been set up to assign a fixed IP to the DPB and facilitate the connection via SSH to the board. For this purpose, the subnet has been declared with a very basic configuration on the server:
 
 ```bash
 subnet 20.0.0.0 netmask 255.255.255.0 {
@@ -75,52 +75,50 @@ subnet 20.0.0.0 netmask 255.255.255.0 {
   option routers 20.0.0.1;
 }
 ```
-Se le ha asignado a la interfaz de red en cuestión la dirección 20.0.0.1 y se ha declarado la subred con un pequeño rango arbitrario y se ha asignado a la DPB la IP fija 20.0.0.33, una dirección fuera del rango puesto que del caso contrario el servidor retornaba un error. Cabe destacar que los puertos SFP de la DBP están pensados para emplear puertos de fibra óptica por lo que en ciertas ocasiones el equipo no es capaz de detectar la conexión en el puerto Ethernet empleando cable Ethernet con RJ-45 por lo que se ha de desactivar la interfaz y luego volver a activar y asignar la dirección 20.0.0.1 y se resuelve el problema, en caso de emplear un puerto de fibra óptica, este problema no surge. 
+The network interface in question has been assigned the address 20.0.0.1 and the subnet has been declared with a small arbitrary range, and the DBP has been assigned the fixed IP 20.0.0.33, an address outside the range, since otherwise the server would return an error. It should be noted that the SFP ports of the DBP are designed to use fibre optic ports, so sometimes the equipment is not able to detect the connection on the Ethernet port using Ethernet cable with RJ-45, so the interface has to be deactivated and then re-activated and assigned the address 20.0.0.1 and the problem is solved, in the case of using a fibre optic port, this problem does not arise.
 
-Con la dirección IP fija ya asignada ya nos es posible acceder a la placa mediante SSH y comunicarnos con esta, para ello empleamos el siguiente comando:
+With the fixed IP address already assigned, it is now possible to access the board via SSH and communicate with it using the following command:
 ```bash
 ssh root@20.0.0.33
-#Aquí introduciríamos la contraseña pertinente
+#Here we would enter the relevant password
 ```
-Para finalizar con el establecimiento del entorno de trabajo únicamente nos quedaría crear el proyecto de aplicación que se va a desarrollar sobre una plataforma personalizada de nuestro proyecto, en el software Vitis IDE de Xilinx. Se ha nombrado al proyecto de aplicación como DBP2_App.
+To finish with the establishment of the working environment, we only have to create the application project that is going to be developed on a customised platform of our project, in the Vitis IDE software of Xilinx. The application project has been named DBP2_App.
 
-# Protocolo I<sup>2</sup>C y como está implementado en nuestra placa
-Para conseguir una comunicación entre los diferentes componentes a tratar de la placa con el terminal se emplea el protocolo I<sup>2</sup>C , un protocolo de comunicación que se basa en un sistema Maestro-Esclavo donde el bus de comunicación se divide en 2 líneas, SCL para el reloj y SDA para los datos, las cuales están conectadas a una resistencia de pull-up cada una por lo que el nivel por defecto es nivel alto .
+# I<sup>2</sup>C protocol and how it is implemented on our board
+To achieve communication between the different components on the board and the terminal, the I<sup>2</sup>C protocol is used, a communication protocol based on a Master-Slave system where the communication bus is divided into 2 lines, SCL for the clock and SDA for the data, which are connected to a pull-up resistor each, so the default level is high level.
 
-El funcionamiento de este protocolo consiste en el inicio de la transmisión por parte de el Maestro que conjuntamente indica la dirección del esclavo al que se dirige con una dirección de 7 bits (nosotros contamos con sensores que su dirección es de 6 bits más uno reservado que a nosotros nos sirve para diferenciar de forma física), además se indica con un bit si la operación a desarrollar es lectura o escritura. La transmisión de datos va guiada por la línea de reloj y se transmiten los datos en tamaño byte transmitiendo de MSB a LSB.
+The operation of this protocol consists of the start of the transmission by the Master which jointly indicates the address of the slave to which it is directed with an address of 7 bits (we have sensors that have an address of 6 bits plus a reserved bit that we use to differentiate in a physical way), in addition it is indicated with a bit if the operation to be carried out is reading or writing. The data transmission is guided by the clock line and the data is transmitted in byte size, transmitting from MSB to LSB.
 
 ![I<sup>2</sup>C Address and Data Frames](/DBP2_App/doc/figures/I2C_ADD_DAT_FRAME.png)
-<figcaption>Marcos de direccionamiento y datos I<sup>2</sup>C</figcaption>
+<figcaption>Addressing and data frames I<sup>2</sup>C</figcaption>.
 <br>
 
+For the write operation on the slave, once communication has been established, the register to be written to and the data to be written must be indicated. The master is responsible for receiving the corresponding ACK and NACK during communication and the end of communication sequence.
 
+The read operation follows a similar process to the write operation, indicating the register to be read and the master is in charge of sending the corresponding ACKs and NACKs during the communication and the end of communication sequence.
 
-Para la operación de escritura sobre el esclavo una vez establecida la comunicación se ha de indicar el registro sobre el que se desea escribir y el dato que se desea escribir. El maestro es el encargado de recibir los correspondientes ACK y NACK durante la comunicación y la secuencia de fin de comunicación.
-
-En la operación de lectura sigue un proceso similar al de escritura indicando el registro que se desea leer y el maestro es el encargado de enviar los correspondientes ACK y NACK durante la comunicación y la secuencia de fin de comunicación.
-
-En nuestro caso el proceso de comunicación se basará en las funciones proporcionadas por las librerías de Linux que nos permiten abrir/cerrar y leer/escribir simplemente llamando a funciones definidas e indicando los argumentos necesarios. Además estas funciones nos permiten operar con vectores para poder leer o escribir datos consecutivos con una única función.
+In our case the communication process will be based on the functions provided by the Linux libraries that allow us to open/close the communication and read/write registers simply by calling defined functions and indicating the necessary arguments. In addition, these functions allow us to operate with vectors in order to read or write consecutive data with a single function.
 
 ![I<sup>2</sup>C Address and Data Frames](/DBP2_App/doc/diag/DBLOQUES_I2C.png)
-<figcaption>Estructura del I<sup>2</sup>C de nuestra DPB</figcaption>
-<br>
+<figcaption>Structure of the I<sup>2</sup>C of our DPB</figcaption>.
+<br> 
 
-En el diagrama de bloques previo se puede observar como están estructurados los buses I<sup>2</sup>C de nuestra DPB, el *filename* correspondiente de cada una de las salidas de los buses I<sup>2</sup>C designadas por los multiplexores y las direcciones esclavo de cada módulo con el que se pretende comunicar. 
+In the previous block diagram you can see how the I<sup>2</sup>C buses of our DPB are structured, the corresponding filename of each of the I<sup>2</sup>C bus outputs designated by the multiplexers and the slave addresses of each module with which we intend to communicate.
 
-Como se puede observar los sensores de corriente, los conectores SFP y el sensor de temperatura que pretendemos emplear, todos emplean el protocolo I<sup>2</sup>C para comunicarse. Sin embargo, el sensor de temperatura y los sensores de corrientes emplean registros de 16 bits, mientras que los SFP emplean registros de tamaño 1 byte. El protocolo I<sup>2</sup>C transporta tramas en tamaño byte por lo que en el caso de los registros de 16 bits implica realizar 2 operaciones consecutivas (ya sea lectura o escritura) sobre la misma dirección de registro mientras que para los registros de 8 bits implicará una única operación por dirección de registro. En nuestro caso, el *driver* I<sup>2</sup>C de Linux nos facilitará en gran medida realizar este tipo de operaciones consecutivas.
+As can be seen, the current sensors, the SFP connectors and the temperature sensor that we intend to use all use the I<sup>2</sup>C protocol to communicate. However, the temperature sensor and the current sensors use 16-bit registers, while the SFPs use 1-byte sized registers. The I<sup>2</sup>C protocol carries byte-sized frames, so in the case of 16-bit registers it involves performing 2 consecutive operations (either read or write) on the same register address, whereas for 8-bit registers it will involve a single operation per register address. In our case, the Linux I<sup>2</sup>C driver will make it much easier to perform this type of consecutive operations.
 
-# Información detallada sobre los sensores disponibles y su utilidad para nuestros intereses
+# Detailed information about the available sensors and their usefulness for our interests.
 
-En cuanto a las unidades sensoriales disponibles en nuestra DPB encontramos, como se ha mencionado previamente en el apartado de I<sup>2</sup>C, un sensor de temperatura (MCP9844), varios sensores de corriente y monitorización de la tensión (INA3221) para los transceptores SFP y el SoM y  los propios transceptores SFP que nos proveen información de gran relevancia sobre su estado de operación y que conviene llevar un seguimiento.
+Regarding the sensor units available in our DPB we find, as previously mentioned in the I<sup>2</sup>C section, a temperature sensor (MCP9844), several current sensors and voltage monitoring (INA3221) for the SFP transceivers and the SoM and the SFP transceivers themselves that provide us with very relevant information about their operating status and that we should keep track of.
+
+## Current sensors INA3221
+
+The current sensors installed in the DPB provide us with the possibility of monitoring up to 3 different channels from the same sensor. In addition, it allows us to measure the bus voltage with respect to GND(*Bus Voltage*) or the voltage difference between the IN+ and IN- terminals of each channel(*Shunt Voltage*). In our case, a resistive element with a value of 0.05 $Omega$ has been placed between IN+ and IN-, which is useful for obtaining both the current and the power consumed in each channel.
+
+It should be noted that this sensor allows us to configure alerts and warnings for voltage values obtained in *Shunt Voltage* measurement mode to detect if the voltage difference between terminals of our resistor exceeds or does not reach certain values and to be able to act accordingly. We also have an alert if in *Bus Voltage* measurement mode, which informs us if all the channels being measured have a voltage higher than that marked by the limits or if any of the channels has a voltage lower than the lower limit. We are also provided with the option to obtain the sum of the *Shunt Voltage* of all channels and set a limit to configure an alert. All named alerts and warnings are collected in the *Mask/Enable* register where the sum of the *Shunt Voltage*, warnings and alarms can also be enabled or disabled.
 
 
-## Sensores de corriente INA3221
-
-Los sensores de corriente instalados en la DPB nos proporciona la posibilidad de monitorizar hasta 3 canales distinitos desde un mismo sensor. Además, nos permite medir la tensión del bus respecto a GND (*Bus Voltage*) o la diferencia de tensión entre los terminales IN+ e IN- de cada canal (*Shunt Voltage*). En nuestro caso entre IN+ e IN- se ha ubicado un elemento resistivo de valor 0.05 $\Omega$ lo cual nos es útil para obtener tanto la corriente como la potencia consumida en cada canal.
-
-Cabe destacar que este sensor nos permite configurar alertas y advertencias para valores de tensión obtenidos en modo de medida *Shunt Voltage* para detectar si la diferencia de tensión entre terminales de nuestra resistencia excede o no alcanza unos valores determinados y poder actuar como corresponda. También disponemos de una alerta si en el modo de medida *Bus Voltage*, que nos informa si todos los canales que se están midiendo tienen una tensión superior a la marcada por los límites o si cualquiera de los canales tiene una tensión menor al límite inferior. Se nos proporciona también la opción de obtener la suma de la *Shunt Voltage* de todos los canales y establecer un límite para configurar una alerta. Todas las alertas y advertencias nombradas se recogen en el registro de *Mask/Enable* donde también se puede habilitar o inhabilitar la suma de la *Shunt Voltage*, las advertencias y las alarmas.
-
-En la siguiente tabla se pueden observar los registros más influyentes para nuestra aplicación, una pequeña descripción de estos, su valor por defecto y el tipo de registro que es, si es solo de lectura o de lectura y escritura. 
+In the following table you can see the most influential registers for our application, a short description of these registers, their default value and the type of register it is, whether it is read-only or read-write.
 
 <!---
 Current.Sens
@@ -149,11 +147,11 @@ Current.Sens
 | 11                    | Power-Valid Lower Limit    | Contains limit value to compare all bus voltage conversions to determine if the any voltage rail has dropped below the Power Valid range.| 00100011 00101000 | 2328    | R/W     | 
 | FE                    | Manufacturer ID            | Contains unique manufacturer identification number.                                                    | 01010100 01001001 | 5449    | R       | 
 | FF                    | Die ID                      | Contains unique die identification number.                                                             | 00110010 00100000 | 3220    | R       |
-<figcaption>Registros de los sensores de corriente INA3221 </figcaption>
+<figcaption>INA3221 Current Sensor Registers</figcaption>
 <br>
 
-Cabe mencionar que todos los datos de tensión vienen dados en complemento a 2 y emplean 13 bits, el bit 15 del registro (MSB) determina el signo y del bit 14-3 el dato de tensión.
-Para *Shunt Voltage* el rango a escala completa equivale a 163.8 mV y el LSB a 40 $\mu$V, en el caso de *Bus Voltage* el LSB equivale a 8 mV y pese a que el rango a escala completa del ADC es de 32.76 V, el rango a escala completa en el caso de *Bus Voltage* es de 26 V puesto que no se recomienda aplicar más tensión.
+It is worth mentioning that all voltage data is given in 2's complement and uses 13 bits, bit 15 of the register (MSB) determines the sign and bit 14-3 the voltage data.
+For *Shunt Voltage* the full scale range is 163.8 mV and the LSB is 40 $mu$V, in the case of *Bus Voltage* the LSB is 8 mV and although the full scale range of the ADC is 32.76 V, the full scale range in the case of *Bus Voltage* is 26 V since it is not recommended to apply more voltage.
 
 ## Temperature sensor MCP9844
 <!---
