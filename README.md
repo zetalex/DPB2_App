@@ -24,7 +24,13 @@ It is well known that telecommunications has played a pivotal role in the course
 Telecommunications encompasses several branches of knowledge, in which I specialise in the field of electronic systems.
 That is why this Final Project of the Degree in Telecommunication Technologies and Services Engineering is a clear evidence of the importance of electronic systems in the advancement of human beings to explore and investigate the behaviour of the universe.
 
-//Explain about neutrinos and a bit about how kamiokande and PMTs work!!!
+Within the field of physics there are countless subfields that study different aspects of everything around us. The project on which this dissertation is based is based on the speciality of physics called *Particle physics*, which is also known as high-energy physics, because many of these particles can only be seen in large collisions provoked in particle accelerators. This discipline of physics is responsible for demonstrating the existence of particles classified according to certain characteristics as bosons or fermions. Nonetheless, it also encounters the difficulty of having been able to demonstrate particles that are almost non-detectable to this day.
+
+Within these elusive particles lies the neutrino, a subatomic entity generated during a radioactive decay and scattering phenomenon. In this instance, the neutrino arises from beta decay, as proposed in Fermi's theory, wherein a sizeable neutral particle (n) disintegrates into a proton (p<sup>+</sup>), an electron (e<sup>-</sup>), and a neutrino (ν<sub>e</sub>).
+
+$$
+n -> p⁺ + e⁻ + v_e
+$$(1.1)
 
 Hyper-Kamiokande is a neutrino observatory project still under construction (estimated to start operation in 2027), which takes place in the Kamioka mines in Japan. Although the project is based in Japan, it involves research institutes from 22 different countries. The aim of the project is to search for proton decays and detect neutrinos from natural sources such as the Earth, the atmosphere, the Sun and the cosmos, as well as to study neutrino oscillations from the neutrino beam of the artificial accelerator.
 
