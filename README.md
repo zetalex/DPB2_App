@@ -155,17 +155,17 @@ Current.Sens
 Cabe mencionar que todos los datos de tensión vienen dados en complemento a 2 y emplean 13 bits, el bit 15 del registro (MSB) determina el signo y del bit 14-3 el dato de tensión.
 Para *Shunt Voltage* el rango a escala completa equivale a 163.8 mV y el LSB a 40 $\mu$V, en el caso de *Bus Voltage* el LSB equivale a 8 mV y pese a que el rango a escala completa del ADC es de 32.76 V, el rango a escala completa en el caso de *Bus Voltage* es de 26 V puesto que no se recomienda aplicar más tensión.
 
-## Sensor de temperatura MCP9844
+## Temperature sensor MCP9844
 <!---
 Registers Temp.Sens
 -->
-El sensor de temperatura MCP9844 nos es una gran herramienta para monitorizar la temperatura del ambiente donde trabaja nuestra DPB, una magnitud esencial a la hora de asegurar un correcto acondicionamiento para el funcionamiento de nuestra electrónica.
+The temperature sensor MCP9844 is a great tool to monitor the temperature of the environment where our DPB works, an essential magnitude to ensure a correct conditioning for the operation of our electronics.
 
-Este sensor de temperatura nos proporciona la herramienta de los eventos que facilita la monitorización de la temperatura ambiente. El MCP9844 nos permite establecer límites de temperatura, solo modificables si se ha habilitado en el registro de configuración, tanto superiores como inferiores e incluso temperatura crítica (únicamente mayor al límite superior). Ya establecidos los límites, desde el registro de configuración se pueden habilitar o deshabilitar los eventos y te permite configurar el evento como una interrupción o como una comparación, decidir si el evento sea activo a nivel alto o nivel bajo y decidir si solo se tiene en cuenta el límite de temperatura crítica o se tiene en cuenta todos los límites.
+This temperature sensor provides us with the events tool that facilitates the monitoring of the ambient temperature. The MCP9844 allows us to set temperature limits, only modifiable if enabled in the configuration register, both upper and lower and even critical temperature (only higher than the upper limit). Once the limits have been established, from the configuration register you can enable or disable the events and you can configure the event as an interruption or as a comparison, decide whether the event is active at high or low level and decide whether only the critical temperature limit is taken into account or all the limits are taken into account.
 
-Asimismo, el sensor presenta diversas funcionalidades como la opción de incluir cierto valor de histéresis a los límites de temperatura (solo aplicable en caso de bajada de temperatura), la posibilidad de modificación de la resolución de medida (menor valor de resolución implicará un mayor tiempo de conversión) o la posibilidad de apagar el sensor en caso de que se desee.
+In addition, the sensor has several functionalities such as the option to include a certain hysteresis value to the temperature limits (only applicable in case of temperature drop), the possibility to modify the measurement resolution (lower resolution value will imply a longer conversion time) or the possibility to switch off the sensor if desired.
 
-A continuación se presenta una tabla de los registros que presenta este sensor de temperatura y su valor por defecto.
+Below is a table of the registers presented by this temperature sensor and its default value.
 
 | Register Address (Hexadecimal) | Register Name         | Default Register Data (Hexadecimal) | Power-Up Default Register Description                                                                                           |
 |-----------------------|-----------------------|--------------------------------------|----------------------------------------------------------------------------------------------------------------------------------|
@@ -179,39 +179,39 @@ A continuación se presenta una tabla de los registros que presenta este sensor 
 | 0x07                  | Microchip Device ID/ Device Revision  | 0x0601                         | —                                                                                                                                       
 | 0x09                  | Resolution  | 0x8001                               | Most Significant bit is set by default 0.25°C Measurement Resolution                                                            |
 
-<figcaption>Registros del sensor de temperatura MCP9844</figcaption>
+<figcaption>MCP9844 Temperature Sensor Registers</figcaption>
 <br>
 
-En este caso el dato de temperatura está codificado en complemento a 2 y se presenta como un dato de 13 bits, 1 bit que determina el signo y 12 que determinan el dato de temperatura, por lo que el fabricante nos proporciona las siguientes ecuaciones para obtener el dato en grados centígrados.
+In this case the temperature data is encoded in 2's complement and is presented as a 13-bit data, 1 bit determining the sign and 12 determining the temperature data, so the manufacturer provides us with the following equations to obtain the data in degrees Celsius.
 
 
-Si la Temperatura $\ge$ 0°C
+If Temperature $\ge$ 0°C
 $$
 T_{A}(ºC) = (UpperByte * 2^{4} + LowerByte* 2^{4}) 
 $$(2.2.1)
 
-Si la Temperatura < 0°C
+If Temperature < 0°C
 $$
 T_{A}(ºC) = (UpperByte * 2^{4} + LowerByte* 2^{4})-256
 $$(2.2.2)
 
-Donde *UpperByte* son los bits 15-8 del registro T<sub>A</sub> y *LowerByte* los bits 7-0 del mismo registro.
+Where *UpperByte* are bits 15-8 of the T<sub>A</sub> register and *LowerByte* are bits 7-0 of the same register.
 
-En el caso de los límites de temperatura estos vienen definidos por 11 bits, 1 bit que determina el signo y 10 bits para codificar el dato absoluto de temperatura
+In the case of the temperature limits these are defined by 11 bits, 1 bit determining the sign and 10 bits to encode the absolute temperature data.
 
-## Transceptores SFP AFBR-5715ALZ
+## SFP Transceiver AFBR-5715ALZ
 
-Los transceptores SFP de fibra óptica tienen la función principal ser los puertos de comunicación de la placa. Estos transceptores cuentan con una memoria EEPROM que se divide en dos páginas, las cuales corresponden a las direcciones esclavo I<sup>2</sup>C 0x50 y 0x51 en nuestro caso.
+Los transceptores SFP de fibra óptica tienen la función principal ser los puertos de comunicación de la placa. These transceivers have an EEPROM memory that is divided into two pages, which correspond to the slave addresses I<sup>2</sup>C 0x50 and 0x51 in our case.
 
-Los SFP recopilan información de magnitudes de gran relevancia en tiempo real y se ubican en la segunda página de la EEPROM (Ox51) como son la temperatura a la que se encuentran, la tensión de alimentación que se les suministra, la corriente de polarización del láser y tanto la potencia óptica transmitida como la recibida. 
+The SFPs collect information on highly relevant real-time quantities and are located on the second page of the EEPROM (0x51), such as the temperature at which they are located, the supply voltage supplied to them, the laser bias current and both the transmitted and received optical power. 
 
-En la misma segunda página de la EEPROM de los SFP se halla la posibilidad de emplear alertas y advertencias en función de un rango ya determinado por el fabricante para monitorizar el estado de los transceptores SFP.
+On the same second page of the SFP EEPROM is the possibility to use alerts and warnings based on a range already determined by the manufacturer to monitor the status of the SFP transceivers.
 
-Pese a que la primera página de la EEPROM se basa principalmente en caracteres identificativos del transceptor como pueden ser el número de parte y revisión o el nombre del vendedor, también podemos encontrar información relevante sobre el estado y funcionamiento del transceptor ya que podemos encontrar en este espacio de la memoria la longitud de onda del láser para saber en que ventana se encuentra trabajando y el registro que nos indica si se ha configurado mediante *hardware* las señales de estado TX_DISABLE, TX_FAULT y RX_LOS. 
+Although the first page of the EEPROM is mainly based on transceiver identification characters such as part number and revision or vendor name, we can also find relevant information about the status and operation of the transceiver as we can find in this memory space the wavelength of the laser to know in which window it is working and the register that tells us if the status signals TX_DISABLE, TX_FAULT and RX_LOS have been configured by hardware. 
 
-En ambas páginas de la EEPROM encontramos uno o varios registros dedicados a un *Checksum* que nos permitirá comprobar el estado de la propia EEPROM.
+In both pages of the EEPROM we find one or more registers dedicated to a Checksum that will allow us to check the status of the EEPROM itself.
 
-A continuación se presentan varias tablas que representan los registros de la EEPROM de los transceptores SFP.
+Below are several tables representing the EEPROM registers of the SFP transceivers.
 <!---
 Registers SFP 0x50
 -->
@@ -240,7 +240,7 @@ Registers SFP 0x50
 | 84-91 | Vendor Date Code, ASCII |
 | 95 | Checksum for bytes 64-94 |
 
-<figcaption>Registros de la página 1 de la EEPROM de los transceptores SFP</figcaption>
+<figcaption>SFP transceiver EEPROM page 1 registers</figcaption>
 <br>
 
 <!---
@@ -272,23 +272,23 @@ Registers SFP 0x51
 | 23           | Tx Bias L Warning LSB   | 102          | Real Time Tx Power MSB    | 127          |                                |
 | 24           | Tx Pwr H Alarm MSB      | 103          | Real Time Tx Power LSB    | 128          |                                |
 | 25           | Tx Pwr H Alarm LSB      |              |                            |              |                                |
-<figcaption>Registros de la página 2 de la EEPROM de los transceptores SFP</figcaption>
+<figcaption>SFP transceiver EEPROM page 2 registers</figcaption>
 <br>
 
 
-Para interpretar los datos de las magnitudes de la página 2 en formato bit hemos de tener en cuenta las siguientes aclaraciones del fabricante en función de la magnitud a interpretar:
+To interpret the data of the magnitudes on page 2 in bit format, the following clarifications from the manufacturer must be taken into account depending on the magnitude to be interpreted:
 
- - **Temperatura (Temp):** Los valores de temperatura se codifican como enteros de 16 bits en complemento a dos, lo que permite representar tanto valores positivos como negativos. Cada unidad en esta representación equivale a 1/256 de grado Celsius (ºC).
+ - **Temperature (Temp):** Temperature values are encoded as 16-bit integers in two's complement, which allows both positive and negative values to be represented. Each unit in this representation is equivalent to 1/256 of a degree Celsius (ºC).
   
-- **Voltaje de Alimentación (VCC):** Este parámetro se representa como un entero de 16 bits sin signo, lo que significa que solo puede tener valores positivos. Cada incremento en este valor corresponde a 100 microvoltios (µV).
+- **Power Supply Voltage (VCC):** This parameter is represented as a 16-bit unsigned integer, which means that it can only have positive values. Each increment in this value corresponds to 100 microvolts (µV).
   
-- **Corriente de Polarización del Láser (Tx Bias):** La corriente de polarización del láser se decodifica como un entero de 16 bits sin signo, lo que indica que solo puede ser positiva. Cada incremento en este valor representa 2 microamperios (µA).
+- **Laser Bias Current (Tx Bias):** The laser bias current is decoded as a 16-bit unsigned integer, which means that it can only be positive. Each increment in this value represents 2 microamperes (µA).
   
-- **Potencia Óptica Promedio Transmitida (Tx Pwr):** Este parámetro se representa como un entero de 16 bits sin signo, donde cada incremento corresponde a 0.1 microvatios (µW) de potencia óptica transmitida.
+- **Average Transmitted Optical Power (Tx Pwr):** This parameter is represented as a 16-bit unsigned integer, where each increment corresponds to 0.1 microwatt (µW) of transmitted optical power.
   
-- **Potencia Óptica Promedio Recibida (Rx Pwr):** Similar al parámetro anterior, la potencia óptica promedio recibida se codifica como un entero de 16 bits sin signo. Cada unidad de este valor representa 0.1 microvatios (µW) de potencia óptica recibida.
+- **Average Optical Power Received (Rx Pwr):** Similar to the previous parameter, the average optical power received is encoded as a 16-bit unsigned integer. Each unit of this value represents 0.1 microwatt (µW) of received optical power.
 
-Como se puede observar en la tabla de registros de la segunda página de la EEPROM, hay un registro de estado y este describe los siguientes casos.
+As can be seen in the register table on the second page of the EEPROM, there is a status register and this describes the following cases.
 
 <!---
 SFP Status Table
@@ -302,12 +302,12 @@ SFP Status Table
 | 1     | Rx LOS State         | Digital state of the SFP LOS Output Pin (1 = LOS asserted) |
 | 0     | Data Ready (Bar)     | Indicates transceiver is powered and real-time sense data is ready (0 = Ready) |
 
-<figcaption>Desglose de los bits de estado de los transceptores SFP</figcaption>
+<figcaption>Breakdown of SFP transceiver status bits</figcaption>
 <br>
 <!---
 SFP Flags Table
 -->
-En cuanto los registros dedicados a las <i>flags</i>, estos contienen los bits indicadores de las alertas y advertencias mencionadas previamente. En la siguiente tabla se presenta su distribución en los registros pertinentes.
+As for the registers dedicated to the <i>flags</i>, these contain the indicator bits of the previously mentioned alerts and warnings. The following table shows their distribution in the relevant registers.
 <br>
 
 | Byte | Bit # | Flag Bit Name | Description |
@@ -336,16 +336,16 @@ En cuanto los registros dedicados a las <i>flags</i>, estos contienen los bits i
 | 117  | 7     | Rx Power High Warning | Set when received P_Avg optical power exceeds high warning threshold. |
 |      | 9     | Rx Power Low Warning | Set when received P_Avg optical power exceeds low warning threshold. |
 
-<figcaption>Desglose de los <i>flags</i> de los transceptores SFP</figcaption>
+<figcaption>Breakdown of the <i>flags</i> of SFP transceivers</figcaption>
 <br>
 
 
  
 # Obtención de datos del AMS, PS y PL SYSMON y diferenciación por canales
 
-Debido a los sensores junto con convertidores ADC con los que ha dotado Xilinx a nuestro módulo empleado y sus herramientas de monitorización de sistemas (SYSMON) podemos acceder mediante el *driver* de linux "xilinx-ams" a una gran cantidad de información en tiempo real del AMS, del PS y del PL. 
+Due to the sensors together with ADC converters with which Xilinx has equipped our module and its system monitoring tools (SYSMON), we can access a large amount of real-time information from the AMS, the PS and the PL via the linux driver "xilinx-ams". 
 
-Esta información se ve diferenciada en distintos canales que se explican en la siguiente tabla.
+This information is differentiated into different channels which are explained in the following table.
 
 | Sysmon Block | Channel | Details                                                     | Measurement | File Descriptor                    |
 |--------------|---------|-------------------------------------------------------------|-------------|-----------------------------|
@@ -387,9 +387,9 @@ Esta información se ve diferenciada en distintos canales que se explican en la 
 |              | 33      | VUser2 voltage measurement (supply9).                       | Voltage     | *in_voltage33_raw, in_voltage33_scale*            |
 |              | 34      | VUser3 voltage measurement (supply10).                      | Voltage     | *in_voltage34_raw, in_voltage34_scale*            |
 
-La información obtenida se muestra en código ADC en el archivo *_raw* y se ha de escalar con el valor obtenido en el archivo *_scale*. En el caso de la temperatura se ha de aplicar también un desfase proveniente del archivo *_offset*. 
+The information obtained is displayed in ADC code in the *_raw* file and has to be scaled with the value obtained in the *_scale* file. In the case of temperature, an offset from the *_offset* file must also be applied. 
 
-A continuación se pueden apreciar las expresiones empleadas para pasar los valores leídos a la magnitud correspondiente.
+The expressions used to pass the values read to the corresponding magnitude are shown below.
 
 $$
 V_{XX}(V) = (in\_voltageXX\_raw * in\_voltageXX\_scale) * \frac{1}{2^{n\_bits}}
@@ -399,10 +399,11 @@ $$
 T_{XX}(ºC)= (in\_tempXX\_raw + in\_tempXX\_offset) * \frac{in\_tempXX\_scale}{2^{n\_bits}}
 $$(3.2)
 
-Donde XX define el número de canal seleccionado en tensión o temperatura y "n_bits" define el número de bits del ADC empleado, en nuestro caso 10 bits. El desfase en el caso de la temperatura se suma puesto que se devuelve un número negativo.
+Where XX defines the selected channel number in voltage or temperature and "n_bits" defines the number of bits of the ADC used, in our case 10 bits. The offset in the case of temperature is added since a negative number is returned.
 
-Xilinx también nos ofrece alarmas aplicadas a las tensiones y temperaturas medidas en los canales previamente mencionados y el *driver* de Linux nos permite configurar y leer estas alarmas empleando también la herramienta *iio_event_monitor* del proprio Linux. En el caso de la temperatura solo se dispone de alarmas que se activen en caso de exceder una determinada temperatura mientras que en el caso de al tensión, hay alarmas para casos tanto de tensión excesiva como de tensión insuficiente.
+Xilinx also offers alarms applied to the voltages and temperatures measured on the previously mentioned channels and the Linux driver allows us to configure and read these alarms also using the *iio_event_monitor* tool of Linux itself. In the case of temperature, there are only alarms that are activated if a certain temperature is exceeded, while in the case of voltage, there are alarms for both overvoltage and undervoltage, but without specifying whether the limit exceeded is the lower or upper limit (shown as *either*).
 
-# Flujo de la aplicación y inicio de la programación
+# Start of programming
 
-Primeramente, antes de aventurarse a la programación de la aplicación se ha planteado un flujograma a seguir por la aplicación para asegurar un funcionamiento acorde a nuestras necesidades.
+After an exhaustive study of all the sensing elements, the operation of each one, their corresponding characteristics and alerts and the communication channel with these devices, we can start programming the different functions that will allow us to communicate with these devices and configure them to our needs or obtain the desired information.
+
