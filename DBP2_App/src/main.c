@@ -361,18 +361,14 @@ int stop_I2cSensors(struct DPB_I2cSensors *data){
 }
 /************************** IIO_EVENT_MONITOR Functions ******************************/
 
-int iio_event_monitor_up() {
-	int rc = 0;
-	//int rc =execl("/run/media/mmcblk0p1/IIO_MONITOR","/run/media/mmcblk0p1/IIO_MONITOR.elf","/dev/iio:device1",NULL);
+int iio_event_monitor_up(FILE *proc) {
 
-	if(rc){
+	proc = popen("/run/media/mmcblk0p1/IIO_MONITOR.elf /dev/iio:device1 &", "r");
+	if (proc == NULL){
 		printf("\nError executing iio_event_monitor.\n");
 		return -1;
 	}
-	else {
-		return 0;
-	}
-
+	return 0;
 }
 
 /************************** AMS Functions ******************************/
@@ -521,6 +517,37 @@ int mpc9844_read_temperature(struct DPB_I2cSensors *data,float *res) {
 	}
 	else
 		res[0] = (temp_buf[0] * 16 + (float)temp_buf[1] / 16); //Temperature = Ambient Temperature (°C)
+	return 0;
+}
+
+int mpc9844_read_alarms(struct DPB_I2cSensors *data,float *res) {
+	int rc = 0;
+	struct I2cDevice dev = data->dev_pcb_temp;
+	uint8_t alarm_buf[1] = {0};
+	uint8_t alarm_reg = MPC9844_TEMP_REG;
+
+
+	// Write temperature address in register pointer
+	rc = i2c_write(&dev,&alarm_reg,1);
+	if(rc < 0)
+		return rc;
+
+	// Read MSB and LSB of ambient temperature
+	rc = i2c_read(&dev,alarm_buf,1);
+	if(rc < 0)
+			return rc;
+	if((alarm_buf[0] & 0xE0) != 0){
+		if((alarm_buf[0] & 0x80) == 0x80){
+			printf("CRITICAL!!! The ambient temperature has exceeded the established critical limit.");
+		}
+		if((alarm_buf[0] & 0x40) == 0x40){
+			printf("WARNING!!! The ambient temperature has exceeded the established high limit.");
+		}
+		if((alarm_buf[0] & 0x20) == 0x20){
+			printf("WARNING!!! The ambient temperature has exceeded the established low limit.");
+		}
+	}
+	alarm_buf[0] = alarm_buf[0] & 0x1F;	//Clear Flag bits
 	return 0;
 }
 
@@ -754,7 +781,100 @@ int sfp_avago_read_rx_av_optical_pwr(struct DPB_I2cSensors *data,int n, float *r
 	res[0] = (float) ((uint16_t) (power_buf[0] << 8)  + power_buf[1]) * 1e-7;
 	return 0;
 }
+int sfp_avago_read_alarms(struct DPB_I2cSensors *data,int n, float *res) {
+	int rc = 0;
+	uint8_t flag_buf[2] = {0,0};
+	uint8_t status_buf[1] = {0};
+	uint8_t status_reg = SFP_STAT_REG;
+	uint8_t flag_reg = SFP_FLG1_REG;
 
+	struct I2cDevice dev;
+
+	switch(n){
+		case DEV_SFP0:
+			dev = data->dev_sfp0_A2;
+		break;
+		case DEV_SFP1:
+			dev = data->dev_sfp1_A2;
+		break;
+		case DEV_SFP2:
+			dev = data->dev_sfp2_A2;
+		break;
+		case DEV_SFP3:
+				dev = data->dev_sfp3_A2;
+			break;
+		case DEV_SFP4:
+				dev = data->dev_sfp4_A2;
+			break;
+		case DEV_SFP5:
+				dev = data->dev_sfp5_A2;
+			break;
+		default:
+			return -EINVAL;
+		break;
+		}
+
+	// Read status bit register
+	rc = i2c_readn_reg(&dev,status_reg,status_buf,1);
+	if(rc < 0)
+		return rc;
+
+
+	// Read flag bit register 1
+	rc = i2c_readn_reg(&dev,flag_reg,flag_buf,1);
+	if(rc < 0)
+		return rc;
+
+	// Read flag bit register 2
+	flag_reg = SFP_FLG2_REG;
+	rc = i2c_readn_reg(&dev,flag_reg,&flag_buf[1],1);
+	if(rc < 0)
+		return rc;
+
+	uint16_t flags =  ((uint16_t) (flag_buf[0] << 8)  + flag_buf[1]);
+
+	if((status_buf[0] & 0x06) != 0){
+		if((status_buf[0] & 0x02) != 0){
+			printf("Reception Loss of Signal in SFP:%d",n);
+		}
+		if((status_buf[0] & 0x04) != 0){
+			printf("Transmitter Fault in SFP:%d",n);
+		}
+	}
+	if((flags & 0xFFC0) != 0){
+		if((flags & 0x0080) == 0x0080){
+			printf("WARNING!!! Received average optical power exceeds high alarm threshold in SFP:%d",n);
+		}
+		if((flags & 0x0040) == 0x0040){
+			printf("WARNING!!! Received average optical power exceeds low alarm threshold in SFP:%d",n);
+		}
+		if((flags & 0x0200) == 0x0200){
+			printf("WARNING!!! Transmitted average optical power exceeds high alarm threshold in SFP:%d",n);
+		}
+		if((flags & 0x0100) == 0x0100){
+			printf("WARNING!!! Transmitted average optical power exceeds low alarm threshold in SFP:%d",n);
+		}
+		if((flags & 0x0800) == 0x0800){
+			printf("WARNING!!! Transceiver laser bias current exceeds high alarm threshold in SFP:%d",n);
+		}
+		if((flags & 0x0400) == 0x0400){
+			printf("WARNING!!! Transceiver laser bias current exceeds low alarm threshold in SFP:%d",n);
+		}
+		if((flags & 0x2000) == 0x2000){
+			printf("WARNING!!! Transceiver internal supply voltage exceeds high alarm threshold in SFP:%d",n);
+		}
+		if((flags & 0x1000) == 0x1000){
+			printf("WARNING!!! Transceiver internal supply voltage exceeds low alarm threshold in SFP:%d",n);
+		}
+		if((flags & 0x8000) == 0x8000){
+			printf("WARNING!!! Transceiver internal temperature exceeds high alarm threshold in SFP:%d",n);
+		}
+		if((flags & 0x4000) == 0x4000){
+			printf("WARNING!!! Transceiver internal temperature exceeds low alarm threshold in SFP:%d",n);
+		}
+	}
+	return 0;
+}
 /************************** Volt. and Curr. Sensor Functions ******************************/
 int ina3221_get_voltage(struct DPB_I2cSensors *data,int n, float *res){
 	int rc = 0;
@@ -835,7 +955,97 @@ int ina3221_get_current(struct DPB_I2cSensors *data,int n, float *res){
 		}
 	return 0;
 }
+int ina3221_read_alarms(struct DPB_I2cSensors *data,int n, float *res){
+	int rc = 0;
+	uint8_t mask_buf[2] = {0,0};
+	uint8_t mask_reg = INA3221_MASK_ENA_REG;
+	struct I2cDevice dev;
+	char *arr[] = { "0", "0", "0" };
+	char warning_str[80];
+	char crit_str[80];
+	strcpy(warning_str, "Warning!!! Excess current in the channel: ");
+	strcpy(crit_str, "CRITICAL!!! Excess current in the channel: ");
 
+	switch(n){
+		case DEV_SFP0_2_VOLT:
+			dev = data->dev_sfp0_2_volt;
+			arr[0] =  "SFP-0";
+			arr[1] =  "SFP-1";
+			arr[2] =  "SFP-2";
+		break;
+		case DEV_SFP3_5_VOLT:
+			dev = data->dev_sfp3_5_volt;
+			arr[0] =  "SFP-3";
+			arr[1] =  "SFP-4";
+			arr[2] =  "SFP-5";
+		break;
+		case DEV_SOM_VOLT:
+			dev = data->dev_som_volt;
+			arr[0] =  "12 V";
+			arr[1] =  "3.3 V";
+			arr[2] =  "1.8 V";
+		break;
+		default:
+			return -EINVAL;
+		break;
+		}
+	// Write shunt voltage channel 1 address in register pointer
+	rc = i2c_write(&dev,&mask_reg,1);
+	if(rc < 0)
+		return rc;
+
+	// Read MSB and LSB of voltage
+	rc = i2c_read(&dev,mask_buf,2);
+	if(rc < 0)
+		return rc;
+
+	uint16_t mask_int = (uint16_t)(mask_buf[0] << 8) + (mask_buf[1]);
+	if((mask_int & 0x0380)!= 0){
+		if((mask_int & 0x0080) == 0x0080){
+			strcat(crit_str,arr[0]);
+			printf(crit_str);
+			strcpy(crit_str, "CRITICAL!!! Excess current in the channel: ");
+			printf("\n");
+		}
+	if((mask_int & 0x0100) == 0x0100){
+			strcat(crit_str,arr[1]);
+			printf(crit_str);
+			strcpy(crit_str, "CRITICAL!!! Excess current in the channel: ");
+			printf("\n");
+		}
+	if((mask_int & 0x0200) == 0x0200){
+			strcat(crit_str,arr[2]);
+			printf(crit_str);
+			strcpy(crit_str, "CRITICAL!!! Excess current in the channel: ");
+			printf("\n");
+		}
+	}
+	if((mask_int & 0x0038)!= 0){
+		if((mask_int & 0x0008) == 0x0008){
+			strcat(warning_str,arr[0]);
+			printf(warning_str);
+			strcpy(warning_str, "Warning!!! Excess current in the channel: ");
+			printf("\n");
+		}
+	if((mask_int & 0x0010) == 0x0010){
+			strcat(warning_str,arr[1]);
+			printf(warning_str);
+			strcpy(warning_str, "Warning!!! Excess current in the channel: ");
+			printf("\n");
+		}
+	if((mask_int & 0x0020) == 0x0020){
+			strcat(warning_str,arr[2]);
+			printf(warning_str);
+			strcpy(warning_str, "Warning!!! Excess current in the channel: ");
+			printf("\n");
+		}
+
+	}
+
+	return 0;
+}
+
+/************************** Threads declaration ******************************/
 static int monitoring_thread_count;
 
 static void *monitoring_thread(void *arg)
@@ -844,8 +1054,8 @@ static void *monitoring_thread(void *arg)
 	int rc ;
 	struct DPB_I2cSensors *data = arg;
 
-	float ams_temp[1];
-	float ams_volt[1];
+	float ams_temp[2];
+	float ams_volt[18];
 	int temp_chan[2] = {7,8};
 	int volt_chan[18] = {0,1,2,3,4,5,6,9,10,11,12,13,14,15,16,17,18,19};
 
@@ -867,8 +1077,12 @@ static void *monitoring_thread(void *arg)
 	//struct DPB_I2cSensors data;
 
 
-	printf("Monitoring thread period: %ds\n",MONIT_THREAD_TIME/1000000);
-	rc = make_periodic(MONIT_THREAD_TIME, &info);
+	printf("Monitoring thread period: %ds\n",MONIT_THREAD_PERIOD/1000000);
+	rc = make_periodic(MONIT_THREAD_PERIOD, &info);
+	if (rc) {
+		printf("Error\r\n");
+		return NULL;
+	}
 	while (1) {
 		rc = mpc9844_read_temperature(data,temp);
 		if (rc) {
@@ -941,6 +1155,14 @@ static void *monitoring_thread(void *arg)
 			printf("Error\r\n");
 			return NULL;
 		}
+		printf("Temperatura ambiente: %f ºC\n",temp[0]);
+		printf("\n");
+		printf("Temperatura SFP: %f ºC\n",sfp_temp[0]);
+		printf("Tensión SFP: %f V\n",sfp_vcc[0]);
+		printf("Corriente polarización del láser SFP: %f A\n",sfp_txbias[0]);
+		printf("Potencia óptica transmitida SFP: %f W\n",sfp_txpwr[0]);
+		printf("Potencia óptica recibida SFP: %f W\n",sfp_rxpwr[0]);
+		printf("\n");
 		for(int m = 0; m<2;m++){
 			printf("Temperatura AMS - Canal %d: %f ºC - Iteración: %d\n",temp_chan[m],ams_temp[m],monitoring_thread_count);
 		}
@@ -966,43 +1188,124 @@ static void *monitoring_thread(void *arg)
 		printf("Corriente SoM - Canal %d: %f A - Iteración: %d\n",l+1,curr_som[l],monitoring_thread_count);
 		printf("Potencia consumida SoM - Canal %d: %f W - Iteración: %d\n",l+1,curr_som[l]*volt_som[l],monitoring_thread_count);
 		}
+		printf("\n");
 		monitoring_thread_count++;
 		wait_period(&info);
 	}
 	//stop_I2cSensors(&data);
 	return NULL;
 }
+static void *alarms_thread(void *arg){
+	struct periodic_info info;
+	int rc ;
+	struct DPB_I2cSensors *data = arg;
 
+	printf("Alarms thread period: %dms\n",ALARMS_THREAD_PERIOD);
+	rc = make_periodic(ALARMS_THREAD_PERIOD, &info);
+	if (rc) {
+		printf("Error\r\n");
+		return NULL;
+	}
+	while(1){
+		/*
+		rc = mpc9844_read_alarms(data,float *res);
+		if (rc) {
+			printf("Error\r\n");
+			return NULL;
+		}
+
+		rc = ina3221_read_alarms(data,0,float *res);
+		if (rc) {
+			printf("Error\r\n");
+			return NULL;
+		}
+		rc = ina3221_read_alarms(data,1,float *res);
+		if (rc) {
+			printf("Error\r\n");
+			return NULL;
+		}
+		rc = ina3221_read_alarms(data,2,float *res);
+		if (rc) {
+			printf("Error\r\n");
+			return NULL;
+		}
+
+		rc = sfp_avago_read_alarms(data,0,float *res)
+		if (rc) {
+			printf("Error\r\n");
+			return NULL;
+		}
+		rc = sfp_avago_read_alarms(data,1,float *res)
+		if (rc) {
+			printf("Error\r\n");
+			return NULL;
+		}
+		rc = sfp_avago_read_alarms(data,2, float *res)
+		if (rc) {
+			printf("Error\r\n");
+			return NULL;
+		}
+		rc = sfp_avago_read_alarms(data,3, float *res)
+		if (rc) {
+			printf("Error\r\n");
+			return NULL;
+		}
+		rc = sfp_avago_read_alarms(data,4, float *res)
+		if (rc) {
+			printf("Error\r\n");
+			return NULL;
+		}
+		rc = sfp_avago_read_alarms(data,5, float *res)
+		if (rc) {
+			printf("Error\r\n");
+			return NULL;
+		}
+		*/
+
+		wait_period(&info);
+	}
+
+	return NULL;
+}
 int main(){
+	//IIO_EVENT_MONITOR process file
+	FILE *fp = NULL;
+	//Threads elements
+	pthread_t t_1, t_2;
+	sigset_t alarm_sig;
+	int i;
 
-		pthread_t t_1;
-		sigset_t alarm_sig;
-		int i;
-		int rc;
-		struct DPB_I2cSensors data;
+	int rc;
+	struct DPB_I2cSensors data;
 
-		rc = init_I2cSensors(&data); //Initialize i2c sensors
+	rc = init_I2cSensors(&data); //Initialize i2c sensors
 
-		if (rc) {
-			printf("Error\r\n");
-			return 0;
+	if (rc) {
+		printf("Error\r\n");
+		return 0;
+	}
+
+	rc = iio_event_monitor_up(fp); //Initialize iio event monitor
+	if (rc) {
+		printf("Error\r\n");
+		return rc;
+	}
+	/* Block all real time signals so they can be used for the timers.
+	   Note: this has to be done in main() before any threads are created
+	   so they all inherit the same mask. Doing it later is subject to
+	   race conditions */
+
+	sigemptyset(&alarm_sig);
+	for (i = SIGRTMIN; i <= SIGRTMAX; i++)
+		sigaddset(&alarm_sig, i);
+	sigprocmask(SIG_BLOCK, &alarm_sig, NULL);
+
+	pthread_create(&t_1, NULL, monitoring_thread,(void *)&data); //Create thread 1 - monitors magnitudes every x seconds
+	//pthread_create(&t_2, NULL, alarms_thread,(void *)&data); //Create thread 2 - read alarms every x miliseconds
+
+	while(1){
+		sleep(1000000);
 		}
-
-		rc = iio_event_monitor_up(); //Initialize iio event monitor
-		if (rc) {
-			printf("Error\r\n");
-			return rc;
-		}
-
-		sigemptyset(&alarm_sig);
-		for (i = SIGRTMIN; i <= SIGRTMAX; i++)
-			sigaddset(&alarm_sig, i);
-		sigprocmask(SIG_BLOCK, &alarm_sig, NULL);
-
-		pthread_create(&t_1, NULL, monitoring_thread,(void *)&data); //Create thread 1 - monitors magnitudes every second
-
-		//stop_I2cSensors(&data);
-		while(1){
-		}
+	//stop_I2cSensors(&data);
 	return 0;
 }
