@@ -1,4 +1,6 @@
 
+#ifndef TIMER_H_   /* Include guard */
+#define TIMER_H_
 
 
 #include <stdio.h>
@@ -9,19 +11,13 @@
 #include <unistd.h>
 
 
-
-#ifndef TIMER_H_   /* Include guard */
-#define TIMER_H_
-
-
-
 struct periodic_info {
 	int sig;
 	sigset_t alarm_sig;
 };
 
-static int make_periodic(int unsigned period, struct periodic_info *info);
-static void wait_period(struct periodic_info *info);
+int make_periodic(int unsigned period, struct periodic_info *info);
+void wait_period(struct periodic_info *info);
 
 #endif
 

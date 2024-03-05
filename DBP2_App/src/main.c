@@ -10,9 +10,9 @@
 #include <pthread.h> 
 #include <stdlib.h>
 #include <string.h>
+#include <timer.h>
 
 #include "i2c.h"
-#include "timer.c"
 #include "constants.h"
 #include "linux/errno.h"
 
@@ -363,7 +363,7 @@ int stop_I2cSensors(struct DPB_I2cSensors *data){
 
 int iio_event_monitor_up(FILE *proc) {
 
-	proc = popen("/run/media/mmcblk0p1/IIO_MONITOR.elf /dev/iio:device1 &", "r");
+	proc = popen("/run/media/mmcblk0p1/IIO_MONITOR.elf -a iio:device0 &", "r");
 	if (proc == NULL){
 		printf("\nError executing iio_event_monitor.\n");
 		return -1;
@@ -382,9 +382,9 @@ int xlnx_ams_read_temp(int *chan, int n, float *res){
 		char offset_str[80];
 		char scale_str[80];
 
-		strcpy(raw_str, "/sys/bus/iio/devices/iio:device1/in_temp");
-		strcpy(offset_str, "/sys/bus/iio/devices/iio:device1/in_temp");
-		strcpy(scale_str, "/sys/bus/iio/devices/iio:device1/in_temp");
+		strcpy(raw_str, "/sys/bus/iio/devices/iio:device0/in_temp");
+		strcpy(offset_str, "/sys/bus/iio/devices/iio:device0/in_temp");
+		strcpy(scale_str, "/sys/bus/iio/devices/iio:device0/in_temp");
 
 		strcat(raw_str, buffer);
 		strcat(offset_str, buffer);
@@ -448,8 +448,8 @@ int xlnx_ams_read_volt(int *chan, int n, float *res){
 		char raw_str[80];
 		char scale_str[80];
 
-		strcpy(raw_str, "/sys/bus/iio/devices/iio:device1/in_voltage");
-		strcpy(scale_str, "/sys/bus/iio/devices/iio:device1/in_voltage");
+		strcpy(raw_str, "/sys/bus/iio/devices/iio:device0/in_voltage");
+		strcpy(scale_str, "/sys/bus/iio/devices/iio:device0/in_voltage");
 
 		strcat(raw_str, buffer);
 		strcat(scale_str, buffer);

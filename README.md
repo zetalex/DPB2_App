@@ -18,7 +18,9 @@
 
 <h3 align="center">Grado en Ingeniería de Tecnologías y Servicios de Telecomunicación</h3>
 
-# Description of Hyper-Kamiokande project
+# Introduction
+
+## The neutrino itself
 It is well known that telecommunications has played a pivotal role in the course of society since its emergence, being a discipline that today is necessary in almost any field, whether day-to-day or professional.
 
 Telecommunications encompasses several branches of knowledge, in which I specialise in the field of electronic systems.
@@ -32,6 +34,15 @@ $$
 n -> p⁺ + e⁻ + v_e
 $$(1.1)
 
+The first person to postulate the existence of the neutrino theoretically was Wolfgang Pauli in 1930, but it remained undetected for 25 years because this hypothetically predicted particle had to be massless, chargeless and without strong interaction.
+
+Finally, in 1956,  Clyde Cowan, Frederick Reines, Francis B. "Kiko" Harrison, Herald W. Kruse, and Austin D. McGuire were able to demonstrate the existence of the neutrino experimentally by using a beam of neutrons to pump a tank of pure water. By observing the subsequent emission of the protons, they were able to demonstrate the existence of the neutrino. This test was called the neutrino experiment.
+
+Over the years, different types of radioactive decays have been discovered that can give rise to neutrinos, such as natural and artificial nuclear reactions, supernova events or the spin-down of a neutron star. Furthermore, it has been discovered that there are different leptonic flavours of neutrinos originating from the weak interactions, electron neutrino, muon neutrino and tau neutrino,each flavor is associated with the correspondingly named charged lepton and similar to some other neutral particles, neutrinos oscillate between different flavors in flight as a consequence.
+
+
+
+## Hyper-Kamiokande Project
 Hyper-Kamiokande is a neutrino observatory project still under construction (estimated to start operation in 2027), which takes place in the Kamioka mines in Japan. Although the project is based in Japan, it involves research institutes from 22 different countries. The aim of the project is to search for proton decays and detect neutrinos from natural sources such as the Earth, the atmosphere, the Sun and the cosmos, as well as to study neutrino oscillations from the neutrino beam of the artificial accelerator.
 
 Hyper-Kamiokande is planned to be the world's largest neutrino observatory, surpassing its predecessor Super-Kamiokande, which is 71 metres high and 68 metres in diameter. The observatory, filled with ultrapure water, will have about 40,000 photomultiplier tubes as detectors inside the observatory and 10,000 detectors outside the observatory.

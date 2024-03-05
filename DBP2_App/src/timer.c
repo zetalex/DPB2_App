@@ -13,13 +13,11 @@
 #include <errno.h>
 #include <time.h>
 #include <pthread.h>
+#include <timer.h>
 #include <unistd.h>
 
-#include "timer.h"
 
-
-
-static int make_periodic(int unsigned period, struct periodic_info *info){
+int make_periodic(int unsigned period, struct periodic_info *info){
 	static int next_sig;
 	int ret;
 	unsigned int ns;
@@ -60,7 +58,7 @@ static int make_periodic(int unsigned period, struct periodic_info *info){
 	return ret;
 }
 
-static void wait_period(struct periodic_info *info){
+void wait_period(struct periodic_info *info){
 	int sig;
 	sigwait(&(info->alarm_sig), &sig);
 }
