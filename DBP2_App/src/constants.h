@@ -135,5 +135,22 @@
 ****************************************************************************/
 #define MONIT_THREAD_PERIOD 10000000
 #define ALARMS_THREAD_PERIOD 100
+#define AMS_ALARMS_THREAD_PERIOD 100
+/******************************************************************************
+*Shared Memory.
+****************************************************************************/
+#define MEMORY_KEY 4567
+
+struct wrapper
+{
+    char ev_type[8];
+    char ch_type[16];
+    int chn;
+    __s64 tmpstmp;
+    sem_t empty;
+    sem_t pmutex;
+    sem_t cmutex;
+    sem_t full;
+};
 
 

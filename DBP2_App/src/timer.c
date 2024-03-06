@@ -13,7 +13,7 @@
 #include <errno.h>
 #include <time.h>
 #include <pthread.h>
-#include <timer.h>
+#include "timer.h"
 #include <unistd.h>
 
 

@@ -53,7 +53,7 @@
                                 								
                                 <option id="xilinx.gnu.compiler.inferred.swplatform.flags.1277236940" name="Software Platform Inferred Flags" superClass="xilinx.gnu.compiler.inferred.swplatform.flags" value="${resolvePlatformFile:project=DBP2_App,fileType=sysrootFlag}" valueType="string"/>
                                 								
-                                <option id="xilinx.gnu.compiler.inferred.swplatform.includes.1334270910" name="Software Platform Include Path" superClass="xilinx.gnu.compiler.inferred.swplatform.includes" valueType="includePath"/>
+                                <option id="xilinx.gnu.compiler.inferred.swplatform.includes.1334270910" name="Software Platform Include Path" superClass="xilinx.gnu.compiler.inferred.swplatform.includes"/>
                                 								
                                 <option id="xilinx.gnu.compiler.dircategory.includes.643410739" superClass="xilinx.gnu.compiler.dircategory.includes" valueType="includePath">
                                     									
