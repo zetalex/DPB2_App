@@ -329,6 +329,7 @@ SFP Status Table
 SFP Flags Table
 -->
 As for the registers dedicated to the <i>flags</i>, these contain the indicator bits of the previously mentioned alerts and warnings. The following table shows their distribution in the relevant registers.
+
 <br>
 
 | Byte | Bit # | Flag Bit Name | Description |

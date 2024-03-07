@@ -3,20 +3,20 @@
 /******************************************************************************
 * Temperature Sensor Register Set - Temperature value, alarm value and alarm flags.
 ****************************************************************************/
-#define MPC9844_TEMP_UPPER_LIM_REG 0x2
-#define MPC9844_TEMP_LOWER_LIM_REG 0x3
-#define MPC9844_TEMP_CRIT_LIM_REG 0x4
-#define MPC9844_TEMP_REG 0x5
+#define MCP9844_TEMP_UPPER_LIM_REG 0x2
+#define MCP9844_TEMP_LOWER_LIM_REG 0x3
+#define MCP9844_TEMP_CRIT_LIM_REG 0x4
+#define MCP9844_TEMP_REG 0x5
 /******************************************************************************
 * Temperature Sensor Register Set - Configuration and resolution value.
 ****************************************************************************/
-#define MPC9844_RES_REG 0x9
-#define MPC9844_CONFIG_REG 0x1
+#define MCP9844_RES_REG 0x9
+#define MCP9844_CONFIG_REG 0x1
 /******************************************************************************
 * Temperature Sensor Register Set - Manufacturer and device ID.
 ****************************************************************************/
-#define MPC9844_MANUF_ID_REG 0x6
-#define MPC9844_DEVICE_ID_REG 0x7
+#define MCP9844_MANUF_ID_REG 0x6
+#define MCP9844_DEVICE_ID_REG 0x7
 /******************************************************************************
 * SFP Register Set - Real Time Magnitudes.
 ****************************************************************************/

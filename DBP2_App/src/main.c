@@ -13,6 +13,7 @@
 #include "timer.h"
 #include <semaphore.h>
 #include <sys/shm.h>
+#include <fcntl.h>
 
 #include "i2c.h"
 #include "constants.h"
@@ -49,15 +50,23 @@ struct wrapper *memory;
 /************************** Function Prototypes ******************************/
 
 /************************** I2C Devices Functions ******************************/
-
+/**
+ * Initialize MCP9844 Temperature Sensor
+ *
+ * @param I2cDevice *dev: device to be initialized
+ *
+ * @return Negative integer if initialization fails.If not, returns 0 and the device initialized
+ *
+ * @note This also checks via Manufacturer and Device ID that the device is correct
+ */
 int init_tempSensor (struct I2cDevice *dev) {
 	int rc = 0;
 	uint8_t manID_buf[2] = {0,0};
-	uint8_t manID_reg = MPC9844_MANUF_ID_REG;
+	uint8_t manID_reg = MCP9844_MANUF_ID_REG;
 	uint8_t devID_buf[2] = {0,0};
-	uint8_t devID_reg = MPC9844_DEVICE_ID_REG;
+	uint8_t devID_reg = MCP9844_DEVICE_ID_REG;
 
-	rc = i2c_start(dev);
+	rc = i2c_start(dev);  //Start I2C device
 		if (rc) {
 			return rc;
 		}
@@ -70,7 +79,7 @@ int init_tempSensor (struct I2cDevice *dev) {
 	rc = i2c_read(dev,manID_buf,2);
 	if(rc < 0)
 			return rc;
-	if(!((manID_buf[0] == 0x00) && (manID_buf[1] == 0x54))){
+	if(!((manID_buf[0] == 0x00) && (manID_buf[1] == 0x54))){ //Check Manufacturer ID to verify is the right component
 		rc = -1;
 		printf("Manufacturer ID does not match the corresponding device: Temperature Sensor\r\n");
 		return rc;
@@ -85,7 +94,7 @@ int init_tempSensor (struct I2cDevice *dev) {
 	rc = i2c_read(dev,devID_buf,2);
 	if(rc < 0)
 			return rc;
-	if(!((devID_buf[0] == 0x06) && (devID_buf[1] == 0x01))){
+	if(!((devID_buf[0] == 0x06) && (devID_buf[1] == 0x01))){//Check Device ID to verify is the right component
 			rc = -1;
 			printf("Device ID does not match the corresponding device: Temperature Sensor\r\n");
 			return rc;
@@ -93,7 +102,15 @@ int init_tempSensor (struct I2cDevice *dev) {
 	return 0;
 
 }
-
+/**
+ * Initialize INA3221 Voltage and Current Sensor
+ *
+ * @param I2cDevice *dev: device to be initialized
+ *
+ * @return Negative integer if initialization fails.If not, returns 0 and the device initialized
+ *
+ * @note This also checks via Manufacturer and Device ID that the device is correct
+ */
 int init_voltSensor (struct I2cDevice *dev) {
 	int rc = 0;
 	uint8_t manID_buf[2] = {0,0};
@@ -101,7 +118,7 @@ int init_voltSensor (struct I2cDevice *dev) {
 	uint8_t devID_buf[2] = {0,0};
 	uint8_t devID_reg = INA3221_DIE_ID_REG;
 
-	rc = i2c_start(dev);
+	rc = i2c_start(dev); //Start I2C device
 		if (rc) {
 			return rc;
 		}
@@ -114,7 +131,7 @@ int init_voltSensor (struct I2cDevice *dev) {
 	rc = i2c_read(dev,manID_buf,2);
 	if(rc < 0)
 			return rc;
-	if(!((manID_buf[0] == 0x54) && (manID_buf[1] == 0x49))){
+	if(!((manID_buf[0] == 0x54) && (manID_buf[1] == 0x49))){ //Check Manufacturer ID to verify is the right component
 		rc = -1;
 		printf("Manufacturer ID does not match the corresponding device: Voltage Sensor\r\n");
 		return rc;
@@ -129,7 +146,7 @@ int init_voltSensor (struct I2cDevice *dev) {
 	rc = i2c_read(dev,devID_buf,2);
 	if(rc < 0)
 			return rc;
-	if(!((devID_buf[0] == 0x32) && (devID_buf[1] == 0x20))){
+	if(!((devID_buf[0] == 0x32) && (devID_buf[1] == 0x20))){ //Check Device ID to verify is the right component
 			rc = -1;
 			printf("Device ID does not match the corresponding device: Voltage Sensor\r\n");
 			return rc;
@@ -137,13 +154,22 @@ int init_voltSensor (struct I2cDevice *dev) {
 	return 0;
 
 }
-
+/**
+ *Compares expected SFP checksum to its current value
+ *
+ * @param I2cDevice *dev: SFP of which the checksum is to be checked
+ * @param uint8_t ini_reg: Register where the checksum count starts
+ * @param uint8_t checksum_val: Checksum value expected
+ * @param int size: number of registers summed for the checksum
+ *
+ * @return Negative integer if checksum is incorrect, and 0 if it is correct
+ */
 int checksum_check(struct I2cDevice *dev,uint8_t ini_reg, uint8_t checksum_val, int size){
 	int rc = 0;
 	int sum = 0;
 	uint8_t byte_buf[size] ;
 
-	rc = i2c_readn_reg(dev,ini_reg,byte_buf,1);
+	rc = i2c_readn_reg(dev,ini_reg,byte_buf,1);  //Read every register from ini_reg to ini_reg+size-1
 			if(rc < 0)
 				return rc;
 	for(int n=1;n<size;n++){
@@ -154,50 +180,68 @@ int checksum_check(struct I2cDevice *dev,uint8_t ini_reg, uint8_t checksum_val, 
 	}
 
 	for(int i=0;i<size;i++){
-		sum += byte_buf[i];
+		sum += byte_buf[i];  //Sum every register read in order to obtain the checksum
 	}
-	uint8_t calc_checksum = (sum & 0xFF);
+	uint8_t calc_checksum = (sum & 0xFF); //Only taking the 8 LSB of the checksum as the checksum register is only 8 bits
 
-	if (checksum_val != calc_checksum){
+	if (checksum_val != calc_checksum){ //Check the obtained checksum equals the device checksum register
 		rc = -1;
 		printf("Checksum value does not match the expected value \r\n");
 		return rc;
 	}
 	return 0;
 }
-
+/**
+ * Initialize SFP EEPROM page 1 as an I2C device
+ *
+ * @param I2cDevice *dev: SFP of which EEPROM is to be initialized
+ *
+ * @return Negative integer if initialization fails.If not, returns 0 and the EEPROM page initialized as I2C device
+ *
+ * @note This also checks via Physical device, SFP function  and the checksum registers that the device is correct and the EEPROM is working properly.
+ */
 int init_SFP_A0(struct I2cDevice *dev) {
 	int rc = 0;
 	uint8_t SFPphys_reg = SFP_PHYS_DEV;
 	uint8_t SFPphys_buf[2] = {0,0};
 
-	rc = i2c_start(dev);
+	rc = i2c_start(dev); //Start I2C device
 		if (rc) {
 			return rc;
 		}
+	//Read SFP Physcial device register
 	rc = i2c_readn_reg(dev,SFPphys_reg,SFPphys_buf,1);
 		if(rc < 0)
 			return rc;
 
-
+	//Read SFP function register
 	SFPphys_reg = SFP_FUNCT;
 	rc = i2c_readn_reg(dev,SFPphys_reg,&SFPphys_buf[1],1);
 	if(rc < 0)
 			return rc;
-	if(!((SFPphys_buf[0] == 0x03) && (SFPphys_buf[1] == 0x04))){
+	if(!((SFPphys_buf[0] == 0x03) && (SFPphys_buf[1] == 0x04))){ //Check Physical device and function to verify is the right component
 			rc = -1;
 			printf("Device ID does not match the corresponding device: SFP-Avago\r\n");
 			return rc;
 	}
-	rc = checksum_check(dev, SFP_PHYS_DEV,0x7F,63);
+	rc = checksum_check(dev, SFP_PHYS_DEV,0x7F,63); //Check checksum register to verify is the right component and the EEPROM is working correctly
 	if(rc < 0)
 				return rc;
-	rc = checksum_check(dev, SFP_CHECKSUM2_A0,0xFA,31);
+	rc = checksum_check(dev, SFP_CHECKSUM2_A0,0xFA,31);//Check checksum register to verify is the right component and the EEPROM is working correctly
 	if(rc < 0)
 				return rc;
 	return 0;
 
 }
+/**
+ * Initialize SFP EEPROM page 2 as an I2C device
+ *
+ * @param I2cDevice *dev: SFP of which EEPROM is to be initialized
+ *
+ * @return Negative integer if initialization fails.If not, returns 0 and the EEPROM page initialized as I2C device
+ *
+ * @note This also checks via the checksum register that the EEPROM is working properly.
+ */
 int init_SFP_A2(struct I2cDevice *dev) {
 	int rc = 0;
 
@@ -211,7 +255,13 @@ int init_SFP_A2(struct I2cDevice *dev) {
 	return 0;
 
 }
-
+/**
+ * Initialize every I2C sensor available
+ *
+ * @param DPB_I2cSensors *data; struct which contains every I2C sensor available
+ *
+ * @return Negative integer if initialization fails.If not, returns 0 every I2C sensor initialized.
+ */
 int init_I2cSensors(struct DPB_I2cSensors *data){
 
 	int rc;
@@ -338,7 +388,13 @@ int init_I2cSensors(struct DPB_I2cSensors *data){
 		}*/
 	return 0;
 }
-
+/**
+ * Stops every I2C Sensors
+ *
+ * @param DPB_I2cSensors *data: struct which contains every I2C sensor available
+ *
+ * @returns 0.
+ */
 int stop_I2cSensors(struct DPB_I2cSensors *data){
 
 	i2c_stop(&data->dev_pcb_temp);
@@ -364,9 +420,14 @@ int stop_I2cSensors(struct DPB_I2cSensors *data){
 	return 0;
 }
 /************************** IIO_EVENT_MONITOR Functions ******************************/
-
+/**
+ * Start IIO EVENT MONITOR to enable Xilinx-AMS events
+ *
+ * @param FILE *proc: file which contains the opened process
+ *
+ * @return Negative integer if start fails.If not, returns 0 and enables Xilinx-AMS events.
+ */
 int iio_event_monitor_up(FILE *proc) {
-
 	proc = popen("/run/media/mmcblk0p1/IIO_MONITOR.elf -a iio:device0 &", "r");
 	if (proc == NULL){
 		printf("\nError executing iio_event_monitor.\n");
@@ -376,7 +437,19 @@ int iio_event_monitor_up(FILE *proc) {
 }
 
 /************************** AMS Functions ******************************/
-int xlnx_ams_read_temp(int *chan, int n, float *res){
+
+/**
+ * Reads temperature of n channels (channels specified in *chan) and stores the values in *res
+ *
+ * @param int *chan: array which contain channels to measure
+ * @param int n: number of channels to measure
+ * @param float *res: array where results are stored in
+ *
+ * @return Negative integer if reading fails.If not, returns 0 and the stored values in *res
+ *
+ * @note The resulting magnitude is obtained by applying the ADC conversion specified by Xilinx
+ */
+int xlnx_ams_read_temp(int *chan, int n, float *res){ //Read
 	FILE *raw,*offset,*scale;
 	for(int i=0;i<n;i++){
 
@@ -406,7 +479,8 @@ int xlnx_ams_read_temp(int *chan, int n, float *res){
 
 			fclose(raw);
 			fclose(offset);
-			fclose(scale); 	/*Any of the files could not be opened*/
+			fclose(scale);
+			printf("AMS Temperature file could not be opened!!! \n");/*Any of the files could not be opened*/
 			return -1;
 			}
 		else{
@@ -432,7 +506,7 @@ int xlnx_ams_read_temp(int *chan, int n, float *res){
 			char *scale_string = malloc(fsize + 1);
 			fread(scale_string, fsize, 1, scale);
 
-			float Temperature = (atof(scale_string) * (atof(raw_string) + atof(offset_string))) / 1024;
+			float Temperature = (atof(scale_string) * (atof(raw_string) + atof(offset_string))) / 1024; //Apply ADC conversion to Temperature, Xilinx Specs
 			fclose(raw);
 			fclose(offset);
 			fclose(scale);
@@ -442,7 +516,17 @@ int xlnx_ams_read_temp(int *chan, int n, float *res){
 		}
 		return 0;
 	}
-
+/**
+ * Reads voltage of n channels (channels specified in *chan) and stores the values in *res
+ *
+ * @param int *chan: array which contain channels to measure
+ * @param int n: number of channels to measure
+ * @param float *res: array where results are stored in
+ *
+ * @return Negative integer if reading fails.If not, returns 0 and the stored values in *res
+ *
+ * @note The resulting magnitude is obtained by applying the ADC conversion specified by Xilinx
+ */
 int xlnx_ams_read_volt(int *chan, int n, float *res){
 	FILE *raw,*scale;
 	for(int i=0;i<n;i++){
@@ -467,7 +551,8 @@ int xlnx_ams_read_volt(int *chan, int n, float *res){
 		if((raw==NULL)|(scale==NULL)){
 
 			fclose(raw);
-			fclose(scale); 	/*Any of the files could not be opened*/
+			fclose(scale);
+			printf("AMS Voltage file could not be opened!!! \n");/*Any of the files could not be opened*/
 			return -1;
 			}
 		else{
@@ -486,7 +571,7 @@ int xlnx_ams_read_volt(int *chan, int n, float *res){
 			char *scale_string = malloc(fsize + 1);
 			fread(scale_string, fsize, 1, scale);
 
-			float Voltage = (atof(scale_string) * atof(raw_string)) / 1024;
+			float Voltage = (atof(scale_string) * atof(raw_string)) / 1024; //Apply ADC conversion to Voltage, Xilinx Specs
 			fclose(raw);
 			fclose(scale);
 			res[i] = Voltage;
@@ -497,11 +582,22 @@ int xlnx_ams_read_volt(int *chan, int n, float *res){
 	}
 
 /************************** Temp.Sensor Functions ******************************/
-int mpc9844_read_temperature(struct DPB_I2cSensors *data,float *res) {
+
+/**
+ * Reads ambient temperature and stores the value in *res
+ *
+ * @param struct DPB_I2cSensors *data: being the corresponding I2C device for the MCP9844 Temperature Sensor
+ * @param float *res: where the ambient temperature value is stored
+ *
+ * @return Negative integer if reading fails.If not, returns 0 and the stored value in *res
+ *
+ * @note The magnitude conversion depends if the temperature is below 0ºC or above. It also clear flag bits.
+ */
+int mcp9844_read_temperature(struct DPB_I2cSensors *data,float *res) {
 	int rc = 0;
 	struct I2cDevice dev = data->dev_pcb_temp;
 	uint8_t temp_buf[2] = {0,0};
-	uint8_t temp_reg = MPC9844_TEMP_REG;
+	uint8_t temp_reg = MCP9844_TEMP_REG;
 
 
 	// Write temperature address in register pointer
@@ -523,8 +619,14 @@ int mpc9844_read_temperature(struct DPB_I2cSensors *data,float *res) {
 		res[0] = (temp_buf[0] * 16 + (float)temp_buf[1] / 16); //Temperature = Ambient Temperature (°C)
 	return 0;
 }
-
-int mpc9844_interruptions(uint8_t flag_buf){
+/**
+ * Handles MCP9844 Temperature Sensor interruptions
+ *
+ * @param uint8_t flag_buf: contains alarm flags
+ *
+ * @return 0 and handles interruption depending on the active flags
+ */
+int mcp9844_interruptions(uint8_t flag_buf){
 	if((flag_buf & 0x80) == 0x80){
 		printf("CRITICAL!!! The ambient temperature has exceeded the established critical limit.");
 	}
@@ -536,12 +638,20 @@ int mpc9844_interruptions(uint8_t flag_buf){
 	}
 	return 0;
 }
-
-int mpc9844_read_alarms(struct DPB_I2cSensors *data) {
+/**
+ * Reads MCP9844 Temperature Sensor alarms flags
+ *
+ * @param struct DPB_I2cSensors *data: being the corresponding I2C device for the MCP9844 Temperature Sensor
+ *
+ * @return  0 and if there is any flag active calls the corresponding function to handle the interruption
+ *
+ * @note It also clear flag bits.
+ */
+int mcp9844_read_alarms(struct DPB_I2cSensors *data) {
 	int rc = 0;
 	struct I2cDevice dev = data->dev_pcb_temp;
 	uint8_t alarm_buf[1] = {0};
-	uint8_t alarm_reg = MPC9844_TEMP_REG;
+	uint8_t alarm_reg = MCP9844_TEMP_REG;
 
 
 	// Write temperature address in register pointer
@@ -554,13 +664,24 @@ int mpc9844_read_alarms(struct DPB_I2cSensors *data) {
 	if(rc < 0)
 			return rc;
 	if((alarm_buf[0] & 0xE0) != 0){
-		mpc9844_interruptions(alarm_buf[0]);
+		mcp9844_interruptions(alarm_buf[0]);
 	}
 	alarm_buf[0] = alarm_buf[0] & 0x1F;	//Clear Flag bits
 	return 0;
 }
 
 /************************** SFP Functions ******************************/
+/**
+ * Reads SFP temperature and stores the value in *res
+ *
+ * @param struct DPB_I2cSensors *data: being the corresponding I2C device SFP EEPROM page 2
+ *
+ * @param int n: indicate from which of the 6 SFP is going to be read,float *res where the magnitude value is stored
+ *
+ * @return Negative integer if reading fails.If not, returns 0 and the stored value in *res
+ *
+ * @note The magnitude conversion is based on the datasheet.
+ */
 int sfp_avago_read_temperature(struct DPB_I2cSensors *data,int n, float *res) {
 	int rc = 0;
 	uint8_t temp_buf[2] = {0,0};
@@ -606,7 +727,17 @@ int sfp_avago_read_temperature(struct DPB_I2cSensors *data,int n, float *res) {
 	res [0] = (float) ((int) (temp_buf[0] << 8)  + temp_buf[1]) / 256;
 	return 0;
 }
-
+/**
+ * Reads SFP voltage supply and stores the value in *res
+ *
+ * @param struct DPB_I2cSensors *data: being the corresponding I2C device SFP EEPROM page 2
+ *
+ * @param int n: indicate from which of the 6 SFP is going to be read,float *res where the magnitude value is stored
+ *
+ * @return Negative integer if reading fails.If not, returns 0 and the stored value in *res
+ *
+ * @note The magnitude conversion is based on the datasheet.
+ */
 int sfp_avago_read_voltage(struct DPB_I2cSensors *data,int n, float *res) {
 	int rc = 0;
 	uint8_t voltage_buf[2] = {0,0};
@@ -652,7 +783,17 @@ int sfp_avago_read_voltage(struct DPB_I2cSensors *data,int n, float *res) {
 	res [0] = (float) ((uint16_t) (voltage_buf[0] << 8)  + voltage_buf[1]) * 1e-4;
 	return 0;
 }
-
+/**
+ * Reads SFP laser bias current and stores the value in *res
+ *
+ * @param struct DPB_I2cSensors *data: being the corresponding I2C device SFP EEPROM page 2
+ *
+ * @param int n: indicate from which of the 6 SFP is going to be read,float *res where the magnitude value is stored
+ *
+ * @return Negative integer if reading fails.If not, returns 0 and the stored value in *res
+ *
+ * @note The magnitude conversion is based on the datasheet.
+ */
 int sfp_avago_read_lbias_current(struct DPB_I2cSensors *data,int n, float *res) {
 	int rc = 0;
 	uint8_t current_buf[2] = {0,0};
@@ -698,7 +839,17 @@ int sfp_avago_read_lbias_current(struct DPB_I2cSensors *data,int n, float *res) 
 	res[0] = (float) ((uint16_t) (current_buf[0] << 8)  + current_buf[1]) * 2e-6;
 	return 0;
 }
-
+/**
+ * Reads SFP average transmitted optical power and stores the value in *res
+ *
+ * @param struct DPB_I2cSensors *data: being the corresponding I2C device SFP EEPROM page 2
+ *
+ * @param int n: indicate from which of the 6 SFP is going to be read,float *res where the magnitude value is stored
+ *
+ * @return Negative integer if reading fails.If not, returns 0 and the stored value in *res
+ *
+ * @note The magnitude conversion is based on the datasheet.
+ */
 int sfp_avago_read_tx_av_optical_pwr(struct DPB_I2cSensors *data,int n, float *res) {
 	int rc = 0;
 	uint8_t power_buf[2] = {0,0};
@@ -744,7 +895,17 @@ int sfp_avago_read_tx_av_optical_pwr(struct DPB_I2cSensors *data,int n, float *r
 	res[0] = (float) ((uint16_t) (power_buf[0] << 8)  + power_buf[1]) * 1e-7;
 	return 0;
 }
-
+/**
+ * Reads SFP average received optical power and stores the value in *res
+ *
+ * @param struct DPB_I2cSensors *data: being the corresponding I2C device SFP EEPROM page 2
+ *
+ * @param int n: indicate from which of the 6 SFP is going to be read,float *res where the magnitude value is stored
+ *
+ * @return Negative integer if reading fails.If not, returns 0 and the stored value in *res
+ *
+ * @note The magnitude conversion is based on the datasheet.
+ */
 int sfp_avago_read_rx_av_optical_pwr(struct DPB_I2cSensors *data,int n, float *res) {
 	int rc = 0;
 	uint8_t power_buf[2] = {0,0};
@@ -790,7 +951,14 @@ int sfp_avago_read_rx_av_optical_pwr(struct DPB_I2cSensors *data,int n, float *r
 	res[0] = (float) ((uint16_t) (power_buf[0] << 8)  + power_buf[1]) * 1e-7;
 	return 0;
 }
-
+/**
+ * Handles SFP status interruptions
+ *
+ * @param uint16_t flags: contains alarms flags
+ * @param int n: indicate from which of the 6 SFP is dealing with
+ *
+ * @return 0 and handles interruption depending on the active status flags
+ */
 int sfp_avago_status_interruptions(uint8_t status, int n){
 
 	if((status & 0x02) != 0){
@@ -801,7 +969,14 @@ int sfp_avago_status_interruptions(uint8_t status, int n){
 	}
 	return 0;
 }
-
+/**
+ * Handles SFP alarm interruptions
+ *
+ * @param uint16_t flags: contains alarms flags
+ * @param int n: indicate from which of the 6 SFP is dealing with
+ *
+ * @return 0 and handles interruption depending on the active alarms flags
+ */
 int sfp_avago_alarms_interruptions(uint16_t flags, int n){
 
 	if((flags & 0x0080) == 0x0080){
@@ -836,7 +1011,14 @@ int sfp_avago_alarms_interruptions(uint16_t flags, int n){
 	}
 	return 0;
 }
-
+/**
+ * Reads SFP status and alarms flags
+ *
+ * @param struct DPB_I2cSensors *data: being the corresponding I2C device for the SFP EEPROM page 2
+ * @param int n: indicate from which of the 6 SFP is going to be read
+ *
+ * @return  0 and if there is any flag active calls the corresponding function to handle the interruption.
+ */
 int sfp_avago_read_alarms(struct DPB_I2cSensors *data,int n) {
 	int rc = 0;
 	uint8_t flag_buf[2] = {0,0};
@@ -899,6 +1081,16 @@ int sfp_avago_read_alarms(struct DPB_I2cSensors *data,int n) {
 }
 
 /************************** Volt. and Curr. Sensor Functions ******************************/
+/**
+ * Reads INA3221 Voltage and Current Sensor bus voltage from each of its 3 channels and stores the values in *res
+ *
+ * @param struct DPB_I2cSensors *data: being the corresponding I2C device INA3221 Voltage and Current Sensor
+ * @param int n: indicate from which of the 3 INA3221 is going to be read,float *res where the voltage values are stored
+ *
+ * @return Negative integer if reading fails.If not, returns 0 and the stored values in *res
+ *
+ * @note The magnitude conversion is based on the datasheet.
+ */
 int ina3221_get_voltage(struct DPB_I2cSensors *data,int n, float *res){
 	int rc = 0;
 	uint8_t voltage_buf[2] = {0,0};
@@ -938,7 +1130,17 @@ int ina3221_get_voltage(struct DPB_I2cSensors *data,int n, float *res){
 	}
 	return 0;
 }
-
+/**
+ * Reads INA3221 Voltage and Current Sensor shunt voltage from a resistor in each of its 3 channels,
+ * obtains the current dividing the voltage by the resistor value and stores the current values in *res
+ *
+ * @param struct DPB_I2cSensors *data: being the corresponding I2C device INA3221 Voltage and Current Sensor
+ * @param int n: indicate from which of the 3 INA3221 is going to be read,float *res where the current values are stored
+ *
+ * @return Negative integer if reading fails.If not, returns 0 and the stored values in *res
+ *
+ * @note The magnitude conversion is based on the datasheet and the resistor value is 0.05 Ohm.
+ */
 int ina3221_get_current(struct DPB_I2cSensors *data,int n, float *res){
 	int rc = 0;
 	uint8_t voltage_buf[2] = {0,0};
@@ -978,7 +1180,14 @@ int ina3221_get_current(struct DPB_I2cSensors *data,int n, float *res){
 		}
 	return 0;
 }
-
+/**
+ * Handles INA3221 Voltage and Current Sensor critical alarm interruptions
+ *
+ * @param uint16_t mask contains critical alarm flags
+ * @param int n indicate from which of the 3 INA3221 is dealing with
+ *
+ * @return 0 and handles interruption depending on the active alarms flags
+ */
 int ina3221_critical_interruptions(uint16_t mask, int n, char **text){
 	char crit_str[80];
 	strcpy(crit_str, "CRITICAL!!! Excess current in the channel: ");
@@ -1003,7 +1212,14 @@ int ina3221_critical_interruptions(uint16_t mask, int n, char **text){
 	}
 	return 0;
 }
-
+/**
+ * Handles INA3221 Voltage and Current Sensor warning alarm interruptions
+ *
+ * @param uint16_t mask: contains warning alarm flags
+ * @param int n: indicate from which of the 3 INA3221 is dealing with
+ *
+ * @return 0 and handles interruption depending on the active alarms flags
+ */
 int ina3221_warning_interruptions(uint16_t mask, int n, char **text){
 	char warning_str[80];
 	strcpy(warning_str, "Warning!!! Excess current in the channel: ");
@@ -1028,7 +1244,14 @@ int ina3221_warning_interruptions(uint16_t mask, int n, char **text){
 	}
 	return 0;
 }
-
+/**
+ * Reads INA3221 Voltage and Current Sensor warning and critical alarms flags
+ *
+ * @param struct DPB_I2cSensors *data: being the corresponding I2C device for the INA3221 Voltage and Current Sensor
+ * @param int n: indicate from which of the 3 INA3221 is going to be read
+ *
+ * @return  0 and if there is any flag active calls the corresponding function to handle the interruption.
+ */
 int ina3221_read_alarms(struct DPB_I2cSensors *data,int n){
 	int rc = 0;
 	uint8_t mask_buf[2] = {0,0};
@@ -1073,7 +1296,7 @@ int ina3221_read_alarms(struct DPB_I2cSensors *data,int n){
 	if((mask_int & 0x0380)!= 0){
 		ina3221_critical_interruptions(mask_int,n,arr);
 	}
-	if((mask_int & 0x0038)!= 0){
+	else if((mask_int & 0x0038)!= 0){
 		ina3221_warning_interruptions(mask_int,n,arr);
 	}
 
@@ -1082,17 +1305,23 @@ int ina3221_read_alarms(struct DPB_I2cSensors *data,int n){
 
 /************************** Threads declaration ******************************/
 static int monitoring_thread_count;
-
+/**
+ * Periodic thread that every x seconds reads every magnitude of every sensor available and stores it.
+ *
+ * @param void *arg: must contain a struct with every I2C device that wants to be monitored
+ *
+ * @return  NULL (if exits is because of an error).
+ */
 static void *monitoring_thread(void *arg)
 {
 	struct periodic_info info;
 	int rc ;
 	struct DPB_I2cSensors *data = arg;
 
-	float ams_temp[2];
-	float ams_volt[18];
-	int temp_chan[2] = {7,8};
-	int volt_chan[18] = {0,1,2,3,4,5,6,9,10,11,12,13,14,15,16,17,18,19};
+	float ams_temp[3];
+	float ams_volt[25];
+	int temp_chan[3] = {7,8,20};
+	int volt_chan[25] = {9,10,11,12,13,14,15,16,17,18,19,21,22,23,24,25,26,27,28,29,30,31,32,33,34};
 
 	float volt_sfp0_2[3];
 	float volt_sfp3_5[3];
@@ -1103,11 +1332,41 @@ static void *monitoring_thread(void *arg)
 	float curr_som[3];
 
 	float temp[1];
-	float sfp_temp[1];
-	float sfp_txpwr[1];
-	float sfp_rxpwr[1];
-	float sfp_vcc[1];
-	float sfp_txbias[1];
+	float sfp_temp_0[1];
+	float sfp_txpwr_0[1];
+	float sfp_rxpwr_0[1];
+	float sfp_vcc_0[1];
+	float sfp_txbias_0[1];
+
+	/*float sfp_temp_1[1];
+	float sfp_txpwr_1[1];
+	float sfp_rxpwr_1[1];
+	float sfp_vcc_1[1];
+	float sfp_txbias_1[1];
+
+	float sfp_temp_2[1];
+	float sfp_txpwr_2[1];
+	float sfp_rxpwr_2[1];
+	float sfp_vcc_2[1];
+	float sfp_txbias_2[1];
+
+	float sfp_temp_3[1];
+	float sfp_txpwr_3[1];
+	float sfp_rxpwr_3[1];
+	float sfp_vcc_3[1];
+	float sfp_txbias_3[1];
+
+	float sfp_temp_4[1];
+	float sfp_txpwr_4[1];
+	float sfp_rxpwr_4[1];
+	float sfp_vcc_4[1];
+	float sfp_txbias_4[1];
+
+	float sfp_temp_5[1];
+	float sfp_txpwr_5[1];
+	float sfp_rxpwr_5[1];
+	float sfp_vcc_5[1];
+	float sfp_txbias_5[1];*/
 
 	//struct DPB_I2cSensors data;
 
@@ -1119,37 +1378,161 @@ static void *monitoring_thread(void *arg)
 		return NULL;
 	}
 	while (1) {
-		rc = mpc9844_read_temperature(data,temp);
+		rc = mcp9844_read_temperature(data,temp);
 		if (rc) {
 			printf("Error\r\n");
 			return NULL;
 		}
-		rc = sfp_avago_read_temperature(data,0,sfp_temp);
+		rc = sfp_avago_read_temperature(data,0,sfp_temp_0);
 		if (rc) {
 			printf("Error\r\n");
 			return NULL;
 		}
-		rc = sfp_avago_read_voltage(data,0,sfp_vcc);
+		rc = sfp_avago_read_voltage(data,0,sfp_vcc_0);
 		if (rc) {
 			printf("Error\r\n");
 			return NULL;
 		}
-		rc = sfp_avago_read_lbias_current(data,0,sfp_txbias);
+		rc = sfp_avago_read_lbias_current(data,0,sfp_txbias_0);
 		if (rc) {
 			printf("Error\r\n");
 			return NULL;
 		}
-		rc = sfp_avago_read_tx_av_optical_pwr(data,0,sfp_txpwr);
+		rc = sfp_avago_read_tx_av_optical_pwr(data,0,sfp_txpwr_0);
 		if (rc) {
 			printf("Error\r\n");
 			return NULL;
 		}
-		rc = sfp_avago_read_rx_av_optical_pwr(data,0,sfp_rxpwr);
+		rc = sfp_avago_read_rx_av_optical_pwr(data,0,sfp_rxpwr_0);
 		if (rc) {
 			printf("Error\r\n");
 			return NULL;
 		}
-
+		/*rc = sfp_avago_read_temperature(data,1,sfp_temp_1);
+		if (rc) {
+			printf("Error\r\n");
+			return NULL;
+		}
+		rc = sfp_avago_read_voltage(data,1,sfp_vcc_1);
+		if (rc) {
+			printf("Error\r\n");
+			return NULL;
+		}
+		rc = sfp_avago_read_lbias_current(data,1,sfp_txbias_1);
+		if (rc) {
+			printf("Error\r\n");
+			return NULL;
+		}
+		rc = sfp_avago_read_tx_av_optical_pwr(data,1,sfp_txpwr_1);
+		if (rc) {
+			printf("Error\r\n");
+			return NULL;
+		}
+		rc = sfp_avago_read_rx_av_optical_pwr(data,1,sfp_rxpwr_1);
+		if (rc) {
+			printf("Error\r\n");
+			return NULL;
+		}
+		rc = sfp_avago_read_temperature(data,2,sfp_temp_2);
+		if (rc) {
+			printf("Error\r\n");
+			return NULL;
+		}
+		rc = sfp_avago_read_voltage(data,2,sfp_vcc_2);
+		if (rc) {
+			printf("Error\r\n");
+			return NULL;
+		}
+		rc = sfp_avago_read_lbias_current(data,2,sfp_txbias_2);
+		if (rc) {
+			printf("Error\r\n");
+			return NULL;
+		}
+		rc = sfp_avago_read_tx_av_optical_pwr(data,2,sfp_txpwr_2);
+		if (rc) {
+			printf("Error\r\n");
+			return NULL;
+		}
+		rc = sfp_avago_read_rx_av_optical_pwr(data,2,sfp_rxpwr_2);
+		if (rc) {
+			printf("Error\r\n");
+			return NULL;
+		}
+		rc = sfp_avago_read_temperature(data,3,sfp_temp_3);
+		if (rc) {
+			printf("Error\r\n");
+			return NULL;
+		}
+		rc = sfp_avago_read_voltage(data,3,sfp_vcc_3);
+		if (rc) {
+			printf("Error\r\n");
+			return NULL;
+		}
+		rc = sfp_avago_read_lbias_current(data,3,sfp_txbias_3);
+		if (rc) {
+			printf("Error\r\n");
+			return NULL;
+		}
+		rc = sfp_avago_read_tx_av_optical_pwr(data,3,sfp_txpwr_3);
+		if (rc) {
+			printf("Error\r\n");
+			return NULL;
+		}
+		rc = sfp_avago_read_rx_av_optical_pwr(data,3,sfp_rxpwr_3);
+		if (rc) {
+			printf("Error\r\n");
+			return NULL;
+		}
+		rc = sfp_avago_read_temperature(data,4,sfp_temp_4);
+		if (rc) {
+			printf("Error\r\n");
+			return NULL;
+		}
+		rc = sfp_avago_read_voltage(data,4,sfp_vcc_4);
+		if (rc) {
+			printf("Error\r\n");
+			return NULL;
+		}
+		rc = sfp_avago_read_lbias_current(data,4,sfp_txbias_4);
+		if (rc) {
+			printf("Error\r\n");
+			return NULL;
+		}
+		rc = sfp_avago_read_tx_av_optical_pwr(data,4,sfp_txpwr_4);
+		if (rc) {
+			printf("Error\r\n");
+			return NULL;
+		}
+		rc = sfp_avago_read_rx_av_optical_pwr(data,4,sfp_rxpwr_4);
+		if (rc) {
+			printf("Error\r\n");
+			return NULL;
+		}
+		rc = sfp_avago_read_temperature(data,5,sfp_temp_5);
+		if (rc) {
+			printf("Error\r\n");
+			return NULL;
+		}
+		rc = sfp_avago_read_voltage(data,5,sfp_vcc_5);
+		if (rc) {
+			printf("Error\r\n");
+			return NULL;
+		}
+		rc = sfp_avago_read_lbias_current(data,5,sfp_txbias_5);
+		if (rc) {
+			printf("Error\r\n");
+			return NULL;
+		}
+		rc = sfp_avago_read_tx_av_optical_pwr(data,5,sfp_txpwr_5);
+		if (rc) {
+			printf("Error\r\n");
+			return NULL;
+		}
+		rc = sfp_avago_read_rx_av_optical_pwr(data,5,sfp_rxpwr_5);
+		if (rc) {
+			printf("Error\r\n");
+			return NULL;
+		}*/
 		rc = ina3221_get_voltage(data,0,volt_sfp0_2);
 		if (rc) {
 			printf("Error\r\n");
@@ -1192,17 +1575,17 @@ static void *monitoring_thread(void *arg)
 		}
 		printf("Temperatura ambiente: %f ºC\n",temp[0]);
 		printf("\n");
-		printf("Temperatura SFP: %f ºC\n",sfp_temp[0]);
-		printf("Tensión SFP: %f V\n",sfp_vcc[0]);
-		printf("Corriente polarización del láser SFP: %f A\n",sfp_txbias[0]);
-		printf("Potencia óptica transmitida SFP: %f W\n",sfp_txpwr[0]);
-		printf("Potencia óptica recibida SFP: %f W\n",sfp_rxpwr[0]);
+		printf("Temperatura SFP: %f ºC\n",sfp_temp_0[0]);
+		printf("Tensión SFP: %f V\n",sfp_vcc_0[0]);
+		printf("Corriente polarización del láser SFP: %f A\n",sfp_txbias_0[0]);
+		printf("Potencia óptica transmitida SFP: %f W\n",sfp_txpwr_0[0]);
+		printf("Potencia óptica recibida SFP: %f W\n",sfp_rxpwr_0[0]);
 		printf("\n");
-		for(int m = 0; m<2;m++){
+		for(int m = 0; m<3;m++){
 			printf("Temperatura AMS - Canal %d: %f ºC - Iteración: %d\n",temp_chan[m],ams_temp[m],monitoring_thread_count);
 		}
 		printf("\n");
-		for(int n = 0; n<18;n++){
+		for(int n = 0; n<25;n++){
 			printf("Tensión AMS - Canal %d: %f V - Iteración: %d\n",volt_chan[n],ams_volt[n],monitoring_thread_count);
 		}
 		printf("\n");
@@ -1230,6 +1613,13 @@ static void *monitoring_thread(void *arg)
 	//stop_I2cSensors(&data);
 	return NULL;
 }
+/**
+ * Periodic thread that every x seconds reads every alarm of every I2C sensor available and handles the interruption.
+ *
+ * @param void *arg: must contain a struct with every I2C device that wants to be monitored
+ *
+ * @return  NULL (if exits is because of an error).
+ */
 static void *i2c_alarms_thread(void *arg){
 	struct periodic_info info;
 	int rc ;
@@ -1302,9 +1692,14 @@ static void *i2c_alarms_thread(void *arg){
 
 	return NULL;
 }
-
-
-
+/**
+ * Periodic thread that is waiting for an alarm from any Xilinx AMS channel, the alarm is presented as an event,
+ * events are reported by IIO EVENT MONITOR through shared memory
+ *
+ * @param void *arg: NULL
+ *
+ * @return  NULL (if exits is because of an error).
+ */
 static void *ams_alarms_thread(void *arg){
 	struct periodic_info info;
 	int rc ;
@@ -1313,12 +1708,14 @@ static void *ams_alarms_thread(void *arg){
 	int chan;
 	__s64 timestamp;
 	char ev_str[80];
-
+    int fd;
+    char ena = '1';
+    char disab = '0';
 	char buffer [64];
 
 	strcpy(ev_str, "/sys/bus/iio/devices/iio:device0/events/in_");
 
-	key_t sharedMemoryKey = MEMORY_KEY;
+	key_t sharedMemoryKey = MEMORY_KEY;  //Using shared memory to communicate with IIO EVENT MONITOR
 
     memoryID=shmget(sharedMemoryKey,sizeof(struct wrapper),0);
 
@@ -1342,7 +1739,7 @@ static void *ams_alarms_thread(void *arg){
 		return NULL;
 	}
 	while(1){
-        sem_wait(&memory->full);
+        sem_wait(&memory->full);  //Semaphore to wait until any event happens
         sem_wait(&memory->cmutex);
 
         chan = memory->chn;
@@ -1355,10 +1752,14 @@ static void *ams_alarms_thread(void *arg){
         strcat(ev_str, "_thresh_");
         strcat(ev_str, ev_type);
         strcat(ev_str, "_en");
+        fd = open(ev_str, O_WRONLY);
+        write (fd, &disab, 1);
 
         usleep(10);
 
-        sem_post(&memory->cmutex);
+        write (fd, &ena, 1);  //Restarting enablement of the event again so it can be asserted again later
+        close(fd);
+        sem_post(&memory->cmutex);//Free the semaphore so the IIO EVENT MONITOR can report another event
         sem_post(&memory->empty);
 
         printf("Event type: %s. Timestamp: %lld. Channel type: %s. Channel: %d.",ev_type,timestamp,ch_type,chan);
@@ -1402,7 +1803,7 @@ int main(){
 
 	pthread_create(&t_1, NULL, monitoring_thread,(void *)&data); //Create thread 1 - monitors magnitudes every x seconds
 	//pthread_create(&t_2, NULL, alarms_thread,(void *)&data); //Create thread 2 - read alarms every x miliseconds
-	pthread_create(&t_3, NULL, ams_alarms_thread,NULL);
+	pthread_create(&t_3, NULL, ams_alarms_thread,NULL);//Create thread 2 - read AMS alarms
 
 	while(1){
 		sleep(1000000);
