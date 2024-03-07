@@ -619,6 +619,39 @@ int mcp9844_read_temperature(struct DPB_I2cSensors *data,float *res) {
 		res[0] = (temp_buf[0] * 16 + (float)temp_buf[1] / 16); //Temperature = Ambient Temperature (°C)
 	return 0;
 }
+
+int mcp9844_set_limits(struct DPB_I2cSensors *data,int n, int temp) {
+	int rc = 0;
+	struct I2cDevice dev = data->dev_pcb_temp;
+	uint8_t temp_buf[2] = {0,0};
+	uint8_t temp_reg ;
+	switch(n){
+		case MCP9844_TEMP_UPPER_LIM:
+			temp_reg = MCP9844_TEMP_UPPER_LIM_REG;
+			break;
+		case MCP9844_TEMP_LOWER_LIM:
+			temp_reg = MCP9844_TEMP_LOWER_LIM_REG;
+			break;
+		case MCP9844_TEMP_CRIT_LIM:
+			temp_reg = MCP9844_TEMP_CRIT_LIM_REG;
+			break;
+		default:
+			return -EINVAL;
+
+	}
+	temp = temp << 2 ;
+	temp = temp & 0x1FFF;
+	temp_buf[0] = temp & 0xFF00;
+	temp_buf[1] = temp & 0x00FF;
+	rc = i2c_write(&dev,&temp_reg,1);
+	if(rc < 0)
+		return rc;
+	rc = i2c_write(&dev,temp_buf,2);
+	if(rc < 0)
+			return rc;
+	return 0;
+
+}
 /**
  * Handles MCP9844 Temperature Sensor interruptions
  *
