@@ -619,30 +619,46 @@ int mcp9844_read_temperature(struct DPB_I2cSensors *data,float *res) {
 		res[0] = (temp_buf[0] * 16 + (float)temp_buf[1] / 16); //Temperature = Ambient Temperature (°C)
 	return 0;
 }
-
-int mcp9844_set_limits(struct DPB_I2cSensors *data,int n, int temp) {
+/**
+ * Set alarms limits for Temperature
+ *
+ * @param struct DPB_I2cSensors *data: being the corresponding I2C device for the MCP9844 Temperature Sensor
+ * @param int n: which limit is modified
+ * @param short temp: value of the limit that is to be set
+ *
+ * @return Negative integer if writing fails or limit chosen is incorrect.
+ * @return 0 if everything is okay and modifies the temperature alarm limit
+ */
+int mcp9844_set_limits(struct DPB_I2cSensors *data,int n, short temp) {
 	int rc = 0;
 	struct I2cDevice dev = data->dev_pcb_temp;
 	uint8_t temp_buf[2] = {0,0};
 	uint8_t temp_reg ;
 	switch(n){
-		case MCP9844_TEMP_UPPER_LIM:
+		case MCP9844_TEMP_UPPER_LIM: //0
 			temp_reg = MCP9844_TEMP_UPPER_LIM_REG;
 			break;
-		case MCP9844_TEMP_LOWER_LIM:
+		case MCP9844_TEMP_LOWER_LIM: //1
 			temp_reg = MCP9844_TEMP_LOWER_LIM_REG;
 			break;
-		case MCP9844_TEMP_CRIT_LIM:
+		case MCP9844_TEMP_CRIT_LIM: //2
 			temp_reg = MCP9844_TEMP_CRIT_LIM_REG;
 			break;
 		default:
 			return -EINVAL;
-
 	}
-	temp = temp << 2 ;
-	temp = temp & 0x1FFF;
-	temp_buf[0] = temp & 0xFF00;
+	if(temp < 0){
+		temp = -temp;
+		temp = temp << 2 ;
+		temp = temp & 0x0FFF;
+		temp = temp | 0x1000;
+	}
+	else{
+		temp = temp << 2 ;
+		temp = temp & 0x0FFF;
+	}
 	temp_buf[1] = temp & 0x00FF;
+	temp_buf[0] = (temp >> 8) & 0x00FF;
 	rc = i2c_write(&dev,&temp_reg,1);
 	if(rc < 0)
 		return rc;
@@ -650,8 +666,59 @@ int mcp9844_set_limits(struct DPB_I2cSensors *data,int n, int temp) {
 	if(rc < 0)
 			return rc;
 	return 0;
-
 }
+/**
+ * Enables or disables configuration register bits of the MCP9844 Temperature Sensor
+ *
+ * @param struct DPB_I2cSensors *data: being the corresponding I2C device for the MCP9844 Temperature Sensor
+ * @param uint8_t *bit_ena: array which should contain the desired bit value (0 o 1)
+ * @param uint8_t *bit_num: array which should contain the position of the bit/s that will be modified
+ *
+ * @return Negative integer if writing fails,array size is mismatching or incorrect value introduced
+ * @return 0 if everything is okay and modifies the configuration register
+ */
+int mcp9844_set_config(struct DPB_I2cSensors *data,uint8_t *bit_ena,uint8_t *bit_num) {
+	int rc = 0;
+	struct I2cDevice dev = data->dev_pcb_temp;
+	uint8_t config_buf[2] = {0,0};
+	uint8_t config_reg = MCP9844_CONFIG_REG;
+	uint8_t array_size = sizeof(bit_num);
+	uint16_t mask;
+	uint16_t config;
+	if(array_size != sizeof(bit_ena))
+		return -EINVAL;
+	rc = i2c_write(&dev,&config_reg,1);
+	if(rc < 0)
+		return rc;
+	// Read MSB and LSB of config reg
+	rc = i2c_read(&dev,config_buf,2);
+	if(rc < 0)
+			return rc;
+	config = (config_buf[0] << 8) + (config_buf[1]);
+	for(int i = 0; i<array_size;i++){
+		mask = 1;
+		mask = mask << bit_num[i];
+		if(bit_ena[i] == 0){
+			config = config & (~mask);
+		}
+		else if(bit_ena[i] == 1){
+			config = config | mask;
+		}
+		else{
+			return -EINVAL;
+		}
+	}
+	config_buf[1] = config & 0x00FF;
+	config_buf[0] = (config >> 8) & 0x00FF;
+	rc = i2c_write(&dev,&config_reg,1);
+	if(rc < 0)
+		return rc;
+	rc = i2c_write(&dev,config_buf,2);
+	if(rc < 0)
+			return rc;
+	return 0;
+}
+
 /**
  * Handles MCP9844 Temperature Sensor interruptions
  *
@@ -1335,7 +1402,141 @@ int ina3221_read_alarms(struct DPB_I2cSensors *data,int n){
 
 	return 0;
 }
-
+/**
+ * Set current alarms limits for INA3221 (warning or critical)
+ *
+ * @param struct DPB_I2cSensors *data: being the corresponding I2C device for the MCP9844 Temperature Sensor
+ * @param int n: which of the 3 INA3221 is being dealt with
+ * @param int ch: which of the 3 INA3221 channels is being dealt with
+ * @param int alarm_type: indicates if the limit to be modifies is for a critical alarm or warning alarm
+ * @param float curr: current value which will be the new limit
+ *
+ * @return Negative integer if writing fails or any parameter is incorrect.
+ * @return 0 if everything is okay and modifies the current alarm limit (as shunt voltage limit)
+ */
+int ina3221_set_limits(struct DPB_I2cSensors *data,int n,int ch,int alarm_type ,float curr) {
+	int rc = 0;
+	uint8_t volt_buf[2] = {0,0};
+	uint8_t volt_reg ;
+	uint16_t volt_lim;
+	struct I2cDevice dev;
+	if(curr >= 1.5)
+		return EINVAL;
+	switch(n){
+		case DEV_SFP0_2_VOLT:
+			dev = data->dev_sfp0_2_volt;
+		break;
+		case DEV_SFP3_5_VOLT:
+			dev = data->dev_sfp3_5_volt;
+		break;
+		case DEV_SOM_VOLT:
+			dev = data->dev_som_volt;
+		break;
+		default:
+			return -EINVAL;
+		break;
+		}
+	switch(ch){
+		case INA3221_CH1:
+			volt_reg = (alarm_type)?INA3221_SHUNT_VOLTAGE_WARN1_REG:INA3221_SHUNT_VOLTAGE_CRIT1_REG;
+		break;
+		case INA3221_CH2:
+			volt_reg = (alarm_type)?INA3221_SHUNT_VOLTAGE_WARN2_REG:INA3221_SHUNT_VOLTAGE_CRIT2_REG;
+		break;
+		case INA3221_CH3:
+			volt_reg = (alarm_type)?INA3221_SHUNT_VOLTAGE_WARN3_REG:INA3221_SHUNT_VOLTAGE_CRIT3_REG;
+		break;
+		default:
+			return -EINVAL;
+		break;
+		}
+	if(curr < 0){
+		curr = -curr;
+		volt_lim = (curr * 0.05 * 1e6)/40; //0.05 = Resistor value
+		volt_lim = volt_lim << 3 ;
+		volt_lim = (~volt_lim)+1;
+		volt_lim = volt_lim | 0x8000;
+	}
+	else{
+		volt_lim = (curr * 0.05 * 1e6)/40; //0.05 = Resistor value
+		volt_lim = volt_lim << 3 ;
+	}
+	volt_buf[1] = volt_lim & 0x00FF;
+	volt_buf[0] = (volt_lim >> 8) & 0x00FF;
+	rc = i2c_write(&dev,&volt_reg,1);
+	if(rc < 0)
+		return rc;
+	rc = i2c_write(&dev,volt_buf,2);
+	if(rc < 0)
+			return rc;
+	return 0;
+}
+/**
+ * Enables or disables configuration register bits of the INA3221 Voltage Sensor
+ *
+ * @param struct DPB_I2cSensors *data: being the corresponding I2C device for the INA3221 Voltage Sensor
+ * @param uint8_t *bit_ena: array which should contain the desired bit value (0 o 1)
+ * @param uint8_t *bit_num: array which should contain the position of the bit/s that will be modified
+ * @param int n :which of the 3 INA3221 is being dealt with
+ *
+ * @return Negative integer if writing fails,array size is mismatching or incorrect value introduced
+ * @return 0 if everything is okay and modifies the configuration register
+ */
+int ina3221_set_config(struct DPB_I2cSensors *data,uint8_t *bit_ena,uint8_t *bit_num, int n) {
+	int rc = 0;
+	uint8_t config_buf[2] = {0,0};
+	uint8_t config_reg = INA3221_CONFIG_REG;
+	uint8_t array_size = sizeof(bit_num);
+	uint16_t mask;
+	uint16_t config;
+	struct I2cDevice dev;
+	if(array_size != sizeof(bit_ena))
+		return -EINVAL;
+	switch(n){
+		case DEV_SFP0_2_VOLT:
+			dev = data->dev_sfp0_2_volt;
+		break;
+		case DEV_SFP3_5_VOLT:
+			dev = data->dev_sfp3_5_volt;
+		break;
+		case DEV_SOM_VOLT:
+			dev = data->dev_som_volt;
+		break;
+		default:
+			return -EINVAL;
+		break;
+		}
+	rc = i2c_write(&dev,&config_reg,1);
+	if(rc < 0)
+		return rc;
+	// Read MSB and LSB of config reg
+	rc = i2c_read(&dev,config_buf,2);
+	if(rc < 0)
+			return rc;
+	config = (config_buf[0] << 8) + (config_buf[1]);
+	for(int i = 0; i<array_size;i++){
+		mask = 1;
+		mask = mask << bit_num[i];
+		if(bit_ena[i] == 0){
+			config = config & (~mask);
+		}
+		else if(bit_ena[i] == 1){
+			config = config | mask;
+		}
+		else{
+			return -EINVAL;
+		}
+	}
+	config_buf[1] = config & 0x00FF;
+	config_buf[0] = (config >> 8) & 0x00FF;
+	rc = i2c_write(&dev,&config_reg,1);
+	if(rc < 0)
+		return rc;
+	rc = i2c_write(&dev,config_buf,2);
+	if(rc < 0)
+			return rc;
+	return 0;
+}
 /************************** Threads declaration ******************************/
 static int monitoring_thread_count;
 /**
@@ -1827,7 +2028,7 @@ int main(){
 	/* Block all real time signals so they can be used for the timers.
 	   Note: this has to be done in main() before any threads are created
 	   so they all inherit the same mask. Doing it later is subject to
-	   race conditions */
+	   race conditions*/
 
 	sigemptyset(&alarm_sig);
 	for (i = SIGRTMIN; i <= SIGRTMAX; i++)

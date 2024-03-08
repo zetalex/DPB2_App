@@ -6,6 +6,9 @@
 #define MCP9844_TEMP_UPPER_LIM_REG 0x2
 #define MCP9844_TEMP_LOWER_LIM_REG 0x3
 #define MCP9844_TEMP_CRIT_LIM_REG 0x4
+#define MCP9844_TEMP_UPPER_LIM 0x0
+#define MCP9844_TEMP_LOWER_LIM 0x1
+#define MCP9844_TEMP_CRIT_LIM 0x2
 #define MCP9844_TEMP_REG 0x5
 /******************************************************************************
 * Temperature Sensor Register Set - Configuration and resolution value.
@@ -105,6 +108,9 @@
 #define INA3221_SHUNT_VOLTAGE_WARN2_REG 0xA
 #define INA3221_SHUNT_VOLTAGE_CRIT3_REG 0xB
 #define INA3221_SHUNT_VOLTAGE_WARN3_REG 0xC
+#define INA3221_CH1 0x0
+#define INA3221_CH2 0x1
+#define INA3221_CH3 0x2
 /******************************************************************************
 * Voltage and Current Sensor Register Set - Device Configuration, alert status configuration and enabling
 ****************************************************************************/

@@ -23,21 +23,11 @@
 
 /*int main()
 {
-	int i = 34;
-	char buffer [sizeof(i)*8+1];
-	snprintf(buffer, sizeof(buffer), "%d",i);
-	printf(buffer);
-	printf("\n");
-	char raw_str[80];
-	strcpy(raw_str, "/sys/bus/iio/devices/iio:device1/in_temp");
-	strcat(raw_str, buffer);
-	strcat(raw_str, "_raw");
+	short i = -200;
+	short z = 200;
+	i = i << 2;
+	short e = i & 0x1FFF;
 
-	printf(raw_str);
-	printf("\n");
-    printf("Hello World\n");
-    printf("Hola Mundo\n");
-    printf("Añado un print \n");
 
 
     return 0;
