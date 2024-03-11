@@ -48,6 +48,7 @@ struct DPB_I2cSensors{
 int memoryID;
 struct wrapper *memory;
 sem_t i2c_sync;
+sem_t ams_sync;
 
 /************************** Function Prototypes ******************************/
 
@@ -430,13 +431,29 @@ int stop_I2cSensors(struct DPB_I2cSensors *data){
  * @return Negative integer if start fails.If not, returns 0 and enables Xilinx-AMS events.
  */
 int iio_event_monitor_up(FILE *proc) {
-	proc = popen("/run/media/mmcblk0p1/IIO_MONITOR.elf -a iio:device0 &", "r");  //Executes IIO EVENT MONITOR
-	proc = popen("\n", "r"); //Avoids stucking at IIO_EVENT_MONITOR in release mode and no creating shared memory space
-	if (proc == NULL){
-		printf("\nError executing iio_event_monitor.\n");
-		return -1;
-	}
-	return 0;
+
+
+    pid_t pid = fork(); // Create a child process
+
+    if (pid == 0) {
+        // Child process
+        // Path of the .elf file and arguments
+        char *args[] = {"/run/media/mmcblk0p1/IIO_MONITOR.elf", "-a", "iio:device0", NULL};
+
+        // Execute the .elf file
+        if (execvp(args[0], args) == -1) {
+            perror("Error executing the .elf file");
+            return -1;
+        }
+    } else if (pid > 0) {
+        // Parent process
+        // You can perform other tasks here while the child process executes the .elf file
+    } else {
+        // Error creating the child process
+        perror("Error creating the child process");
+        return -1;
+    }
+    return 0;
 }
 
 /************************** AMS Functions ******************************/
@@ -584,15 +601,15 @@ int xlnx_ams_read_volt(int *chan, int n, float *res){
 	return 0;
 	}
 /**
- * Reads voltage of n channels (channels specified in *chan) and stores the values in *res
+ * DEtermines the new limit of the alarm of the channel n
  *
- * @param int *chan: array which contain channels to measure
- * @param int n: number of channels to measure
- * @param float *res: array where results are stored in
+ * @param int chan: channel whose alarm limit will be changed
+ * @param char *ev_type: string that determines the type of the event
+ * @param char *ch_type: string that determines the type of the channel
+ * @float val: value of the new limit
  *
- * @return Negative integer if reading fails.If not, returns 0 and the stored values in *res
+ * @return Negative integer if setting fails, any file could not be opened or invalid argument.If not, returns 0 and the modifies the specified limit
  *
- * @note The resulting magnitude is obtained by applying the ADC conversion specified by Xilinx
  */
 int xlnx_ams_set_limits(int chan, char *ev_type, char *ch_type, float val){
 	FILE *offset,*scale;
@@ -604,7 +621,14 @@ int xlnx_ams_set_limits(int chan, char *ev_type, char *ch_type, float val){
 		char adc_buff [8];
 		long fsize;
 		int thres;
+		char ev_str[80];
+	    int fd;
+	    char ena = '1';
+	    char disab = '0';
 		uint16_t adc_code;
+
+		if(val<0) //Cannot be negative
+			return -EINVAL;
 
 		snprintf(buffer, sizeof(buffer), "%d",chan);
 
@@ -619,6 +643,11 @@ int xlnx_ams_set_limits(int chan, char *ev_type, char *ch_type, float val){
 		strcat(thres_str, "_thresh_");
 		strcat(thres_str, ev_type);
 		strcat(thres_str, "_value");
+
+		strcpy(ev_str, "/sys/bus/iio/devices/iio:device0/events/in_");
+		strcat(ev_str, ch_type);
+		strcat(ev_str, buffer);
+		strcat(ev_str, "_thresh_");
 
 		scale = fopen(scale_str,"r");
 		thres = open(thres_str, O_WRONLY);
@@ -640,7 +669,9 @@ int xlnx_ams_set_limits(int chan, char *ev_type, char *ch_type, float val){
 					printf("AMS Voltage file could not be opened!!! \n");/*Any of the files could not be opened*/
 					return -1;
 				}
-
+				if(strcmp("rising",ev_type)){
+					return -EINVAL;
+				}
 				fseek(offset, 0, SEEK_END);
 				fsize = ftell(offset);
 				fseek(offset, 0, SEEK_SET);  /* same as rewind(f); */
@@ -659,8 +690,14 @@ int xlnx_ams_set_limits(int chan, char *ev_type, char *ch_type, float val){
 				fclose(offset);
 
 			    adc_code = (uint16_t) (1024*val)/atof(scale_string) - atof(offset_string);
+				strcat(ev_str, "rising_en");
+				fd = open(ev_str, O_WRONLY);
+
 			}
-			else{
+			else if(!strcmp("voltage",ch_type)){
+				if((strcmp("rising",ev_type))&(strcmp("falling",ev_type))){
+					return -EINVAL;
+				}
 				fseek(scale, 0, SEEK_END);
 				fsize = ftell(scale);
 				fseek(scale, 0, SEEK_SET);  /* same as rewind(f); */
@@ -670,13 +707,22 @@ int xlnx_ams_set_limits(int chan, char *ev_type, char *ch_type, float val){
 
 				adc_code = (uint16_t)(1024*val)/atof(scale_string);
 
+				strcat(ev_str, "either_en");
+				fd = open(ev_str, O_WRONLY);
 				fclose(scale);
 
 				//return 0;
 			}
+			else
+				return -EINVAL;
+
 			snprintf(adc_buff, sizeof(adc_buff), "%d",adc_code);
 			write (thres, &adc_buff, sizeof(adc_buff));
 			close(thres);
+	        write (fd, &disab, 1);
+	        usleep(10);
+	        write(fd,&ena,1);
+	        close(fd);
 			}
 	return 0;
 	}
@@ -2039,13 +2085,14 @@ static void *i2c_alarms_thread(void *arg){
 }
 /**
  * Periodic thread that is waiting for an alarm from any Xilinx AMS channel, the alarm is presented as an event,
- * events are reported by IIO EVENT MONITOR through shared memory
+ * events are reported by IIO EVENT MONITOR through shared memory. Shared memory segment is declared.
  *
  * @param void *arg: NULL
  *
  * @return  NULL (if exits is because of an error).
  */
 static void *ams_alarms_thread(void *arg){
+
 	struct periodic_info info;
 	int rc ;
 	char ev_type[8];
@@ -2058,25 +2105,36 @@ static void *ams_alarms_thread(void *arg){
     char disab = '0';
 	char buffer [64];
 
+	key_t sharedMemoryKey = MEMORY_KEY;
+	memoryID = shmget(sharedMemoryKey, sizeof(struct wrapper), IPC_CREAT | 0600);
+	if (memoryID == -1) {
+	     perror("shmget():");
+	     exit(1);
+	 }
+
+	memory = shmat(memoryID, NULL, 0);
+	if (memory == (void *) -1) {
+	    perror("shmat():");
+	    exit(1);
+	}
+
+	//printf("Initializtaion !\n");
+	strcpy(memory->ev_type,"");
+	strcpy(memory->ch_type,"");
+	sem_init(&memory->ams_sync, 1, 0);
+	sem_init(&memory->empty, 1, 1);
+	sem_init(&memory->full, 1, 0);
+	memory->chn = 0;
+	memory->tmpstmp = 0;
+
+	if (memoryID == -1) {
+	    perror("shmget(): ");
+	    exit(1);
+	 }
+
 	strcpy(ev_str, "/sys/bus/iio/devices/iio:device0/events/in_");
 
-	key_t sharedMemoryKey = MEMORY_KEY;  //Using shared memory to communicate with IIO EVENT MONITOR
-
-    memoryID=shmget(sharedMemoryKey,sizeof(struct wrapper),0);
-
-    if(memoryID==-1)
-    {
-        perror("shmget(): ");
-        exit(1);
-    }
-
-    memory = shmat(memoryID,NULL,0);
-    if(memory== (void*)-1)
-    {
-        perror("shmat():");
-        exit(1);
-    }
-
+	usleep(10);
 	printf("AMS Alarms thread period: %dms\n",AMS_ALARMS_THREAD_PERIOD);
 	rc = make_periodic(AMS_ALARMS_THREAD_PERIOD, &info);
 	if (rc) {
@@ -2084,8 +2142,8 @@ static void *ams_alarms_thread(void *arg){
 		return NULL;
 	}
 	while(1){
+
         sem_wait(&memory->full);  //Semaphore to wait until any event happens
-        sem_wait(&memory->cmutex);
 
         chan = memory->chn;
         strcpy(ev_type,memory->ev_type);
@@ -2102,12 +2160,12 @@ static void *ams_alarms_thread(void *arg){
 
         usleep(10);
 
+        sem_post(&memory->empty);//Free the semaphore so the IIO EVENT MONITOR can report another event
+
         write (fd, &ena, 1);  //Restarting enablement of the event again so it can be asserted again later
         close(fd);
-        sem_post(&memory->cmutex);//Free the semaphore so the IIO EVENT MONITOR can report another event
-        sem_post(&memory->empty);
 
-        printf("Event type: %s. Timestamp: %lld. Channel type: %s. Channel: %d.",ev_type,timestamp,ch_type,chan);
+        printf("Event type: %s. Timestamp: %lld. Channel type: %s. Channel: %d.\n",ev_type,timestamp,ch_type,chan);
         strcpy(ev_str, "/sys/bus/iio/devices/iio:device0/events/in_");
 		wait_period(&info);
 	}
@@ -2136,7 +2194,6 @@ int main(){
 		printf("Error\r\n");
 		return rc;
 	}
-
 	sem_init(&i2c_sync,0,1);
 	/* Block all real time signals so they can be used for the timers.
 	   Note: this has to be done in main() before any threads are created

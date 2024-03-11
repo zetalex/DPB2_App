@@ -145,7 +145,7 @@
 /******************************************************************************
 *Shared Memory.
 ****************************************************************************/
-#define MEMORY_KEY 4567
+#define MEMORY_KEY 7890
 
 struct wrapper
 {
@@ -154,9 +154,8 @@ struct wrapper
     int chn;
     __s64 tmpstmp;
     sem_t empty;
-    sem_t pmutex;
-    sem_t cmutex;
     sem_t full;
+    sem_t ams_sync;
 };
 
 
