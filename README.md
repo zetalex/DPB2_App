@@ -40,22 +40,48 @@ Finally, in 1956,  Clyde Cowan, Frederick Reines, Francis B. "Kiko" Harrison, He
 
 Over the years, different types of radioactive decays have been discovered that can give rise to neutrinos, such as natural and artificial nuclear reactions, supernova events or the spin-down of a neutron star. Furthermore, it has been discovered that there are different leptonic flavours of neutrinos originating from the weak interactions, electron neutrino, muon neutrino and tau neutrino,each flavor is associated with the correspondingly named charged lepton and similar to some other neutral particles, neutrinos oscillate between different flavors in flight as a consequence.
 
+The discipline that studies the phenomena caused by neutrinos from space encounters the difficulty of detecting neutrinos because they interact with almost nothing or only weakly. A configuration for detecting a decent amount of neutrinos will be explained in the next section. This precise configuration is the basis of the project on which this TFG has been developed.
+
+## Hyper-Kamiokande Project (HKK)
 
 
-## Hyper-Kamiokande Project
-Hyper-Kamiokande is a neutrino observatory project still under construction (estimated to start operation in 2027), which takes place in the Kamioka mines in Japan. Although the project is based in Japan, it involves research institutes from 22 different countries. The aim of the project is to search for proton decays and detect neutrinos from natural sources such as the Earth, the atmosphere, the Sun and the cosmos, as well as to study neutrino oscillations from the neutrino beam of the artificial accelerator.
+## Hyper-Kamiokande Project (HKK) physical basis and its predecessor Super-Kamiokande
 
-Hyper-Kamiokande is planned to be the world's largest neutrino observatory, surpassing its predecessor Super-Kamiokande, which is 71 metres high and 68 metres in diameter. The observatory, filled with ultrapure water, will have about 40,000 photomultiplier tubes as detectors inside the observatory and 10,000 detectors outside the observatory.
+The physics apparatus used to study neutrinos is referred to as a neutrino detector, built to be isolated from any other inﬂuence like cosmic rays or background radiation .These neutrino detectors are huge structures that work following a neutrino detection technique of the existent ones let it be scintillators (like in the Cowan-Reines neutrino experiment), radiochemical methods, radio detectors or Cherenkov light detectors.The experiment that gives name to this chapter is based on the latter: the Cherenkov light detection. 
 
+This detectors are huge water-ﬁlled tanks enriched with deuterium and gadolinium. This medium is ideal for neutrino interaction as the interaction of one of this subatomic particles with the electrons or nuclei of water can produce a charged particle faster than the speed of light in water. This produces a cone of light called Cherenkov light and can be deﬁned as the equivalent of light to a sonic boom in acoustic waves.
 
+The water tank is surrounded by photosensible sensors called Phototubes, a cell ﬁlled with gas or a vacuum tube sensitive to light. The most used king of phototube is the Photomultipliertube (PMT) due to its high sensitiveness.
+
+This PMT detects the Cherenkov light produced by the neutrino interaction. By sensing the pattern of light many information of the neutrino can be inferred, such as direction, energy and sometimes the ﬂavor information of the incident neutrino.
+
+![How a PMT detects Cherenkov Light phenomenon](/DBP2_App/doc/figures/CHERK_LIGHT.png)
+<figcaption>How a PMT detects Cherenkov Light phenomenon</figcaption>.
+<br>
+
+These detections are exceedingly rare due to the low probability of a neutrino interacting with matter. Therefore, the larger the water tank and the greater the number of PMTs, the more interactions can be detected within the same timeframe.
+
+The largest neutrino detector currently in operation is the Super-Kamiokande (SKK). "Kamiokande" is a fusion of several words: KAMIOKA Neutrino Detection Experiment. Situated beneath Mount Ikeno near the city of Hida in the Gifu Prefecture, Japan, Kamioka is the facility that oversees this detector. The detector has undergone up to four revisions for various reasons, such as cascade failures or the replacement of the 6000 PMTs, along with upgrades to electronics in the latest iteration, Super-Kamiokande IV. These versions have not led to an increase in the number of PMTs or their percentage of coverage, but rather to measures to protect the technology used.
 
 ![Interior of the Super-Kamiokande, predecessor of the Hyper-Kamiokande](/DBP2_App/doc/figures/SK-Detector.png)
 <figcaption>Interior of the Super-Kamiokande, predecessor of the Hyper-Kamiokande</figcaption>.
 <br>
 
-![Structure of the Hyper-Kamiokande](/DBP2_App/doc/figures/HK-SEC.png)
-<figcaption>Structure of the Hyper-Kamiokande</figcaption>.
+## Structure of the HKK 
+
+Hyper-Kamiokande is a neutrino observatory project still under construction (estimated to start operation in 2027), which takes place in the Kamioka mines in Japan replacing the Super-Kamiokande. Although the project is based in Japan, it involves research institutes from 22 different countries. The aim of the project is to search for anti-neutrinos coming from supernovas, proton decays and detect neutrinos from natural sources such as the Earth, the atmosphere, the Sun and the cosmos, as well as to study neutrino oscillations from the neutrino beam of the artificial accelerator.
+
+Hyper-Kamiokande is planned to be the world's largest neutrino observatory, surpassing its predecessor Super-Kamiokande, which is 71 metres high and 68 metres in diameter. The observatory, filled with ultrapure water, will have about 40,000 photomultiplier tubes as detectors inside the observatory and 10,000 detectors outside the observatory. Although HKK is bigger than SKK, by including almost 4 times the number of PMTs of its predecessor, HKK achieves a 40% photo-cathode coverage, the same as SKK.
+
+
+![HKK water tank concept sketch](/DBP2_App/doc/figures/HK-Sketch.png)
+<figcaption>HKK water tank concept sketch</figcaption>
 <br>
+
+![Internal structure of the Hyper-Kamiokande](/DBP2_App/doc/figures/HK-SEC.png)
+<figcaption>Internal structure of the Hyper-Kamiokande</figcaption>
+<br>
+The detector design comprises a cylindrical tank with outer dimensions of 78 meters in height and 68 meters in diameter. It is filled with 260,000 metric tons of ultrapure water to create a water Cherenkov detector. This tank will be surrounded by highly sensitive photodetectors, which boast a 50% higher efficiency compared to the SKK ones, thus allowing for greater precision in measuring light intensity and detection time. These photomultiplier tubes (PMTs), specifically the Hamatsu R12860 model, will enhance the detection of signatures such as those produced in neutrino interactions. Consequently, this setup will enable researchers to more accurately measure the direction and velocity of neutrinos passing through the detector.
 
 The PMTs, along with the rest of the electronics, will be housed in hermetically sealed vessels submerged in the water inside the observatory.
 
@@ -74,7 +100,7 @@ Since the electronics are located in a place that is difficult to access, as it 
 In our group we are dedicated to the DPB module and specifically my work is dedicated to the reliability of the DPB, as it consists of developing an application that uses all the sensing and measurement subsystems available in the DPB to monitor its status and establish alarms and warnings for critical cases.
 
 
-# Technology with which is going to be used
+# Technology which is going to be used
 
 Due to the amount of data we intend to work with and the need to customise our board for our application, we have chosen to use a SoM with the AMD Zynq UltraScale+ MPSoC as the processing system, which is combined in the SoM together with logic devices which form a user-programmable logic. The MPSoC includes various controllers such as UART, I2C or eMMC ports which provide communication with the peripherals and integrates a monitoring system for the chip itself and its subsystems. In addition, the Zynq UltraScale+ has support for lightweight operating systems, which can be a great benefit if you take advantage of the functionality of the operating system's own drivers.
 
