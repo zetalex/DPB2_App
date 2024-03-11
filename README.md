@@ -42,7 +42,7 @@ Over the years, different types of radioactive decays have been discovered that 
 
 The discipline that studies the phenomena caused by neutrinos from space encounters the difficulty of detecting neutrinos because they interact with almost nothing or only weakly. A configuration for detecting a decent amount of neutrinos will be explained in the next section. This precise configuration is the basis of the project on which this TFG has been developed.
 
-## Hyper-Kamiokande Project (HKK)
+# Hyper-Kamiokande Project (HKK)
 
 
 ## Hyper-Kamiokande Project (HKK) physical basis and its predecessor Super-Kamiokande
@@ -64,8 +64,7 @@ These detections are exceedingly rare due to the low probability of a neutrino i
 The largest neutrino detector currently in operation is the Super-Kamiokande (SKK). "Kamiokande" is a fusion of several words: KAMIOKA Neutrino Detection Experiment. Situated beneath Mount Ikeno near the city of Hida in the Gifu Prefecture, Japan, Kamioka is the facility that oversees this detector. The detector has undergone up to four revisions for various reasons, such as cascade failures or the replacement of the 6000 PMTs, along with upgrades to electronics in the latest iteration, Super-Kamiokande IV. These versions have not led to an increase in the number of PMTs or their percentage of coverage, but rather to measures to protect the technology used.
 
 ![Interior of the Super-Kamiokande, predecessor of the Hyper-Kamiokande](/DBP2_App/doc/figures/SK-Detector.png)
-<figcaption>Interior of the Super-Kamiokande, predecessor of the Hyper-Kamiokande</figcaption>.
-<br>
+<figcaption>Interior of the Super-Kamiokande, predecessor of the Hyper-Kamiokande</figcaption>
 
 ## Structure of the HKK 
 
@@ -79,11 +78,14 @@ Hyper-Kamiokande is planned to be the world's largest neutrino observatory, surp
 <br>
 
 ![Internal structure of the Hyper-Kamiokande](/DBP2_App/doc/figures/HK-SEC.png)
-<figcaption>Internal structure of the Hyper-Kamiokande</figcaption>
+<figcaption>Cross-section of the Hyper-Kamiokande</figcaption>
 <br>
 The detector design comprises a cylindrical tank with outer dimensions of 78 meters in height and 68 meters in diameter. It is filled with 260,000 metric tons of ultrapure water to create a water Cherenkov detector. This tank will be surrounded by highly sensitive photodetectors, which boast a 50% higher efficiency compared to the SKK ones, thus allowing for greater precision in measuring light intensity and detection time. These photomultiplier tubes (PMTs), specifically the Hamatsu R12860 model, will enhance the detection of signatures such as those produced in neutrino interactions. Consequently, this setup will enable researchers to more accurately measure the direction and velocity of neutrinos passing through the detector.
 
-The PMTs, along with the rest of the electronics, will be housed in hermetically sealed vessels submerged in the water inside the observatory.
+![PMT strucutre](/DBP2_App/doc/figures/PMT-str.png)
+<figcaption>PMT strucutre</figcaption>
+<br>
+The PMTs, along with the rest of the electronics, will be housed in hermetically sealed vessels submerged in the water inside the observatory, following the same structure as the SKK.
 
 ![Interior of the vessel](/DBP2_App/doc/figures/Vasija.jpg)
 <figcaption>Interior of the vessel</figcaption>
@@ -96,6 +98,26 @@ The PMTs, along with the rest of the electronics, will be housed in hermetically
 As can be seen in the previous figures, the electronics are concentrated inside the vessel, where the information from the PMTs passes through digitisers to the DPB. The DPB is responsible for communicating the different modules both outside and inside the vessel, it acts as a hub inside the vessel.
 
 Since the electronics are located in a place that is difficult to access, as it would mean emptying the observatory of water, high reliability is required in this project, at least 10 years. For this reason, robust systems have been chosen and the electronics used must be monitored.
+
+## HKK objectives
+
+The HKK experiment stands at the forefront of contemporary neutrino research, poised to unlock profound insights into the fundamental properties of these elusive particles. With its innovative design and enhanced capabilities, HKK ventures into uncharted territories of particle physics, aiming to shed light on mysteries ranging from neutrino oscillations to the enigmatic nature of dark matter.
+
+In the realm of neutrino oscillation measurements, HKK endeavors to employ both accelerator and atmospheric neutrinos to unravel mysteries such as determining the mass hierarchy, investigating CP violation in the lepton sector, and precisely measuring oscillation parameters. Additionally, it aims to explore phenomena such as sterile neutrinos and potential violations of Lorentz invariance.
+
+In solar neutrino measurements, HKK aims to address discrepancies observed between solar and reactor neutrino measurements, particularly focusing on the θ12 sector. It intends to achieve this by studying day-night asymmetry in solar neutrino flux and exploring novel avenues such as monitoring solar fusion reactions and observing higher-energy neutrino flux.
+
+HKK seeks to build upon the nucleon decay research legacy of Kamiokande and SKK (Super-Kamiokande) by significantly enhancing limits on proton decays. It plans to utilize advanced PMT technology to improve performance, especially in detecting gamma rays from neutron capture, which is crucial for reducing neutrino backgrounds in proton decay searches.
+
+In terms of supernova burst neutrinos, HKK aims to detect and analyze a substantial number of neutrinos from Galactic supernovae, allowing for detailed studies of these explosive events. It complements other experiments such as DUNE in its sensitivity to various types of supernova neutrinos.
+
+For supernova relic neutrinos, HKK could contribute significantly by focusing on higher energy regions, complementing the efforts of SKK. Introducing gadolinium enhances sensitivity by distinguishing neutrino interactions from background events.
+
+In dark matter searches, HKK aims to improve upon SKK's capabilities in detecting dark matter through neutrino signals, particularly from neutralino annihilation in regions of high dark matter density like the core of the Sun and the Galactic center. It also seeks to detect low-mass neutralinos, which are challenging to detect in direct-detection experiments.
+
+In the pursuit of understanding the universe at its most fundamental level, the HKK experiment represents a beacon of scientific exploration. Through its multifaceted approach and collaborative efforts, HKK is poised to unravel some of the most profound mysteries of the cosmos, shaping our understanding of particle physics for generations to come.
+
+## Project organisation
 
 In our group we are dedicated to the DPB module and specifically my work is dedicated to the reliability of the DPB, as it consists of developing an application that uses all the sensing and measurement subsystems available in the DPB to monitor its status and establish alarms and warnings for critical cases.
 
