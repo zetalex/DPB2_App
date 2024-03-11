@@ -2158,11 +2158,9 @@ static void *ams_alarms_thread(void *arg){
         fd = open(ev_str, O_WRONLY);
         write (fd, &disab, 1);
 
-        usleep(10);
+        //usleep(10);
 
         sem_post(&memory->empty);//Free the semaphore so the IIO EVENT MONITOR can report another event
-
-
 
         printf("Event type: %s. Timestamp: %lld. Channel type: %s. Channel: %d.\n",ev_type,timestamp,ch_type,chan);
         strcpy(ev_str, "/sys/bus/iio/devices/iio:device0/events/in_");
