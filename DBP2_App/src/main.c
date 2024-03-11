@@ -2162,12 +2162,13 @@ static void *ams_alarms_thread(void *arg){
 
         sem_post(&memory->empty);//Free the semaphore so the IIO EVENT MONITOR can report another event
 
-        write (fd, &ena, 1);  //Restarting enablement of the event again so it can be asserted again later
-        close(fd);
+
 
         printf("Event type: %s. Timestamp: %lld. Channel type: %s. Channel: %d.\n",ev_type,timestamp,ch_type,chan);
         strcpy(ev_str, "/sys/bus/iio/devices/iio:device0/events/in_");
 		wait_period(&info);
+		write (fd, &ena, 1);  //Restarting enablement of the event again so it can be asserted again later
+		close(fd);
 	}
 	return NULL;
 }
