@@ -474,7 +474,7 @@ After an exhaustive study of all the sensing elements, the operation of each one
 Regarding the application to be programmed, it has been decided that it will be an application that will have several threads and sub-processes that will allow us to monitor the status of the DPB periodically, control the different alarms that we have and attend to interruptions. All this information will then be transmitted to the DAQ. 
 The DAQ will also receive configuration commands from the sensors and the application will have to act according to these commands.
 
-## Device and AMS initialization
+## Device and AMS alarms initialization
 
 In order to start the application, all the I<sup>2</sup>C devices to be used must be initialized, as well as the IIO_EVENT_MONITOR to be able to receive the alarms coming from the AMS.
 
@@ -545,104 +545,11 @@ int init_tempSensor (struct I2cDevice *dev) {
 
 }
 ```
-This function gets the Temperature Sensor I<sup>2</sup>C device, starts it snd then checks the Manufacturer ID and Device ID so as to confirm that is initalizating the right sensor.
+As it can be seen in the function init_tempSensor(), every I<sup>2</sup>C device is initialized following a simialr strucutre. Firstly, the device is started using the fucntion i2c_start from the I<sup>2</sup>C linux driver, then we check if we are initializing the correct device by checking specific registers and comparing them to their expected value and if any step fails, the function returns ans specifies the error.
 
-```c
-int init_voltSensor (struct I2cDevice *dev) {
-	int rc = 0;
-	uint8_t manID_buf[2] = {0,0};
-	uint8_t manID_reg = INA3221_MANUF_ID_REG;
-	uint8_t devID_buf[2] = {0,0};
-	uint8_t devID_reg = INA3221_DIE_ID_REG;
+For SFPs, the initialization process is a bit different since each of the two pages of their EEPROM is initialized as an independent devices. Furthermore, we use the checksum contained in the memory pages to verify the proper status of the memory pages.
 
-	rc = i2c_start(dev); //Start I2C device
-		if (rc) {
-			return rc;
-		}
-	// Write Manufacturer ID address in register pointer
-	rc = i2c_write(dev,&manID_reg,1);
-	if(rc < 0)
-		return rc;
-
-	// Read MSB and LSB of Manufacturer ID
-	rc = i2c_read(dev,manID_buf,2);
-	if(rc < 0)
-			return rc;
-	if(!((manID_buf[0] == 0x54) && (manID_buf[1] == 0x49))){ //Check Manufacturer ID to verify is the right component
-		printf("Manufacturer ID does not match the corresponding device: Voltage Sensor\r\n");
-		return -EINVAL;
-	}
-
-	// Write Device ID address in register pointer
-	rc = i2c_write(dev,&devID_reg,1);
-	if(rc < 0)
-		return rc;
-
-	// Read MSB and LSB of Device ID
-	rc = i2c_read(dev,devID_buf,2);
-	if(rc < 0)
-			return rc;
-	if(!((devID_buf[0] == 0x32) && (devID_buf[1] == 0x20))){ //Check Device ID to verify is the right component
-			printf("Device ID does not match the corresponding device: Voltage Sensor\r\n");
-			return -EINVAL;
-	}
-	return 0;
-
-}
-```
-This function,as the previous one, gets the Voltage Sensor I<sup>2</sup>C device, starts it and checks the Manufacturer and Device ID so as to confirm the initialized I<sup>2</sup>C device is the correct one.
-
-```c
-int init_SFP_A0(struct I2cDevice *dev) {
-	int rc = 0;
-	uint8_t SFPphys_reg = SFP_PHYS_DEV;
-	uint8_t SFPphys_buf[2] = {0,0};
-
-	rc = i2c_start(dev); //Start I2C device
-		if (rc) {
-			return rc;
-		}
-	//Read SFP Physcial device register
-	rc = i2c_readn_reg(dev,SFPphys_reg,SFPphys_buf,1);
-		if(rc < 0)
-			return rc;
-
-	//Read SFP function register
-	SFPphys_reg = SFP_FUNCT;
-	rc = i2c_readn_reg(dev,SFPphys_reg,&SFPphys_buf[1],1);
-	if(rc < 0)
-			return rc;
-	if(!((SFPphys_buf[0] == 0x03) && (SFPphys_buf[1] == 0x04))){ //Check Physical device and function to verify is the right component
-			printf("Device ID does not match the corresponding device: SFP-Avago\r\n");
-			return -EINVAL;
-	}
-	rc = checksum_check(dev, SFP_PHYS_DEV,0x7F,63); //Check checksum register to verify is the right component and the EEPROM is working correctly
-	if(rc < 0)
-				return rc;
-	rc = checksum_check(dev, SFP_CHECKSUM2_A0,0xFA,31);//Check checksum register to verify is the right component and the EEPROM is working correctly
-	if(rc < 0)
-				return rc;
-	return 0;
-
-}
-
-int init_SFP_A2(struct I2cDevice *dev) {
-	int rc = 0;
-
-	rc = i2c_start(dev);
-		if (rc) {
-			return rc;
-		}
-	rc = checksum_check(dev,SFP_MSB_HTEMP_ALARM_REG,0x61,95);//Check checksum register to verify is the right component and the EEPROM is working correctly
-	if(rc < 0)
-				return rc;
-	return 0;
-
-}
-```
-As it has been mentioned previously, the SFP provide us information by reading an EEPROM which is divided in 2 pages, and each page has a different I<sup>2</sup>C slave address, so it is treated as different I<sup>2</sup>C devices when initializing. The init_SFP_A0 function starts the first page and by checking the Physical device ID and its function register verifies that is the correct device. Then, it checks if the chechksums that the EEPROM contains match the expected value to veify that the EEPROM is working properly.
-
-Subsequently, the init_SFP_A2 function starts the second page and verifies the checksum contained in this page of the EEPROM with the same purpose as the previous function. 
+We use the following function to verify that the checksum value is correct:
 
 ```c
 int checksum_check(struct I2cDevice *dev,uint8_t ini_reg, uint8_t checksum_val, int size){
@@ -679,131 +586,11 @@ The function sums every register in the given range, and only takes the 8 LSB as
 ```c
 int init_I2cSensors(struct DPB_I2cSensors *data){
 
-	int rc;
 	data->dev_pcb_temp.filename = "/dev/i2c-2";
 	data->dev_pcb_temp.addr = 0x18;
-
-	data->dev_som_volt.filename = "/dev/i2c-2";
-	data->dev_som_volt.addr = 0x40;
-	data->dev_sfp0_2_volt.filename = "/dev/i2c-3";
-	data->dev_sfp0_2_volt.addr = 0x40;
-	data->dev_sfp3_5_volt.filename = "/dev/i2c-3";
-	data->dev_sfp3_5_volt.addr = 0x41;
-
-	data->dev_sfp0_A0.filename = "/dev/i2c-6";
-	data->dev_sfp0_A0.addr = 0x50;
-	data->dev_sfp1_A0.filename = "/dev/i2c-10";
-	data->dev_sfp1_A0.addr = 0x50;
-	data->dev_sfp2_A0.filename = "/dev/i2c-8";
-	data->dev_sfp2_A0.addr = 0x50;
-	data->dev_sfp3_A0.filename = "/dev/i2c-12";
-	data->dev_sfp3_A0.addr = 0x50;
-	data->dev_sfp4_A0.filename = "/dev/i2c-9";
-	data->dev_sfp4_A0.addr = 0x50;
-	data->dev_sfp5_A0.filename = "/dev/i2c-13";
-	data->dev_sfp5_A0.addr = 0x50;
-
-	data->dev_sfp0_A2.filename = "/dev/i2c-6";
-	data->dev_sfp0_A2.addr = 0x51;
-	data->dev_sfp1_A2.filename = "/dev/i2c-10";
-	data->dev_sfp1_A2.addr = 0x51;
-	data->dev_sfp2_A2.filename = "/dev/i2c-8";
-	data->dev_sfp2_A2.addr = 0x51;
-	data->dev_sfp3_A2.filename = "/dev/i2c-12";
-	data->dev_sfp3_A2.addr = 0x51;
-	data->dev_sfp4_A2.filename = "/dev/i2c-9";
-	data->dev_sfp4_A2.addr = 0x51;
-	data->dev_sfp5_A2.filename = "/dev/i2c-13";
-	data->dev_sfp5_A2.addr = 0x51;
-
-
-	rc = init_tempSensor(&data->dev_pcb_temp);
-	if (rc) {
-		printf("Failed to start i2c device: Temp. Sensor\r\n");
-		return rc;
-	}
-
-	rc = init_voltSensor(&data->dev_sfp0_2_volt);
-	if (rc) {
-		printf("Failed to start i2c device: SFP 0-2 Voltage Sensor\r\n");
-		return rc;
-	}
-
-	rc = init_voltSensor(&data->dev_sfp3_5_volt);
-	if (rc) {
-		printf("Failed to start i2c device: SFP 3-5 Voltage Sensor\r\n");
-		return rc;
-	}
-
-	rc = init_voltSensor(&data->dev_som_volt);
-	if (rc) {
-		printf("Failed to start i2c device: SoM Voltage Sensor\r\n");
-		return rc;
-	}
-
-	rc = init_SFP_A0(&data->dev_sfp0_A0);
-		if (rc) {
-			printf("Failed to start i2c device: SFP 0 - EEPROM page A0h\r\n");
-			return rc;
-		}
-	rc = init_SFP_A2(&data->dev_sfp0_A2);
-		if (rc) {
-			printf("Failed to start i2c device: SFP 0 - EEPROM page A2h\r\n");
-			return rc;
-		}
-	rc = init_SFP_A0(&data->dev_sfp1_A0);
-		if (rc) {
-			printf("Failed to start i2c device: SFP 1 - EEPROM page A0h\r\n");
-			return rc;
-		}
-	rc = init_SFP_A2(&data->dev_sfp1_A2);
-		if (rc) {
-			printf("Failed to start i2c device: SFP 1 - EEPROM page A2h\r\n");
-			return rc;
-		}
-	rc = init_SFP_A0(&data->dev_sfp0_A2);
-		if (rc) {
-			printf("Failed to start i2c device: SFP 2 - EEPROM page A0h\r\n");
-			return rc;
-		}
-	rc = init_SFP_A2(&data->dev_sfp2_A2);
-		if (rc) {
-			printf("Failed to start i2c device: SFP 2 - EEPROM page A2h\r\n");
-			return rc;
-		}
-	rc = init_SFP_A0(&data->dev_sfp3_A0);
-		if (rc) {
-			printf("Failed to start i2c device: SFP 3 - EEPROM page A0h\r\n");
-			return rc;
-		}
-	rc = init_SFP_A2(&data->dev_sfp3_A2);
-		if (rc) {
-			printf("Failed to start i2c device: SFP 3 - EEPROM page A2h\r\n");
-			return rc;
-		}
-	rc = init_SFP_A0(&data->dev_sfp4_A0);
-		if (rc) {
-			printf("Failed to start i2c device: SFP 4 - EEPROM page A0h\r\n");
-			return rc;
-		}
-	rc = init_SFP_A2(&data->dev_sfp4_A2);
-		if (rc) {
-			printf("Failed to start i2c device: SFP 4 - EEPROM page A2h\r\n");
-			return rc;
-		}
-	rc = init_SFP_A0(&data->dev_sfp5_A0);
-		if (rc) {
-			printf("Failed to start i2c device: SFP 5 - EEPROM page A0h\r\n");
-			return rc;
-		}
-	rc = init_SFP_A2(&data->dev_sfp5_A2);
-		if (rc) {
-			printf("Failed to start i2c device: SFP 5 - EEPROM page A2h\r\n");
-			return rc;
-		}
-	return 0;
-}
-
+    :
+    :
+    :
 ```
 Finally, in this function we define every filename and slave address for every I<sup>2</sup>C device and we call every initialization functions mentioned previously and in case any initialization misses, it is reported which device has failed.
 
@@ -811,42 +598,22 @@ Finally, in this function we define every filename and slave address for every I
 int stop_I2cSensors(struct DPB_I2cSensors *data){
 
 	i2c_stop(&data->dev_pcb_temp);
-
-	i2c_stop(&data->dev_sfp0_2_volt);
-	i2c_stop(&data->dev_sfp3_5_volt);
-	i2c_stop(&data->dev_som_volt);
-
-	i2c_stop(&data->dev_sfp0_A0);
-	i2c_stop(&data->dev_sfp1_A0);
-	i2c_stop(&data->dev_sfp2_A0);
-	i2c_stop(&data->dev_sfp3_A0);
-	i2c_stop(&data->dev_sfp4_A0);
-	i2c_stop(&data->dev_sfp5_A0);
-
-	i2c_stop(&data->dev_sfp0_A2);
-	i2c_stop(&data->dev_sfp1_A2);
-	i2c_stop(&data->dev_sfp2_A2);
-	i2c_stop(&data->dev_sfp3_A2);
-	i2c_stop(&data->dev_sfp4_A2);
-	i2c_stop(&data->dev_sfp5_A2);
-
-	return 0;
-}
+    :
+    :
+    :
 ```
-It has also been developed the stop_I2cSensors fucntion to termiante the I<sup>2</sup>C devices, even though it is not exepcted to be used as the application should be permantently active.
+It has also been developed the stop_I2cSensors function to termiante the I<sup>2</sup>C devices by using I<sup>2</sup>C linux driver function i2c_stop(), even though it is not exepcted to be used as the application should be permantently active.
 
 Regarding the IIO_EVENT_MONITOR initialization, it has been executed as a subprocess that will detect AMS alarms as events and it is executed by the following function:
 
 ```c
 int iio_event_monitor_up() {
-
-
     pid_t pid = fork(); // Create a child process
 
     if (pid == 0) {
         // Child process
         // Path of the .elf file and arguments
-        char *args[] = {"/run/media/mmcblk0p1/IIO_MONITOR.elf", "-a", "iio:device0", NULL};
+        char *args[] = {"/run/media/mmcblk0p1/IIO_MONITOR.elf", "-a", "/dev/iio:device0", NULL};
 
         // Execute the .elf file
         if (execvp(args[0], args) == -1) {
@@ -865,6 +632,8 @@ int iio_event_monitor_up() {
 }
 ```
 This function executes an IIO_EVENT_MONITOR through its release file. It should be emphasised that this IIO_EVENT_MONITOR is slightly customized by us so as to include shared memory configuration to communicate the main application with it.
+
+At first, it was recommended to use the function system() to execute the process as it was a bash script. However, it did not resulted as expected so it was decided to use the function [execvp()](https://linux.die.net/man/3/execvp), which also provides us with a more visual and convenient way of passing the necessary arguments to the function. 
 
 ```c
 

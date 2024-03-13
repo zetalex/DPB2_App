@@ -432,7 +432,7 @@ int iio_event_monitor_up() {
     if (pid == 0) {
         // Child process
         // Path of the .elf file and arguments
-        char *args[] = {"/run/media/mmcblk0p1/IIO_MONITOR.elf", "-a", "iio:device0", NULL};
+        char *args[] = {"/run/media/mmcblk0p1/IIO_MONITOR.elf", "-a", "/dev/iio:device0", NULL};
 
         // Execute the .elf file
         if (execvp(args[0], args) == -1) {
@@ -1947,7 +1947,7 @@ static void *monitoring_thread(void *arg)
 		}
 		sem_post(&i2c_sync);//Free semaphore to sync I2C usage
 
-		rc = xlnx_ams_read_temp(temp_chan,2,ams_temp);
+		rc = xlnx_ams_read_temp(temp_chan,3,ams_temp);
 		if (rc) {
 			printf("Error\r\n");
 			return NULL;
@@ -2095,8 +2095,8 @@ static void *ams_alarms_thread(void *arg){
 	__s64 timestamp;
 	char ev_str[80];
     int fd;
-    char ena = '1';
-    char disab = '0';
+    char ena[2] = "1";
+    char disab[2] = "0";
 	char buffer [64];
 
 	strcpy(ev_str, "/sys/bus/iio/devices/iio:device0/events/in_");
@@ -2123,26 +2123,27 @@ static void *ams_alarms_thread(void *arg){
         strcat(ev_str, "_thresh_");
         strcat(ev_str, ev_type);
         strcat(ev_str, "_en");
-        //fd = open(ev_str, O_WRONLY);
-     //   write (fd, &disab, 1);
+       // fd = open(ev_str, O_WRONLY);
+        //write (fd, disab, 2);
         //close(fd);
 
         //usleep(10);
 
-        sem_post(&memory->empty);//Free the semaphore so the IIO EVENT MONITOR can report another event
+
 
         printf("Event type: %s. Timestamp: %lld. Channel type: %s. Channel: %d.\n",ev_type,timestamp,ch_type,chan);
         strcpy(ev_str, "/sys/bus/iio/devices/iio:device0/events/in_");
-		wait_period(&info);
-	//	write (fd, &ena, 1);  //Restarting enablement of the event again so it can be asserted again later
+
+		//write (fd, ena, 2);  //Restarting enablement of the event again so it can be asserted again later
 		//close(fd);
 
+        sem_post(&memory->empty);//Free the semaphore so the IIO EVENT MONITOR can report another event
+		wait_period(&info);
 	}
 	return NULL;
 }
 int main(){
-	//IIO_EVENT_MONITOR process file
-	FILE *fp = NULL;
+
 	//Threads elements
 	pthread_t t_1, t_2, t_3;
 	sigset_t alarm_sig;
@@ -2203,7 +2204,7 @@ int main(){
 
 	pthread_create(&t_1, NULL, ams_alarms_thread,NULL); //Create thread 1 - read AMS alarms
 	pthread_create(&t_2, NULL, i2c_alarms_thread,(void *)&data); //Create thread 2 - read alarms every x miliseconds
-	//pthread_create(&t_3, NULL, monitoring_thread,(void *)&data );//Create thread 3 - monitors magnitudes every x seconds
+	pthread_create(&t_3, NULL, monitoring_thread,(void *)&data );//Create thread 3 - monitors magnitudes every x seconds
 
 	while(1){
 		sleep(1000000);
