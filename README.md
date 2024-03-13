@@ -413,19 +413,11 @@ As for the registers dedicated to the <i>flags</i>, these contain the indicator 
  
 # Obtención de datos del AMS, PS y PL SYSMON y diferenciación por canales
 
-Due to the sensors together with ADC converters with which Xilinx has equipped our module and its system monitoring tools (SYSMON), we can access a large amount of real-time information from the AMS, the PS and the PL via the linux driver "xilinx-ams". 
+Due to the sensors together with ADC converters with which Xilinx has equipped our module and its system monitoring tools (SYSMON), we can access a large amount of real-time information from the PS and the PL via the linux driver "xilinx-ams". 
 
 This information is differentiated into different channels which are explained in the following table.
 
 | Sysmon Block | Channel | Details                                                     | Measurement | File Descriptor                    |
-|--------------|---------|-------------------------------------------------------------|-------------|-----------------------------|
-| AMS CTRL     | 0       | System PLLs voltage measurement, VCC_PSPLL.                 | Voltage     | *in_voltage0_raw, in_voltage0_scale*        |
-|              | 1       | Battery voltage measurement, VCC_PSBATT.                    | Voltage     | *in_voltage1_raw, in_voltage1_scale*        |
-|              | 2       | PL Internal voltage measurement, VCCINT.                    | Voltage     | *in_voltage2_raw, in_voltage2_scale*         |
-|              | 3       | Block RAM voltage measurement, VCCBRAM.                     | Voltage     | *in_voltage3_raw, in_voltage3_scale*         |
-|              | 4       | PL Aux voltage measurement, VCCAUX.                         | Voltage     | *in_voltage4_raw, in_voltage4_scale*         |
-|              | 5       | Voltage measurement for six DDR I/O PLLs, VCC_PSDDR_PLL.    | Voltage     | *in_voltage5_raw, in_voltage5_scale*        |
-|              | 6       | VCC_PSINTFP_DDR voltage measurement.                        | Voltage     | *in_voltage6_raw, in_voltage6_scale*        |
 |--------------|---------|-------------------------------------------------------------|-------------|-----------------------------|
 | PS Sysmon    | 7       | LPD temperature measurement.                                | Temperature | *in_temp7_raw, in_temp7_scale, in_temp7_offset, in_temp7_input* |
 |              | 8       | FPD temperature measurement (REMOTE).                       | Temperature | *in_temp8_raw, in_temp8_scale, in_temp8_offset, in_temp8_input* |
@@ -457,6 +449,8 @@ This information is differentiated into different channels which are explained i
 |              | 33      | VUser2 voltage measurement (supply9).                       | Voltage     | *in_voltage33_raw, in_voltage33_scale*            |
 |              | 34      | VUser3 voltage measurement (supply10).                      | Voltage     | *in_voltage34_raw, in_voltage34_scale*            |
 
+The chart starts from channel 7 as the previous channels are from the AMS CTRL sysmon block and display repeated information from the PL.
+
 The information obtained is displayed in ADC code in the *_raw* file and has to be scaled with the value obtained in the *_scale* file. In the case of temperature, an offset from the *_offset* file must also be applied. 
 
 The expressions used to pass the values read to the corresponding magnitude are shown below.
@@ -473,7 +467,405 @@ Where XX defines the selected channel number in voltage or temperature and "n_bi
 
 Xilinx also offers alarms applied to the voltages and temperatures measured on the previously mentioned channels and the Linux driver allows us to configure and read these alarms also using the *iio_event_monitor* tool of Linux itself. In the case of temperature, there are only alarms that are activated if a certain temperature is exceeded, while in the case of voltage, there are alarms for both overvoltage and undervoltage, but without specifying whether the limit exceeded is the lower or upper limit (shown as *either*).
 
-# Start of programming
+# Programming
 
-After an exhaustive study of all the sensing elements, the operation of each one, their corresponding characteristics and alerts and the communication channel with these devices, we can start programming the different functions that will allow us to communicate with these devices and configure them to our needs or obtain the desired information.
+After an exhaustive study of all the sensing elements, the operation of each one, their corresponding characteristics and alerts and the communication channel with these devices, I can start programming the different functions that will allow us to communicate with these devices and configure them to our needs or obtain the desired information.
 
+Regarding the application to be programmed, it has been decided that it will be an application that will have several threads and sub-processes that will allow us to monitor the status of the DPB periodically, control the different alarms that we have and attend to interruptions. All this information will then be transmitted to the DAQ. 
+The DAQ will also receive configuration commands from the sensors and the application will have to act according to these commands.
+
+## Device and AMS initialization
+
+In order to start the application, all the I<sup>2</sup>C devices to be used must be initialized, as well as the IIO_EVENT_MONITOR to be able to receive the alarms coming from the AMS.
+
+```c
+struct DPB_I2cSensors{
+
+	struct I2cDevice dev_pcb_temp;
+	struct I2cDevice dev_sfp0_2_volt;
+	struct I2cDevice dev_sfp3_5_volt;
+	struct I2cDevice dev_som_volt;
+	struct I2cDevice dev_sfp0_A0;
+	struct I2cDevice dev_sfp1_A0;
+	struct I2cDevice dev_sfp2_A0;
+	struct I2cDevice dev_sfp3_A0;
+	struct I2cDevice dev_sfp4_A0;
+	struct I2cDevice dev_sfp5_A0;
+	struct I2cDevice dev_sfp0_A2;
+	struct I2cDevice dev_sfp1_A2;
+	struct I2cDevice dev_sfp2_A2;
+	struct I2cDevice dev_sfp3_A2;
+	struct I2cDevice dev_sfp4_A2;
+	struct I2cDevice dev_sfp5_A2;
+};
+
+```
+Firstly, every I<sup>2</sup>C device has been gathered and globally defined in a strcut. Then, the following functions have been developed to initialize each of the I<sup>2</sup>C devices:
+
+```c
+int init_tempSensor (struct I2cDevice *dev) {
+	int rc = 0;
+	uint8_t manID_buf[2] = {0,0};
+	uint8_t manID_reg = MCP9844_MANUF_ID_REG;
+	uint8_t devID_buf[2] = {0,0};
+	uint8_t devID_reg = MCP9844_DEVICE_ID_REG;
+
+	rc = i2c_start(dev);  //Start I2C device
+		if (rc) {
+			return rc;
+		}
+	// Write Manufacturer ID address in register pointer
+	rc = i2c_write(dev,&manID_reg,1);
+	if(rc < 0)
+		return rc;
+
+	// Read MSB and LSB of Manufacturer ID
+	rc = i2c_read(dev,manID_buf,2);
+	if(rc < 0)
+			return rc;
+	if(!((manID_buf[0] == 0x00) && (manID_buf[1] == 0x54))){ //Check Manufacturer ID to verify is the right component
+		printf("Manufacturer ID does not match the corresponding device: Temperature Sensor\r\n");
+		return -EINVAL;
+	}
+
+	// Write Device ID address in register pointer
+	rc = i2c_write(dev,&devID_reg,1);
+	if(rc < 0)
+		return rc;
+
+	// Read MSB and LSB of Device ID
+	rc = i2c_read(dev,devID_buf,2);
+	if(rc < 0)
+			return rc;
+	if(!((devID_buf[0] == 0x06) && (devID_buf[1] == 0x01))){//Check Device ID to verify is the right component
+			printf("Device ID does not match the corresponding device: Temperature Sensor\r\n");
+			return -EINVAL;
+	}
+	return 0;
+
+}
+```
+This function gets the Temperature Sensor I<sup>2</sup>C device, starts it snd then checks the Manufacturer ID and Device ID so as to confirm that is initalizating the right sensor.
+
+```c
+int init_voltSensor (struct I2cDevice *dev) {
+	int rc = 0;
+	uint8_t manID_buf[2] = {0,0};
+	uint8_t manID_reg = INA3221_MANUF_ID_REG;
+	uint8_t devID_buf[2] = {0,0};
+	uint8_t devID_reg = INA3221_DIE_ID_REG;
+
+	rc = i2c_start(dev); //Start I2C device
+		if (rc) {
+			return rc;
+		}
+	// Write Manufacturer ID address in register pointer
+	rc = i2c_write(dev,&manID_reg,1);
+	if(rc < 0)
+		return rc;
+
+	// Read MSB and LSB of Manufacturer ID
+	rc = i2c_read(dev,manID_buf,2);
+	if(rc < 0)
+			return rc;
+	if(!((manID_buf[0] == 0x54) && (manID_buf[1] == 0x49))){ //Check Manufacturer ID to verify is the right component
+		printf("Manufacturer ID does not match the corresponding device: Voltage Sensor\r\n");
+		return -EINVAL;
+	}
+
+	// Write Device ID address in register pointer
+	rc = i2c_write(dev,&devID_reg,1);
+	if(rc < 0)
+		return rc;
+
+	// Read MSB and LSB of Device ID
+	rc = i2c_read(dev,devID_buf,2);
+	if(rc < 0)
+			return rc;
+	if(!((devID_buf[0] == 0x32) && (devID_buf[1] == 0x20))){ //Check Device ID to verify is the right component
+			printf("Device ID does not match the corresponding device: Voltage Sensor\r\n");
+			return -EINVAL;
+	}
+	return 0;
+
+}
+```
+This function,as the previous one, gets the Voltage Sensor I<sup>2</sup>C device, starts it and checks the Manufacturer and Device ID so as to confirm the initialized I<sup>2</sup>C device is the correct one.
+
+```c
+int init_SFP_A0(struct I2cDevice *dev) {
+	int rc = 0;
+	uint8_t SFPphys_reg = SFP_PHYS_DEV;
+	uint8_t SFPphys_buf[2] = {0,0};
+
+	rc = i2c_start(dev); //Start I2C device
+		if (rc) {
+			return rc;
+		}
+	//Read SFP Physcial device register
+	rc = i2c_readn_reg(dev,SFPphys_reg,SFPphys_buf,1);
+		if(rc < 0)
+			return rc;
+
+	//Read SFP function register
+	SFPphys_reg = SFP_FUNCT;
+	rc = i2c_readn_reg(dev,SFPphys_reg,&SFPphys_buf[1],1);
+	if(rc < 0)
+			return rc;
+	if(!((SFPphys_buf[0] == 0x03) && (SFPphys_buf[1] == 0x04))){ //Check Physical device and function to verify is the right component
+			printf("Device ID does not match the corresponding device: SFP-Avago\r\n");
+			return -EINVAL;
+	}
+	rc = checksum_check(dev, SFP_PHYS_DEV,0x7F,63); //Check checksum register to verify is the right component and the EEPROM is working correctly
+	if(rc < 0)
+				return rc;
+	rc = checksum_check(dev, SFP_CHECKSUM2_A0,0xFA,31);//Check checksum register to verify is the right component and the EEPROM is working correctly
+	if(rc < 0)
+				return rc;
+	return 0;
+
+}
+
+int init_SFP_A2(struct I2cDevice *dev) {
+	int rc = 0;
+
+	rc = i2c_start(dev);
+		if (rc) {
+			return rc;
+		}
+	rc = checksum_check(dev,SFP_MSB_HTEMP_ALARM_REG,0x61,95);//Check checksum register to verify is the right component and the EEPROM is working correctly
+	if(rc < 0)
+				return rc;
+	return 0;
+
+}
+```
+As it has been mentioned previously, the SFP provide us information by reading an EEPROM which is divided in 2 pages, and each page has a different I<sup>2</sup>C slave address, so it is treated as different I<sup>2</sup>C devices when initializing. The init_SFP_A0 function starts the first page and by checking the Physical device ID and its function register verifies that is the correct device. Then, it checks if the chechksums that the EEPROM contains match the expected value to veify that the EEPROM is working properly.
+
+Subsequently, the init_SFP_A2 function starts the second page and verifies the checksum contained in this page of the EEPROM with the same purpose as the previous function. 
+
+```c
+int checksum_check(struct I2cDevice *dev,uint8_t ini_reg, uint8_t checksum_val, int size){
+	int rc = 0;
+	int sum = 0;
+	uint8_t byte_buf[size] ;
+
+	rc = i2c_readn_reg(dev,ini_reg,byte_buf,1);  //Read every register from ini_reg to ini_reg+size-1
+			if(rc < 0)
+				return rc;
+	for(int n=1;n<size;n++){
+	ini_reg ++;
+	rc = i2c_readn_reg(dev,ini_reg,&byte_buf[n],1);
+		if(rc < 0)
+			return rc;
+	}
+
+	for(int i=0;i<size;i++){
+		sum += byte_buf[i];  //Sum every register read in order to obtain the checksum
+	}
+	uint8_t calc_checksum = (sum & 0xFF); //Only taking the 8 LSB of the checksum as the checksum register is only 8 bits
+
+	if (checksum_val != calc_checksum){ //Check the obtained checksum equals the device checksum register
+		printf("Checksum value does not match the expected value \r\n");
+		return -EHWPOISON;
+	}
+	return 0;
+}
+```
+In order to verify the cheksums from any SFP, a function was needed that calculates the current checksum value and compares it to the expected value. So as to calcualte the checksum, the function needs to be given the I<sup>2</sup>C device, the address of the first register to be counted in the checksum calculation, the expected checksum value and the amount of registers to be counted in the checksum calculation.
+
+The function sums every register in the given range, and only takes the 8 LSB as the SFP registers size is 1 byte. 
+
+```c
+int init_I2cSensors(struct DPB_I2cSensors *data){
+
+	int rc;
+	data->dev_pcb_temp.filename = "/dev/i2c-2";
+	data->dev_pcb_temp.addr = 0x18;
+
+	data->dev_som_volt.filename = "/dev/i2c-2";
+	data->dev_som_volt.addr = 0x40;
+	data->dev_sfp0_2_volt.filename = "/dev/i2c-3";
+	data->dev_sfp0_2_volt.addr = 0x40;
+	data->dev_sfp3_5_volt.filename = "/dev/i2c-3";
+	data->dev_sfp3_5_volt.addr = 0x41;
+
+	data->dev_sfp0_A0.filename = "/dev/i2c-6";
+	data->dev_sfp0_A0.addr = 0x50;
+	data->dev_sfp1_A0.filename = "/dev/i2c-10";
+	data->dev_sfp1_A0.addr = 0x50;
+	data->dev_sfp2_A0.filename = "/dev/i2c-8";
+	data->dev_sfp2_A0.addr = 0x50;
+	data->dev_sfp3_A0.filename = "/dev/i2c-12";
+	data->dev_sfp3_A0.addr = 0x50;
+	data->dev_sfp4_A0.filename = "/dev/i2c-9";
+	data->dev_sfp4_A0.addr = 0x50;
+	data->dev_sfp5_A0.filename = "/dev/i2c-13";
+	data->dev_sfp5_A0.addr = 0x50;
+
+	data->dev_sfp0_A2.filename = "/dev/i2c-6";
+	data->dev_sfp0_A2.addr = 0x51;
+	data->dev_sfp1_A2.filename = "/dev/i2c-10";
+	data->dev_sfp1_A2.addr = 0x51;
+	data->dev_sfp2_A2.filename = "/dev/i2c-8";
+	data->dev_sfp2_A2.addr = 0x51;
+	data->dev_sfp3_A2.filename = "/dev/i2c-12";
+	data->dev_sfp3_A2.addr = 0x51;
+	data->dev_sfp4_A2.filename = "/dev/i2c-9";
+	data->dev_sfp4_A2.addr = 0x51;
+	data->dev_sfp5_A2.filename = "/dev/i2c-13";
+	data->dev_sfp5_A2.addr = 0x51;
+
+
+	rc = init_tempSensor(&data->dev_pcb_temp);
+	if (rc) {
+		printf("Failed to start i2c device: Temp. Sensor\r\n");
+		return rc;
+	}
+
+	rc = init_voltSensor(&data->dev_sfp0_2_volt);
+	if (rc) {
+		printf("Failed to start i2c device: SFP 0-2 Voltage Sensor\r\n");
+		return rc;
+	}
+
+	rc = init_voltSensor(&data->dev_sfp3_5_volt);
+	if (rc) {
+		printf("Failed to start i2c device: SFP 3-5 Voltage Sensor\r\n");
+		return rc;
+	}
+
+	rc = init_voltSensor(&data->dev_som_volt);
+	if (rc) {
+		printf("Failed to start i2c device: SoM Voltage Sensor\r\n");
+		return rc;
+	}
+
+	rc = init_SFP_A0(&data->dev_sfp0_A0);
+		if (rc) {
+			printf("Failed to start i2c device: SFP 0 - EEPROM page A0h\r\n");
+			return rc;
+		}
+	rc = init_SFP_A2(&data->dev_sfp0_A2);
+		if (rc) {
+			printf("Failed to start i2c device: SFP 0 - EEPROM page A2h\r\n");
+			return rc;
+		}
+	rc = init_SFP_A0(&data->dev_sfp1_A0);
+		if (rc) {
+			printf("Failed to start i2c device: SFP 1 - EEPROM page A0h\r\n");
+			return rc;
+		}
+	rc = init_SFP_A2(&data->dev_sfp1_A2);
+		if (rc) {
+			printf("Failed to start i2c device: SFP 1 - EEPROM page A2h\r\n");
+			return rc;
+		}
+	rc = init_SFP_A0(&data->dev_sfp0_A2);
+		if (rc) {
+			printf("Failed to start i2c device: SFP 2 - EEPROM page A0h\r\n");
+			return rc;
+		}
+	rc = init_SFP_A2(&data->dev_sfp2_A2);
+		if (rc) {
+			printf("Failed to start i2c device: SFP 2 - EEPROM page A2h\r\n");
+			return rc;
+		}
+	rc = init_SFP_A0(&data->dev_sfp3_A0);
+		if (rc) {
+			printf("Failed to start i2c device: SFP 3 - EEPROM page A0h\r\n");
+			return rc;
+		}
+	rc = init_SFP_A2(&data->dev_sfp3_A2);
+		if (rc) {
+			printf("Failed to start i2c device: SFP 3 - EEPROM page A2h\r\n");
+			return rc;
+		}
+	rc = init_SFP_A0(&data->dev_sfp4_A0);
+		if (rc) {
+			printf("Failed to start i2c device: SFP 4 - EEPROM page A0h\r\n");
+			return rc;
+		}
+	rc = init_SFP_A2(&data->dev_sfp4_A2);
+		if (rc) {
+			printf("Failed to start i2c device: SFP 4 - EEPROM page A2h\r\n");
+			return rc;
+		}
+	rc = init_SFP_A0(&data->dev_sfp5_A0);
+		if (rc) {
+			printf("Failed to start i2c device: SFP 5 - EEPROM page A0h\r\n");
+			return rc;
+		}
+	rc = init_SFP_A2(&data->dev_sfp5_A2);
+		if (rc) {
+			printf("Failed to start i2c device: SFP 5 - EEPROM page A2h\r\n");
+			return rc;
+		}
+	return 0;
+}
+
+```
+Finally, in this function we define every filename and slave address for every I<sup>2</sup>C device and we call every initialization functions mentioned previously and in case any initialization misses, it is reported which device has failed.
+
+```c
+int stop_I2cSensors(struct DPB_I2cSensors *data){
+
+	i2c_stop(&data->dev_pcb_temp);
+
+	i2c_stop(&data->dev_sfp0_2_volt);
+	i2c_stop(&data->dev_sfp3_5_volt);
+	i2c_stop(&data->dev_som_volt);
+
+	i2c_stop(&data->dev_sfp0_A0);
+	i2c_stop(&data->dev_sfp1_A0);
+	i2c_stop(&data->dev_sfp2_A0);
+	i2c_stop(&data->dev_sfp3_A0);
+	i2c_stop(&data->dev_sfp4_A0);
+	i2c_stop(&data->dev_sfp5_A0);
+
+	i2c_stop(&data->dev_sfp0_A2);
+	i2c_stop(&data->dev_sfp1_A2);
+	i2c_stop(&data->dev_sfp2_A2);
+	i2c_stop(&data->dev_sfp3_A2);
+	i2c_stop(&data->dev_sfp4_A2);
+	i2c_stop(&data->dev_sfp5_A2);
+
+	return 0;
+}
+```
+It has also been developed the stop_I2cSensors fucntion to termiante the I<sup>2</sup>C devices, even though it is not exepcted to be used as the application should be permantently active.
+
+Regarding the IIO_EVENT_MONITOR initialization, it has been executed as a subprocess that will detect AMS alarms as events and it is executed by the following function:
+
+```c
+int iio_event_monitor_up() {
+
+
+    pid_t pid = fork(); // Create a child process
+
+    if (pid == 0) {
+        // Child process
+        // Path of the .elf file and arguments
+        char *args[] = {"/run/media/mmcblk0p1/IIO_MONITOR.elf", "-a", "iio:device0", NULL};
+
+        // Execute the .elf file
+        if (execvp(args[0], args) == -1) {
+            perror("Error executing the .elf file");
+            return -1;
+        }
+    } else if (pid > 0) {
+        // Parent process
+        // You can perform other tasks here while the child process executes the .elf file
+    } else {
+        // Error creating the child process
+        perror("Error creating the child process");
+        return -1;
+    }
+    return 0;
+}
+```
+This function executes an IIO_EVENT_MONITOR through its release file. It should be emphasised that this IIO_EVENT_MONITOR is slightly customized by us so as to include shared memory configuration to communicate the main application with it.
+
+```c
+
+```

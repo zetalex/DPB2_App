@@ -83,9 +83,8 @@ int init_tempSensor (struct I2cDevice *dev) {
 	if(rc < 0)
 			return rc;
 	if(!((manID_buf[0] == 0x00) && (manID_buf[1] == 0x54))){ //Check Manufacturer ID to verify is the right component
-		rc = -1;
 		printf("Manufacturer ID does not match the corresponding device: Temperature Sensor\r\n");
-		return rc;
+		return -EINVAL;
 	}
 
 	// Write Device ID address in register pointer
@@ -98,9 +97,8 @@ int init_tempSensor (struct I2cDevice *dev) {
 	if(rc < 0)
 			return rc;
 	if(!((devID_buf[0] == 0x06) && (devID_buf[1] == 0x01))){//Check Device ID to verify is the right component
-			rc = -1;
 			printf("Device ID does not match the corresponding device: Temperature Sensor\r\n");
-			return rc;
+			return -EINVAL;
 	}
 	return 0;
 
@@ -135,9 +133,8 @@ int init_voltSensor (struct I2cDevice *dev) {
 	if(rc < 0)
 			return rc;
 	if(!((manID_buf[0] == 0x54) && (manID_buf[1] == 0x49))){ //Check Manufacturer ID to verify is the right component
-		rc = -1;
 		printf("Manufacturer ID does not match the corresponding device: Voltage Sensor\r\n");
-		return rc;
+		return -EINVAL;
 	}
 
 	// Write Device ID address in register pointer
@@ -150,9 +147,8 @@ int init_voltSensor (struct I2cDevice *dev) {
 	if(rc < 0)
 			return rc;
 	if(!((devID_buf[0] == 0x32) && (devID_buf[1] == 0x20))){ //Check Device ID to verify is the right component
-			rc = -1;
 			printf("Device ID does not match the corresponding device: Voltage Sensor\r\n");
-			return rc;
+			return -EINVAL;
 	}
 	return 0;
 
@@ -188,9 +184,8 @@ int checksum_check(struct I2cDevice *dev,uint8_t ini_reg, uint8_t checksum_val, 
 	uint8_t calc_checksum = (sum & 0xFF); //Only taking the 8 LSB of the checksum as the checksum register is only 8 bits
 
 	if (checksum_val != calc_checksum){ //Check the obtained checksum equals the device checksum register
-		rc = -1;
 		printf("Checksum value does not match the expected value \r\n");
-		return rc;
+		return -EHWPOISON;
 	}
 	return 0;
 }
@@ -223,9 +218,8 @@ int init_SFP_A0(struct I2cDevice *dev) {
 	if(rc < 0)
 			return rc;
 	if(!((SFPphys_buf[0] == 0x03) && (SFPphys_buf[1] == 0x04))){ //Check Physical device and function to verify is the right component
-			rc = -1;
 			printf("Device ID does not match the corresponding device: SFP-Avago\r\n");
-			return rc;
+			return -EINVAL;
 	}
 	rc = checksum_check(dev, SFP_PHYS_DEV,0x7F,63); //Check checksum register to verify is the right component and the EEPROM is working correctly
 	if(rc < 0)
@@ -252,7 +246,7 @@ int init_SFP_A2(struct I2cDevice *dev) {
 		if (rc) {
 			return rc;
 		}
-	rc = checksum_check(dev,SFP_MSB_HTEMP_ALARM_REG,0x61,95);
+	rc = checksum_check(dev,SFP_MSB_HTEMP_ALARM_REG,0x61,95);//Check checksum register to verify is the right component and the EEPROM is working correctly
 	if(rc < 0)
 				return rc;
 	return 0;
@@ -430,7 +424,7 @@ int stop_I2cSensors(struct DPB_I2cSensors *data){
  *
  * @return Negative integer if start fails.If not, returns 0 and enables Xilinx-AMS events.
  */
-int iio_event_monitor_up(FILE *proc) {
+int iio_event_monitor_up() {
 
 
     pid_t pid = fork(); // Create a child process
@@ -2085,7 +2079,7 @@ static void *i2c_alarms_thread(void *arg){
 }
 /**
  * Periodic thread that is waiting for an alarm from any Xilinx AMS channel, the alarm is presented as an event,
- * events are reported by IIO EVENT MONITOR through shared memory. Shared memory segment is declared.
+ * events are reported by IIO EVENT MONITOR through shared memory.
  *
  * @param void *arg: NULL
  *
@@ -2104,6 +2098,58 @@ static void *ams_alarms_thread(void *arg){
     char ena = '1';
     char disab = '0';
 	char buffer [64];
+
+	strcpy(ev_str, "/sys/bus/iio/devices/iio:device0/events/in_");
+
+	sem_wait(&memory->ams_sync);
+
+	printf("AMS Alarms thread period: %dms\n",AMS_ALARMS_THREAD_PERIOD);
+	rc = make_periodic(AMS_ALARMS_THREAD_PERIOD, &info);
+	if (rc) {
+		printf("Error\r\n");
+		return NULL;
+	}
+
+	while(1){
+        sem_wait(&memory->full);  //Semaphore to wait until any event happens
+
+        chan = memory->chn;
+        strcpy(ev_type,memory->ev_type);
+        strcpy(ch_type,memory->ch_type);
+        timestamp = memory->tmpstmp;
+        snprintf(buffer, sizeof(buffer), "%d",chan);
+        strcat(ev_str, ch_type);
+        strcat(ev_str, buffer);
+        strcat(ev_str, "_thresh_");
+        strcat(ev_str, ev_type);
+        strcat(ev_str, "_en");
+        //fd = open(ev_str, O_WRONLY);
+     //   write (fd, &disab, 1);
+        //close(fd);
+
+        //usleep(10);
+
+        sem_post(&memory->empty);//Free the semaphore so the IIO EVENT MONITOR can report another event
+
+        printf("Event type: %s. Timestamp: %lld. Channel type: %s. Channel: %d.\n",ev_type,timestamp,ch_type,chan);
+        strcpy(ev_str, "/sys/bus/iio/devices/iio:device0/events/in_");
+		wait_period(&info);
+	//	write (fd, &ena, 1);  //Restarting enablement of the event again so it can be asserted again later
+		//close(fd);
+
+	}
+	return NULL;
+}
+int main(){
+	//IIO_EVENT_MONITOR process file
+	FILE *fp = NULL;
+	//Threads elements
+	pthread_t t_1, t_2, t_3;
+	sigset_t alarm_sig;
+	int i;
+
+	int rc;
+	struct DPB_I2cSensors data;
 
 	key_t sharedMemoryKey = MEMORY_KEY;
 	memoryID = shmget(sharedMemoryKey, sizeof(struct wrapper), IPC_CREAT | 0600);
@@ -2132,55 +2178,6 @@ static void *ams_alarms_thread(void *arg){
 	    exit(1);
 	 }
 
-	strcpy(ev_str, "/sys/bus/iio/devices/iio:device0/events/in_");
-
-	usleep(10);
-	printf("AMS Alarms thread period: %dms\n",AMS_ALARMS_THREAD_PERIOD);
-	rc = make_periodic(AMS_ALARMS_THREAD_PERIOD, &info);
-	if (rc) {
-		printf("Error\r\n");
-		return NULL;
-	}
-	while(1){
-
-        sem_wait(&memory->full);  //Semaphore to wait until any event happens
-
-        chan = memory->chn;
-        strcpy(ev_type,memory->ev_type);
-        strcpy(ch_type,memory->ch_type);
-        timestamp = memory->tmpstmp;
-        snprintf(buffer, sizeof(buffer), "%d",chan);
-        strcat(ev_str, ch_type);
-        strcat(ev_str, buffer);
-        strcat(ev_str, "_thresh_");
-        strcat(ev_str, ev_type);
-        strcat(ev_str, "_en");
-        fd = open(ev_str, O_WRONLY);
-        write (fd, &disab, 1);
-
-        //usleep(10);
-
-        sem_post(&memory->empty);//Free the semaphore so the IIO EVENT MONITOR can report another event
-
-        printf("Event type: %s. Timestamp: %lld. Channel type: %s. Channel: %d.\n",ev_type,timestamp,ch_type,chan);
-        strcpy(ev_str, "/sys/bus/iio/devices/iio:device0/events/in_");
-		wait_period(&info);
-		write (fd, &ena, 1);  //Restarting enablement of the event again so it can be asserted again later
-		close(fd);
-	}
-	return NULL;
-}
-int main(){
-	//IIO_EVENT_MONITOR process file
-	FILE *fp = NULL;
-	//Threads elements
-	pthread_t t_1, t_2, t_3;
-	sigset_t alarm_sig;
-	int i;
-
-	int rc;
-	struct DPB_I2cSensors data;
-
 	rc = init_I2cSensors(&data); //Initialize i2c sensors
 
 	if (rc) {
@@ -2188,7 +2185,7 @@ int main(){
 		return 0;
 	}
 
-	rc = iio_event_monitor_up(fp); //Initialize iio event monitor
+	rc = iio_event_monitor_up(); //Initialize iio event monitor
 	if (rc) {
 		printf("Error\r\n");
 		return rc;
@@ -2206,7 +2203,7 @@ int main(){
 
 	pthread_create(&t_1, NULL, ams_alarms_thread,NULL); //Create thread 1 - read AMS alarms
 	pthread_create(&t_2, NULL, i2c_alarms_thread,(void *)&data); //Create thread 2 - read alarms every x miliseconds
-	pthread_create(&t_3, NULL, monitoring_thread,(void *)&data );//Create thread 3 - monitors magnitudes every x seconds
+	//pthread_create(&t_3, NULL, monitoring_thread,(void *)&data );//Create thread 3 - monitors magnitudes every x seconds
 
 	while(1){
 		sleep(1000000);
