@@ -14,6 +14,7 @@
 #include <semaphore.h>
 #include <sys/shm.h>
 #include <fcntl.h>
+#include <time.h>
 
 #include "i2c.h"
 #include "constants.h"
@@ -463,7 +464,7 @@ int iio_event_monitor_up() {
  *
  * @note The resulting magnitude is obtained by applying the ADC conversion specified by Xilinx
  */
-int xlnx_ams_read_temp(int *chan, int n, float *res){ //Read
+int xlnx_ams_read_temp(int *chan, int n, float *res){
 	FILE *raw,*offset,*scale;
 	for(int i=0;i<n;i++){
 
@@ -866,15 +867,22 @@ int mcp9844_set_config(struct DPB_I2cSensors *data,uint8_t *bit_ena,uint8_t *bit
  *
  * @return 0 and handles interruption depending on the active flags
  */
-int mcp9844_interruptions(uint8_t flag_buf){
+int mcp9844_interruptions(struct DPB_I2cSensors *data, uint8_t flag_buf){
+	time_t timestamp;
+	float res [1];
+	mcp9844_read_temperature(data,res);
+
 	if((flag_buf & 0x80) == 0x80){
-		printf("CRITICAL!!! The ambient temperature has exceeded the established critical limit.\n");
+		timestamp = time(NULL);
+		printf("Chip: MCP9844. Event type: critical. Timestamp: %ld. Channel type: Temperature. Channel: 1. Value: %f ºC\n",timestamp,res[0]);
 	}
 	if((flag_buf & 0x40) == 0x40){
-		printf("WARNING!!! The ambient temperature has exceeded the established high limit.\n");
+		timestamp = time(NULL);
+		printf("Chip: MCP9844. Event type: rising. Timestamp: %ld. Channel type: Temperature. Channel: 1. Value: %f ºC\n",timestamp,res[0]);
 	}
 	if((flag_buf & 0x20) == 0x20){
-		printf("WARNING!!! The ambient temperature has exceeded the established low limit.\n");
+		timestamp = time(NULL);
+		printf("Chip: MCP9844. Event type: falling. Timestamp: %ld. Channel type: Temperature. Channel: 1. Value: %f ºC\n",timestamp,res[0]);
 	}
 	return 0;
 }
@@ -904,7 +912,7 @@ int mcp9844_read_alarms(struct DPB_I2cSensors *data) {
 	if(rc < 0)
 			return rc;
 	if((alarm_buf[0] & 0xE0) != 0){
-		mcp9844_interruptions(alarm_buf[0]);
+		mcp9844_interruptions(data,alarm_buf[0]);
 	}
 	alarm_buf[0] = alarm_buf[0] & 0x1F;	//Clear Flag bits
 	return 0;
@@ -1200,12 +1208,15 @@ int sfp_avago_read_rx_av_optical_pwr(struct DPB_I2cSensors *data,int n, float *r
  * @return 0 and handles interruption depending on the active status flags
  */
 int sfp_avago_status_interruptions(uint8_t status, int n){
+	time_t timestamp;
 
 	if((status & 0x02) != 0){
-		printf("Reception Loss of Signal in SFP:%d",n);
+		timestamp = time(NULL);
+		printf("Chip: SFP-%d. Event type: rising. Timestamp: %ld. Channel type: RxLOS. Channel: %d. Value: RxLOS\n",n,timestamp,n);
 	}
 	if((status & 0x04) != 0){
-		printf("Transmitter Fault in SFP:%d",n);
+		timestamp = time(NULL);
+		printf("Chip: SFP-%d. Event type: rising. Timestamp: %ld. Channel type: TxFault. Channel: %d. Value: TxFault\n",n,timestamp,n);
 	}
 	return 0;
 }
@@ -1217,38 +1228,50 @@ int sfp_avago_status_interruptions(uint8_t status, int n){
  *
  * @return 0 and handles interruption depending on the active alarms flags
  */
-int sfp_avago_alarms_interruptions(uint16_t flags, int n){
+int sfp_avago_alarms_interruptions(struct DPB_I2cSensors *data,uint16_t flags, int n){
+	time_t timestamp;
+	float res [1];
 
 	if((flags & 0x0080) == 0x0080){
-		printf("WARNING!!! Received average optical power exceeds high alarm threshold in SFP:%d\n",n);
-	}
+		timestamp = time(NULL);
+		sfp_avago_read_rx_av_optical_pwr(data,n,res);
+		printf("Chip: SFP-%d. Event type: rising. Timestamp: %ld. Channel type: RxAvOptPwr. Channel: %d. Value: %f W\n",n,timestamp,n,res[0]);}
 	if((flags & 0x0040) == 0x0040){
-		printf("WARNING!!! Received average optical power exceeds low alarm threshold in SFP:%d\n",n);
-	}
+		timestamp = time(NULL);
+		sfp_avago_read_rx_av_optical_pwr(data,n,res);
+		printf("Chip: SFP-%d. Event type: falling. Timestamp: %ld. Channel type: RxAvOptPwr. Channel: %d. Value: %f W\n",n,timestamp,n,res[0]);	}
 	if((flags & 0x0200) == 0x0200){
-		printf("WARNING!!! Transmitted average optical power exceeds high alarm threshold in SFP:%d\n",n);
-	}
+		timestamp = time(NULL);
+		sfp_avago_read_tx_av_optical_pwr(data,n,res);
+		printf("Chip: SFP-%d. Event type: rising. Timestamp: %ld. Channel type: TxAvOptPwr. Channel: %d. Value: %f W\n",n,timestamp,n,res[0]);	}
 	if((flags & 0x0100) == 0x0100){
-		printf("WARNING!!! Transmitted average optical power exceeds low alarm threshold in SFP:%d\n",n);
-	}
+		timestamp = time(NULL);
+		sfp_avago_read_tx_av_optical_pwr(data,n,res);
+		printf("Chip: SFP-%d. Event type: falling. Timestamp: %ld. Channel type: TxAvOptPwr. Channel: %d. Value: %f W\n",n,timestamp,n,res[0]);	}
 	if((flags & 0x0800) == 0x0800){
-		printf("WARNING!!! Transceiver laser bias current exceeds high alarm threshold in SFP:%d\n",n);
-	}
+		timestamp = time(NULL);
+		sfp_avago_read_lbias_current(data,n,res);
+		printf("Chip: SFP-%d. Event type: rising. Timestamp: %ld. Channel type: LbiasCurr. Channel: %d. Value: %f A\n",n,timestamp,n,res[0]);	}
 	if((flags & 0x0400) == 0x0400){
-		printf("WARNING!!! Transceiver laser bias current exceeds low alarm threshold in SFP:%d\n",n);
-	}
+		timestamp = time(NULL);
+		sfp_avago_read_lbias_current(data,n,res);
+		printf("Chip: SFP-%d. Event type: falling. Timestamp: %ld. Channel type: LbiasCurr. Channel: %d. Value: %f A\n",n,timestamp,n,res[0]);	}
 	if((flags & 0x2000) == 0x2000){
-		printf("WARNING!!! Transceiver internal supply voltage exceeds high alarm threshold in SFP:%d\n",n);
-	}
+		timestamp = time(NULL);
+		sfp_avago_read_voltage(data,n,res);
+		printf("Chip: SFP-%d. Event type: rising. Timestamp: %ld. Channel type: Vcc. Channel: %d. Value: %f V\n",n,timestamp,n,res[0]);	}
 	if((flags & 0x1000) == 0x1000){
-		printf("WARNING!!! Transceiver internal supply voltage exceeds low alarm threshold in SFP:%d\n",n);
-	}
+		timestamp = time(NULL);
+		sfp_avago_read_voltage(data,n,res);
+		printf("Chip: SFP-%d. Event type: falling. Timestamp: %ld. Channel type: Vcc. Channel: %d. Value: %f V\n",n,timestamp,n,res[0]);	}
 	if((flags & 0x8000) == 0x8000){
-		printf("WARNING!!! Transceiver internal temperature exceeds high alarm threshold in SFP:%d\n",n);
-	}
+		timestamp = time(NULL);
+		sfp_avago_read_temperature(data,n,res);
+		printf("Chip: SFP-%d. Event type: rising. Timestamp: %ld. Channel type: Temp. Channel: %d. Value: %f ºC\n",n,timestamp,n,res[0]);	}
 	if((flags & 0x4000) == 0x4000){
-		printf("WARNING!!! Transceiver internal temperature exceeds low alarm threshold in SFP:%d\n",n);
-	}
+		timestamp = time(NULL);
+		sfp_avago_read_temperature(data,n,res);
+		printf("Chip: SFP-%d. Event type: falling. Timestamp: %ld. Channel type: Temp. Channel: %d. Value: %f ºC\n",n,timestamp,n,res[0]);	}
 	printf("\n");
 	return 0;
 }
@@ -1316,7 +1339,7 @@ int sfp_avago_read_alarms(struct DPB_I2cSensors *data,int n) {
 		sfp_avago_status_interruptions(status_buf[0],n);
 	}
 	if((flags & 0xFFC0) != 0){
-		sfp_avago_alarms_interruptions(flags,n);
+		sfp_avago_alarms_interruptions(data,flags,n);
 	}
 	return 0;
 }
@@ -1429,33 +1452,22 @@ int ina3221_get_current(struct DPB_I2cSensors *data,int n, float *res){
  *
  * @return 0 and handles interruption depending on the active alarms flags
  */
-int ina3221_critical_interruptions(uint16_t mask, int n, char **text){
-	char crit_str[80];
-	strcpy(crit_str, "CRITICAL!!! Excess current in the channel: ");
+int ina3221_critical_interruptions(struct DPB_I2cSensors *data,uint16_t mask, int n, char **text){
+	time_t timestamp;
+	float res[3];
+	ina3221_get_current(data,n,res);
 
 	if((mask & 0x0080) == 0x0080){
-		strcat(crit_str,text[0]);
-		printf(crit_str);
-		strcpy(crit_str, "CRITICAL!!! Excess current in the channel: ");
-		printf("\n");
-		printf("%x",mask);
-		printf("\n");
+		timestamp = time(NULL);
+		printf("Chip:%s. Event type: critical. Timestamp: %ld. Channel type: Current. Channel: 1. Value: %f A\n",text[0],timestamp,res[0]);
 	}
 	if((mask & 0x0100) == 0x0100){
-		strcat(crit_str,text[1]);
-		printf(crit_str);
-		strcpy(crit_str, "CRITICAL!!! Excess current in the channel: ");
-		printf("\n");
-		printf("%x",mask);
-		printf("\n");
+		timestamp = time(NULL);
+		printf("Chip:%s. Event type: critical. Timestamp: %ld. Channel type: Current. Channel: 2. Value: %f A\n",text[0],timestamp,res[1]);
 	}
 	if((mask & 0x0200) == 0x0200){
-		strcat(crit_str,text[2]);
-		printf(crit_str);
-		strcpy(crit_str, "CRITICAL!!! Excess current in the channel: ");
-		printf("\n");
-		printf("%x",mask);
-		printf("\n");
+		timestamp = time(NULL);
+		printf("Chip:%s. Event type: critical. Timestamp: %ld. Channel type: Current. Channel: 3. Value: %f A\n",text[0],timestamp,res[2]);
 	}
 	return 0;
 }
@@ -1467,27 +1479,23 @@ int ina3221_critical_interruptions(uint16_t mask, int n, char **text){
  *
  * @return 0 and handles interruption depending on the active alarms flags
  */
-int ina3221_warning_interruptions(uint16_t mask, int n, char **text){
-	char warning_str[80];
-	strcpy(warning_str, "Warning!!! Excess current in the channel: ");
+int ina3221_warning_interruptions(struct DPB_I2cSensors *data,uint16_t mask, int n, char **text){
+
+	time_t timestamp;
+	float res[3];
+	ina3221_get_current(data,n,res);
 
 	if((mask & 0x0008) == 0x0008){
-		strcat(warning_str,text[0]);
-		printf(warning_str);
-		strcpy(warning_str, "Warning!!! Excess current in the channel: ");
-		printf("\n");
+		timestamp = time(NULL);
+		printf("Chip:%s. Event type: rising. Timestamp: %ld. Channel type: Current. Channel: 1. Value: %f A\n",text[0],timestamp,res[0]);
 	}
 	if((mask & 0x0010) == 0x0010){
-		strcat(warning_str,text[1]);
-		printf(warning_str);
-		strcpy(warning_str, "Warning!!! Excess current in the channel: ");
-		printf("\n");
+		timestamp = time(NULL);
+		printf("Chip:%s. Event type: rising. Timestamp: %ld. Channel type: Current. Channel: 2. Value: %f A\n",text[0],timestamp,res[1]);
 	}
 	if((mask & 0x0020) == 0x0020){
-		strcat(warning_str,text[2]);
-		printf(warning_str);
-		strcpy(warning_str, "Warning!!! Excess current in the channel: ");
-		printf("\n");
+		timestamp = time(NULL);
+		printf("Chip:%s. Event type: rising. Timestamp: %ld. Channel type: Current. Channel: 3. Value: %f A\n",text[0],timestamp,res[2]);
 	}
 	return 0;
 }
@@ -1504,26 +1512,20 @@ int ina3221_read_alarms(struct DPB_I2cSensors *data,int n){
 	uint8_t mask_buf[2] = {0,0};
 	uint8_t mask_reg = INA3221_MASK_ENA_REG;
 	struct I2cDevice dev;
-	char *arr[] = { "0", "0", "0" };
+	char *arr[] = {"0"};
 
 	switch(n){
 		case DEV_SFP0_2_VOLT:
 			dev = data->dev_sfp0_2_volt;
-			arr[0] =  "SFP-0\n";
-			arr[1] =  "SFP-1\n";
-			arr[2] =  "SFP-2\n";
+			arr[0] = "INA3221-SFP0-2";
 		break;
 		case DEV_SFP3_5_VOLT:
 			dev = data->dev_sfp3_5_volt;
-			arr[0] =  "SFP-3\n";
-			arr[1] =  "SFP-4\n";
-			arr[2] =  "SFP-5\n";
+			arr[0] = "INA3221-SFP3-5";
 		break;
 		case DEV_SOM_VOLT:
 			dev = data->dev_som_volt;
-			arr[0] =  "12 V\n";
-			arr[1] =  "3.3 V\n";
-			arr[2] =  "1.8 V\n";
+			arr[0] = "INA3221-SoM";
 		break;
 		default:
 			return -EINVAL;
@@ -1541,10 +1543,10 @@ int ina3221_read_alarms(struct DPB_I2cSensors *data,int n){
 
 	uint16_t mask_int = (uint16_t)(mask_buf[0] << 8) + (mask_buf[1]);
 	if((mask_int & 0x0380)!= 0){
-		ina3221_critical_interruptions(mask_int,n,arr);
+		ina3221_critical_interruptions(data,mask_int,n,arr);
 	}
 	else if((mask_int & 0x0038)!= 0){
-		ina3221_warning_interruptions(mask_int,n,arr);
+		ina3221_warning_interruptions(data,mask_int,n,arr);
 	}
 
 	return 0;
@@ -2086,7 +2088,7 @@ static void *i2c_alarms_thread(void *arg){
  * @return  NULL (if exits is because of an error).
  */
 static void *ams_alarms_thread(void *arg){
-
+	FILE *raw,*rising;
 	struct periodic_info info;
 	int rc ;
 	char ev_type[8];
@@ -2094,10 +2096,10 @@ static void *ams_alarms_thread(void *arg){
 	int chan;
 	__s64 timestamp;
 	char ev_str[80];
-    int fd;
-    char ena[2] = "1";
-    char disab[2] = "0";
+	char raw_str[80];
+	char ris_str[80];
 	char buffer [64];
+	float res [1];
 
 	strcpy(ev_str, "/sys/bus/iio/devices/iio:device0/events/in_");
 
@@ -2112,32 +2114,64 @@ static void *ams_alarms_thread(void *arg){
 
 	while(1){
         sem_wait(&memory->full);  //Semaphore to wait until any event happens
-
+        res[0] = 0;
         chan = memory->chn;
         strcpy(ev_type,memory->ev_type);
         strcpy(ch_type,memory->ch_type);
-        timestamp = memory->tmpstmp;
+        timestamp = (memory->tmpstmp)/1e9; //From ns to s
         snprintf(buffer, sizeof(buffer), "%d",chan);
-        strcat(ev_str, ch_type);
-        strcat(ev_str, buffer);
-        strcat(ev_str, "_thresh_");
-        strcat(ev_str, ev_type);
-        strcat(ev_str, "_en");
-       // fd = open(ev_str, O_WRONLY);
-        //write (fd, disab, 2);
-        //close(fd);
 
-        //usleep(10);
+        if(!strcmp(ch_type,"voltage")){
+        	xlnx_ams_read_volt(&chan,1,res);
+    		strcpy(raw_str, "/sys/bus/iio/devices/iio:device0/in_voltage");
+    		strcpy(ris_str, "/sys/bus/iio/devices/iio:device0/events/in_voltage");
 
+    		strcat(raw_str, buffer);
+    		strcat(ris_str, buffer);
 
+    		strcat(raw_str, "_raw");
+    		strcat(ris_str, "_thresh_rising_value");
 
-        printf("Event type: %s. Timestamp: %lld. Channel type: %s. Channel: %d.\n",ev_type,timestamp,ch_type,chan);
-        strcpy(ev_str, "/sys/bus/iio/devices/iio:device0/events/in_");
+    		raw = fopen(raw_str,"r");
+    		rising = fopen(ris_str,"r");
 
-		//write (fd, ena, 2);  //Restarting enablement of the event again so it can be asserted again later
-		//close(fd);
+    		if((raw==NULL)|(rising==NULL)){
 
-        sem_post(&memory->empty);//Free the semaphore so the IIO EVENT MONITOR can report another event
+    			fclose(raw);
+    			fclose(rising);
+    			printf("AMS Voltage file could not be opened!!! \n");/*Any of the files could not be opened*/
+    			return NULL;
+    			}
+    		else{
+    			fseek(raw, 0, SEEK_END);
+    			long fsize = ftell(raw);
+    			fseek(raw, 0, SEEK_SET);  /* same as rewind(f); */
+
+    			char *raw_string = malloc(fsize + 1);
+    			fread(raw_string, fsize, 1, raw);
+
+    			fseek(rising, 0, SEEK_END);
+    			fsize = ftell(rising);
+    			fseek(rising, 0, SEEK_SET);  /* same as rewind(f); */
+
+    			char *ris_string = malloc(fsize + 1);
+    			fread(ris_string, fsize, 1, rising);
+
+    			if(atof(ris_string)>=atof(raw_string))
+    				strcpy(ev_type,"falling");
+    			else
+    				strcpy(ev_type,"rising");
+
+    			printf("Chip: AMS. Event type: %s. Timestamp: %lld. Channel type: %s. Channel: %d. Value: %f V\n",ev_type,timestamp,ch_type,chan,res[0]);
+    			fclose(raw);
+    			fclose(rising);
+    		}
+
+        }
+        else if(!strcmp(ch_type,"temp")){
+        	xlnx_ams_read_temp(&chan,1,res);
+            printf("Chip: AMS. Event type: %s. Timestamp: %lld. Channel type: %s. Channel: %d. Value: %f ºC\n",ev_type,timestamp,ch_type,chan,res[0]);
+        }
 		wait_period(&info);
 	}
 	return NULL;
@@ -2204,7 +2238,7 @@ int main(){
 
 	pthread_create(&t_1, NULL, ams_alarms_thread,NULL); //Create thread 1 - read AMS alarms
 	pthread_create(&t_2, NULL, i2c_alarms_thread,(void *)&data); //Create thread 2 - read alarms every x miliseconds
-	pthread_create(&t_3, NULL, monitoring_thread,(void *)&data );//Create thread 3 - monitors magnitudes every x seconds
+	//pthread_create(&t_3, NULL, monitoring_thread,(void *)&data );//Create thread 3 - monitors magnitudes every x seconds
 
 	while(1){
 		sleep(1000000);
