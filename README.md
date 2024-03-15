@@ -633,7 +633,17 @@ int iio_event_monitor_up() {
 ```
 This function executes an IIO_EVENT_MONITOR through its release file. It should be emphasised that this IIO_EVENT_MONITOR is slightly customized by us so as to include shared memory configuration to communicate the main application with it.
 
-At first, it was recommended to use the function system() to execute the process as it was a bash script. However, it did not resulted as expected so it was decided to use the function [execvp()](https://linux.die.net/man/3/execvp), which also provides us with a more visual and convenient way of passing the necessary arguments to the function. 
+At first, it was recommended to use the function system() to execute the process as it was a bash script. Nevertheless, it did not resulted as expected so it was decided to use the function [execvp()](https://linux.die.net/man/3/execvp), which also provides us with a more visual and convenient way of passing the necessary arguments to the function. 
+
+## Monitoring thread 
+
+The first thread to be developed in tha application has been the monitoring thread, which consists in a periodic function that every iteration reads every magnitude from every device available and after it gathers all the data, it reports it to the DAQ. This will allow us to have real time information on the status of the DPB.
+
+In order to be able to read information from the I<sup>2</sup>C sensors by using the I<sup>2</sup>C Linux driver, I have used the functions i2c_write() to write the address of the register I want to read in the register pointer, so that by using the function i2c_read() I can read the desired register byte to byte as all the I<sup>2</sup>C devices that have been used 2 bytes registers and allow continuous reading apart from the SFPs. 
+
+In order to read from the SFPs, I used the function i2c_readn_reg() which is an implicit combination of i2c_write() to write in the register pointer and i2c_read(). As the SFPs do not allow continuous reading and their register size is 1 byte, i2c_readn_reg() has been used two times to read MSB and LSB of the desired data and it has been specified the the appropriate register address for each operation.
+
+
 
 ```c
 
