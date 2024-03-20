@@ -1,7 +1,8 @@
 {
     "files.associations": {
         "i2c-dev.h": "c",
-        "i2c.h": "c"
+        "i2c.h": "c",
+        "shm.h": "c"
     },
     "cSpell.language": "es",
     "cSpell.words": [

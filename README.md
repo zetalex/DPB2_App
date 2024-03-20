@@ -91,11 +91,7 @@ The PMTs, along with the rest of the electronics, will be housed in hermetically
 <figcaption>Interior of the vessel</figcaption>
 <br>
 
-![Diagram of communication between the different modules of the vessel](/DBP2_App/doc/diag/Bloques_Vasija.jpg)
-<figcaption>Diagram of communication between the different modules of the vessel</figcaption>.
-<br> 
-
-As can be seen in the previous figures, the electronics are concentrated inside the vessel, where the information from the PMTs passes through digitisers to the DPB. The DPB is responsible for communicating the different modules both outside and inside the vessel, it acts as a hub inside the vessel.
+As can be seen in the previous figure, the electronics are concentrated inside the vessel, where the information from the PMTs passes through digitisers to the DPB. The DPB is responsible for communicating the different modules both outside and inside the vessel, it acts as a hub inside the vessel.
 
 Since the electronics are located in a place that is difficult to access, as it would mean emptying the observatory of water, high reliability is required in this project, at least 10 years. For this reason, robust systems have been chosen and the electronics used must be monitored.
 
@@ -105,7 +101,7 @@ The HKK experiment stands at the forefront of contemporary neutrino research, po
 
 In the realm of neutrino oscillation measurements, HKK endeavors to employ both accelerator and atmospheric neutrinos to unravel mysteries such as determining the mass hierarchy, investigating CP violation in the lepton sector, and precisely measuring oscillation parameters. Additionally, it aims to explore phenomena such as sterile neutrinos and potential violations of Lorentz invariance.
 
-In solar neutrino measurements, HKK aims to address discrepancies observed between solar and reactor neutrino measurements, particularly focusing on the θ12 sector. It intends to achieve this by studying day-night asymmetry in solar neutrino flux and exploring novel avenues such as monitoring solar fusion reactions and observing higher-energy neutrino flux.
+In solar neutrino measurements, HKK aims to address discrepancies observed between solar and reactor neutrino measurements, particularly focusing on the θ<sub>12</sub> sector. It intends to achieve this by studying day-night asymmetry in solar neutrino flux and exploring novel avenues such as monitoring solar fusion reactions and observing higher-energy neutrino flux.
 
 HKK seeks to build upon the nucleon decay research legacy of Kamiokande and SKK (Super-Kamiokande) by significantly enhancing limits on proton decays. It plans to utilize advanced PMT technology to improve performance, especially in detecting gamma rays from neutron capture, which is crucial for reducing neutrino backgrounds in proton decay searches.
 
@@ -117,9 +113,22 @@ In dark matter searches, HKK aims to improve upon SKK's capabilities in detectin
 
 In the pursuit of understanding the universe at its most fundamental level, the HKK experiment represents a beacon of scientific exploration. Through its multifaceted approach and collaborative efforts, HKK is poised to unravel some of the most profound mysteries of the cosmos, shaping our understanding of particle physics for generations to come.
 
-## Project organisation
+## Project organization
 
-In our group we are dedicated to the DPB module and specifically my work is dedicated to the reliability of the DPB, as it consists of developing an application that uses all the sensing and measurement subsystems available in the DPB to monitor its status and establish alarms and warnings for critical cases.
+As it has been mentioned previuously, the HKK project involves research institutes from all over the world, which are in charge of different tasks within the project whether they are related to physics, electronics or any other relevant field. The project tasks have been divided in 7 different FD (Far Detector) groups.
+
+This TFG is developed inside of the FD4 group as our group in the I3M at the UPV belongs to this FD group. FD4 group tasks focus on developing electronics front-end inside the vessel so as to be able to gather information from the sensors, transform it in order to allow the processing unit to process the data properly.
+
+![Diagram of communication between the different modules of the vessel](/DBP2_App/doc/diag/Bloques_Vasija.jpg)
+<figcaption>Diagram of communication between the different modules of the vessel</figcaption>.
+<br> 
+
+As it can be seen in the previous figure, the electronics inside the vessel consits of high and low voltage modules, digitizers and the DPB, and communicate outside the vessel with the DAQ.
+
+The UPV is in charge of the development of the DPB focusing on collecting and transmitting information to the DAQ and on employing redundancy to maximise reliability.
+This is because the DBP, being the hub of the front-end electronics inside the vessel, is responsible for communicating all the modules and as the vessel is submerged in water, the electronics must be reliable enough to last for more than 10 years without needing to be removed from the vessel.
+
+# TFG Objectives
 
 
 # Technology which is going to be used
@@ -411,7 +420,7 @@ As for the registers dedicated to the <i>flags</i>, these contain the indicator 
 
 
  
-# Obtención de datos del AMS, PS y PL SYSMON y diferenciación por canales
+# Data gathering from AMS, PS and PL SYSMON and channel differentiation
 
 Due to the sensors together with ADC converters with which Xilinx has equipped our module and its system monitoring tools (SYSMON), we can access a large amount of real-time information from the PS and the PL via the linux driver "xilinx-ams". 
 
@@ -471,8 +480,11 @@ Xilinx also offers alarms applied to the voltages and temperatures measured on t
 
 After an exhaustive study of all the sensing elements, the operation of each one, their corresponding characteristics and alerts and the communication channel with these devices, I can start programming the different functions that will allow us to communicate with these devices and configure them to our needs or obtain the desired information.
 
-Regarding the application to be programmed, it has been decided that it will be an application that will have several threads and sub-processes that will allow us to monitor the status of the DPB periodically, control the different alarms that we have and attend to interruptions. All this information will then be transmitted to the DAQ. 
-The DAQ will also receive configuration commands from the sensors and the application will have to act according to these commands.
+Regarding the application to be programmed, it has been decided that it will be an application that will have several threads and sub-processes that will allow us to monitor the status of the DPB periodically, control the different alarms that we have and attend to interruptions. The threads will be defined using POSIX threads execution model implemented as [pthreads](https://linux.die.net/man/7/pthreads) in C programming language 
+
+
+All the gathered information will then be transmitted to the DAQ in a JSON format. 
+The DAQ will also send configuration commands from the sensors and the application will have to act according to these commands.
 
 ## Device and AMS alarms initialization
 
@@ -643,8 +655,43 @@ In order to be able to read information from the I<sup>2</sup>C sensors by using
 
 In order to read from the SFPs, I used the function i2c_readn_reg() which is an implicit combination of i2c_write() to write in the register pointer and i2c_read(). As the SFPs do not allow continuous reading and their register size is 1 byte, i2c_readn_reg() has been used two times to read MSB and LSB of the desired data and it has been specified the the appropriate register address for each operation.
 
+Regarding the data provided by the AMS, we obtain them in ADC code by calling a function that will access the sysfs files generated by the "xilinx-ams" driver, and the final magnitude is obtained by applying the conversion explained in the chapter "Data gathering from AMS, PS and PL SYSMON and channel differentiation" depending on whether we are dealing with voltage or temperature.
+
+Every periodic iteration of this thread will store the gathered data and send it in a packet to the DAQ but with less priority than the alarms.
+ 
+## Alarms threads
+
+After developing the monitoring periodic thread, the same periodic structure has been followed for the development of the alarm threads. However, the period will be much shorter than in the monitoring thread as detcting any alarm is much more critical.
+
+It has been decided to divide the alarm thread in two different threads, one for the I<sup>2</sup>C devices and the other for the AMS alarms. This decision has been made since the I<sup>2</sup>C devices detect alarm information by reading from a log while the AMS detects it through the IIO_EVENT_MONITOR subprocess. Furthermore, the conversion time of the I<sup>2</sup>C devices restricted the alarm triggering of the AMS too much. Therefore, the period of each thread has been set depending on the most restrivtive conversion time.
+
+Regarding the I<sup>2</sup>C devices alarms thread, it has been necessary to use a POSIX sempahore, [sempahore](https://pubs.opengroup.org/onlinepubs/009695399/basedefs/semaphore.h.html), to synchronize the I<sup>2</sup>C bus usage and avoid race condition between any other thread.
+
+Regarding the functioning of the thread, it calls functions that read the flags registers of the I<sup>2</sup>C devices and check if there is an active flag, clean it if necessary and depending on which flag is activated, the event is communicated to the DAQ. The format for sending alarms from either I<sup>2</sup>C or AMS devices is as follows:
+
+ - **Chip:** Indicate which chip has asserted the alarm.
+  
+- **Event type:** Indicates if the event is critical or or just a warning that the upper (rising) or lower (falling) limit has been surpassed
+  
+- **Timestamp:** Indicates in seconds from the first of January of 1970 the time the event has occurred.
+  
+- **Channel type:** Indicates the amgnitude that is measured through the channel.
+  
+- **Channel:** Number of channel, 1 if there is only one channel.
+
+- **Value:** Current value of the magnitude that has triggered the alarm.
+<br>
+
+In order to develop the AMS alarms thread, we fisrtly need the linux kernel tool IIO_EVENT_MONITOR, a generic application to detect events coming from IIO devices, which working along the "xilinx-ams" driver allows us to catch AMS alarms. For this purpose, the IIO_EVENT_MONITOR has been modified in order to be able to transmit the detected event information to our main application.
+
+First of all, a segment of shared memory has been established between the main application and the IIO_EVENT_MONITOR sub-process to transmit the necessary event information and set up semaphores to synchronise sub-process and thread. One semaphore is used to force the AMS alarm thread to start IIO_EVENT_MONITOR, and the other semaphore is used to indicate to the alarm thread that an event has been detected and the thread will handle it accordingly. 
+
+As the IIO_EVENT_MONITOR do not provide us the value of the magnitude that has triggered the alarm and do not differenciate rising and falling voltage events, the thread takes care of this.
+
+It should be noted that in the process of debugging this thread, several bugs have been detected in the "xilinx-ams" driver that we have solved to ensure the correct functioning of our application.
+
+The first encountered bug is due to the driver masking an alarm when it is triggered so that it is not detected again until it has been previously reset to normal values to avoid the same alarm going off constantly. However, the unmasking process proposed an impossible situation and did not allow an alarm to go off more than once despite a previous reset as it should work. By modifying several logical operations, the problem was solved without affecting its performance.
+
+The other problem we found was a lack of functionality of the driver, since the AMS by default enables hysteresis for the temperature alarm and the lower limit places it at 0 degrees. The problem is that the driver does not allow you to modify the lower limit or disable hysteresis, so it only allowed you to enable temperature alarms once. We made the decision to disable hysteresis from the driver since it does not suit our application and with this we find the desired operation of the AMS alarms
 
 
-```c
-
-```
