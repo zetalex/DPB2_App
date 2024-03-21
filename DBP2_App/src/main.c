@@ -2,9 +2,10 @@
  * main.c
  *
  * @date
- * @author
+ * @author Borja Martínez Sánchez
  */
 
+/************************** Libraries includes *****************************/
 #include <stdio.h>
 #include <unistd.h>
 #include <pthread.h> 
@@ -45,378 +46,47 @@ struct DPB_I2cSensors{
 	//struct I2cDevice dev_mux0;
 	//struct I2cDevice dev_mux1;
 };
-
-int memoryID;
-struct wrapper *memory;
+/******************************************************************************
+*Local Semaphores.
+****************************************************************************/
 sem_t i2c_sync;
-sem_t ams_sync;
-
 /************************** Function Prototypes ******************************/
 
-/************************** I2C Devices Functions ******************************/
-/**
- * Initialize MCP9844 Temperature Sensor
- *
- * @param I2cDevice *dev: device to be initialized
- *
- * @return Negative integer if initialization fails.If not, returns 0 and the device initialized
- *
- * @note This also checks via Manufacturer and Device ID that the device is correct
- */
-int init_tempSensor (struct I2cDevice *dev) {
-	int rc = 0;
-	uint8_t manID_buf[2] = {0,0};
-	uint8_t manID_reg = MCP9844_MANUF_ID_REG;
-	uint8_t devID_buf[2] = {0,0};
-	uint8_t devID_reg = MCP9844_DEVICE_ID_REG;
+int init_tempSensor (struct I2cDevice *);
+int init_voltSensor (struct I2cDevice *);
+int checksum_check(struct I2cDevice *,uint8_t,uint8_t,int);
+int init_SFP_A0(struct I2cDevice *);
+int init_SFP_A2(struct I2cDevice *);
+int init_I2cSensors(struct DPB_I2cSensors *);
+int stop_I2cSensors(struct DPB_I2cSensors *);
+int iio_event_monitor_up();
+int xlnx_ams_read_temp(int *, int, float *);
+int xlnx_ams_read_volt(int *, int, float *);
+int xlnx_ams_set_limits(int, char *, char *, float);
+int mcp9844_read_temperature(struct DPB_I2cSensors *,float *);
+int mcp9844_set_limits(struct DPB_I2cSensors *,int, float);
+int mcp9844_set_config(struct DPB_I2cSensors *,uint8_t *,uint8_t *);
+int mcp9844_interruptions(struct DPB_I2cSensors *, uint8_t );
+int mcp9844_read_alarms(struct DPB_I2cSensors *);
+int sfp_avago_read_temperature(struct DPB_I2cSensors *,int , float *);
+int sfp_avago_read_voltage(struct DPB_I2cSensors *,int , float *);
+int sfp_avago_read_lbias_current(struct DPB_I2cSensors *,int, float *);
+int sfp_avago_read_tx_av_optical_pwr(struct DPB_I2cSensors *,int, float *);
+int sfp_avago_read_rx_av_optical_pwr(struct DPB_I2cSensors *data,int, float *);
+int sfp_avago_status_interruptions(uint8_t, int);
+int sfp_avago_alarms_interruptions(struct DPB_I2cSensors *,uint16_t , int );
+int sfp_avago_read_alarms(struct DPB_I2cSensors *,int ) ;
+int ina3221_get_voltage(struct DPB_I2cSensors *,int , float *);
+int ina3221_get_current(struct DPB_I2cSensors *,int , float *);
+int ina3221_critical_interruptions(struct DPB_I2cSensors *,uint16_t , int , char **);
+int ina3221_warning_interruptions(struct DPB_I2cSensors *,uint16_t , int , char **);
+int ina3221_read_alarms(struct DPB_I2cSensors *,int);
+int ina3221_set_limits(struct DPB_I2cSensors *,int ,int ,int  ,float );
+int ina3221_set_config(struct DPB_I2cSensors *,uint8_t *,uint8_t *, int );
+static void *monitoring_thread(void *);
+static void *i2c_alarms_thread(void *);
+static void *ams_alarms_thread(void *);
 
-	rc = i2c_start(dev);  //Start I2C device
-		if (rc) {
-			return rc;
-		}
-	// Write Manufacturer ID address in register pointer
-	rc = i2c_write(dev,&manID_reg,1);
-	if(rc < 0)
-		return rc;
-
-	// Read MSB and LSB of Manufacturer ID
-	rc = i2c_read(dev,manID_buf,2);
-	if(rc < 0)
-			return rc;
-	if(!((manID_buf[0] == 0x00) && (manID_buf[1] == 0x54))){ //Check Manufacturer ID to verify is the right component
-		printf("Manufacturer ID does not match the corresponding device: Temperature Sensor\r\n");
-		return -EINVAL;
-	}
-
-	// Write Device ID address in register pointer
-	rc = i2c_write(dev,&devID_reg,1);
-	if(rc < 0)
-		return rc;
-
-	// Read MSB and LSB of Device ID
-	rc = i2c_read(dev,devID_buf,2);
-	if(rc < 0)
-			return rc;
-	if(!((devID_buf[0] == 0x06) && (devID_buf[1] == 0x01))){//Check Device ID to verify is the right component
-			printf("Device ID does not match the corresponding device: Temperature Sensor\r\n");
-			return -EINVAL;
-	}
-	return 0;
-
-}
-/**
- * Initialize INA3221 Voltage and Current Sensor
- *
- * @param I2cDevice *dev: device to be initialized
- *
- * @return Negative integer if initialization fails.If not, returns 0 and the device initialized
- *
- * @note This also checks via Manufacturer and Device ID that the device is correct
- */
-int init_voltSensor (struct I2cDevice *dev) {
-	int rc = 0;
-	uint8_t manID_buf[2] = {0,0};
-	uint8_t manID_reg = INA3221_MANUF_ID_REG;
-	uint8_t devID_buf[2] = {0,0};
-	uint8_t devID_reg = INA3221_DIE_ID_REG;
-
-	rc = i2c_start(dev); //Start I2C device
-		if (rc) {
-			return rc;
-		}
-	// Write Manufacturer ID address in register pointer
-	rc = i2c_write(dev,&manID_reg,1);
-	if(rc < 0)
-		return rc;
-
-	// Read MSB and LSB of Manufacturer ID
-	rc = i2c_read(dev,manID_buf,2);
-	if(rc < 0)
-			return rc;
-	if(!((manID_buf[0] == 0x54) && (manID_buf[1] == 0x49))){ //Check Manufacturer ID to verify is the right component
-		printf("Manufacturer ID does not match the corresponding device: Voltage Sensor\r\n");
-		return -EINVAL;
-	}
-
-	// Write Device ID address in register pointer
-	rc = i2c_write(dev,&devID_reg,1);
-	if(rc < 0)
-		return rc;
-
-	// Read MSB and LSB of Device ID
-	rc = i2c_read(dev,devID_buf,2);
-	if(rc < 0)
-			return rc;
-	if(!((devID_buf[0] == 0x32) && (devID_buf[1] == 0x20))){ //Check Device ID to verify is the right component
-			printf("Device ID does not match the corresponding device: Voltage Sensor\r\n");
-			return -EINVAL;
-	}
-	return 0;
-
-}
-/**
- *Compares expected SFP checksum to its current value
- *
- * @param I2cDevice *dev: SFP of which the checksum is to be checked
- * @param uint8_t ini_reg: Register where the checksum count starts
- * @param uint8_t checksum_val: Checksum value expected
- * @param int size: number of registers summed for the checksum
- *
- * @return Negative integer if checksum is incorrect, and 0 if it is correct
- */
-int checksum_check(struct I2cDevice *dev,uint8_t ini_reg, uint8_t checksum_val, int size){
-	int rc = 0;
-	int sum = 0;
-	uint8_t byte_buf[size] ;
-
-	rc = i2c_readn_reg(dev,ini_reg,byte_buf,1);  //Read every register from ini_reg to ini_reg+size-1
-			if(rc < 0)
-				return rc;
-	for(int n=1;n<size;n++){
-	ini_reg ++;
-	rc = i2c_readn_reg(dev,ini_reg,&byte_buf[n],1);
-		if(rc < 0)
-			return rc;
-	}
-
-	for(int i=0;i<size;i++){
-		sum += byte_buf[i];  //Sum every register read in order to obtain the checksum
-	}
-	uint8_t calc_checksum = (sum & 0xFF); //Only taking the 8 LSB of the checksum as the checksum register is only 8 bits
-
-	if (checksum_val != calc_checksum){ //Check the obtained checksum equals the device checksum register
-		printf("Checksum value does not match the expected value \r\n");
-		return -EHWPOISON;
-	}
-	return 0;
-}
-/**
- * Initialize SFP EEPROM page 1 as an I2C device
- *
- * @param I2cDevice *dev: SFP of which EEPROM is to be initialized
- *
- * @return Negative integer if initialization fails.If not, returns 0 and the EEPROM page initialized as I2C device
- *
- * @note This also checks via Physical device, SFP function  and the checksum registers that the device is correct and the EEPROM is working properly.
- */
-int init_SFP_A0(struct I2cDevice *dev) {
-	int rc = 0;
-	uint8_t SFPphys_reg = SFP_PHYS_DEV;
-	uint8_t SFPphys_buf[2] = {0,0};
-
-	rc = i2c_start(dev); //Start I2C device
-		if (rc) {
-			return rc;
-		}
-	//Read SFP Physcial device register
-	rc = i2c_readn_reg(dev,SFPphys_reg,SFPphys_buf,1);
-		if(rc < 0)
-			return rc;
-
-	//Read SFP function register
-	SFPphys_reg = SFP_FUNCT;
-	rc = i2c_readn_reg(dev,SFPphys_reg,&SFPphys_buf[1],1);
-	if(rc < 0)
-			return rc;
-	if(!((SFPphys_buf[0] == 0x03) && (SFPphys_buf[1] == 0x04))){ //Check Physical device and function to verify is the right component
-			printf("Device ID does not match the corresponding device: SFP-Avago\r\n");
-			return -EINVAL;
-	}
-	rc = checksum_check(dev, SFP_PHYS_DEV,0x7F,63); //Check checksum register to verify is the right component and the EEPROM is working correctly
-	if(rc < 0)
-				return rc;
-	rc = checksum_check(dev, SFP_CHECKSUM2_A0,0xFA,31);//Check checksum register to verify is the right component and the EEPROM is working correctly
-	if(rc < 0)
-				return rc;
-	return 0;
-
-}
-/**
- * Initialize SFP EEPROM page 2 as an I2C device
- *
- * @param I2cDevice *dev: SFP of which EEPROM is to be initialized
- *
- * @return Negative integer if initialization fails.If not, returns 0 and the EEPROM page initialized as I2C device
- *
- * @note This also checks via the checksum register that the EEPROM is working properly.
- */
-int init_SFP_A2(struct I2cDevice *dev) {
-	int rc = 0;
-
-	rc = i2c_start(dev);
-		if (rc) {
-			return rc;
-		}
-	rc = checksum_check(dev,SFP_MSB_HTEMP_ALARM_REG,0x61,95);//Check checksum register to verify is the right component and the EEPROM is working correctly
-	if(rc < 0)
-				return rc;
-	return 0;
-
-}
-/**
- * Initialize every I2C sensor available
- *
- * @param DPB_I2cSensors *data; struct which contains every I2C sensor available
- *
- * @return Negative integer if initialization fails.If not, returns 0 every I2C sensor initialized.
- */
-int init_I2cSensors(struct DPB_I2cSensors *data){
-
-	int rc;
-	data->dev_pcb_temp.filename = "/dev/i2c-2";
-	data->dev_pcb_temp.addr = 0x18;
-
-	data->dev_som_volt.filename = "/dev/i2c-2";
-	data->dev_som_volt.addr = 0x40;
-	data->dev_sfp0_2_volt.filename = "/dev/i2c-3";
-	data->dev_sfp0_2_volt.addr = 0x40;
-	data->dev_sfp3_5_volt.filename = "/dev/i2c-3";
-	data->dev_sfp3_5_volt.addr = 0x41;
-
-	data->dev_sfp0_A0.filename = "/dev/i2c-6";
-	data->dev_sfp0_A0.addr = 0x50;
-	data->dev_sfp1_A0.filename = "/dev/i2c-10";
-	data->dev_sfp1_A0.addr = 0x50;
-	data->dev_sfp2_A0.filename = "/dev/i2c-8";
-	data->dev_sfp2_A0.addr = 0x50;
-	data->dev_sfp3_A0.filename = "/dev/i2c-12";
-	data->dev_sfp3_A0.addr = 0x50;
-	data->dev_sfp4_A0.filename = "/dev/i2c-9";
-	data->dev_sfp4_A0.addr = 0x50;
-	data->dev_sfp5_A0.filename = "/dev/i2c-13";
-	data->dev_sfp5_A0.addr = 0x50;
-
-	data->dev_sfp0_A2.filename = "/dev/i2c-6";
-	data->dev_sfp0_A2.addr = 0x51;
-	data->dev_sfp1_A2.filename = "/dev/i2c-10";
-	data->dev_sfp1_A2.addr = 0x51;
-	data->dev_sfp2_A2.filename = "/dev/i2c-8";
-	data->dev_sfp2_A2.addr = 0x51;
-	data->dev_sfp3_A2.filename = "/dev/i2c-12";
-	data->dev_sfp3_A2.addr = 0x51;
-	data->dev_sfp4_A2.filename = "/dev/i2c-9";
-	data->dev_sfp4_A2.addr = 0x51;
-	data->dev_sfp5_A2.filename = "/dev/i2c-13";
-	data->dev_sfp5_A2.addr = 0x51;
-
-
-	rc = init_tempSensor(&data->dev_pcb_temp);
-	if (rc) {
-		printf("Failed to start i2c device: Temp. Sensor\r\n");
-		return rc;
-	}
-
-	rc = init_voltSensor(&data->dev_sfp0_2_volt);
-	if (rc) {
-		printf("Failed to start i2c device: SFP 0-2 Voltage Sensor\r\n");
-		return rc;
-	}
-
-	rc = init_voltSensor(&data->dev_sfp3_5_volt);
-	if (rc) {
-		printf("Failed to start i2c device: SFP 3-5 Voltage Sensor\r\n");
-		return rc;
-	}
-
-	rc = init_voltSensor(&data->dev_som_volt);
-	if (rc) {
-		printf("Failed to start i2c device: SoM Voltage Sensor\r\n");
-		return rc;
-	}
-
-	rc = init_SFP_A0(&data->dev_sfp0_A0);
-		if (rc) {
-			printf("Failed to start i2c device: SFP 0 - EEPROM page A0h\r\n");
-			return rc;
-		}
-	rc = init_SFP_A2(&data->dev_sfp0_A2);
-		if (rc) {
-			printf("Failed to start i2c device: SFP 0 - EEPROM page A2h\r\n");
-			return rc;
-		}
-	/*rc = init_SFP_A0(&data->dev_sfp1_A0);
-		if (rc) {
-			printf("Failed to start i2c device: SFP 1 - EEPROM page A0h\r\n");
-			return rc;
-		}
-	rc = init_SFP_A2(&data->dev_sfp1_A2);
-		if (rc) {
-			printf("Failed to start i2c device: SFP 1 - EEPROM page A2h\r\n");
-			return rc;
-		}
-	rc = init_SFP_A0(&data->dev_sfp0_A2);
-		if (rc) {
-			printf("Failed to start i2c device: SFP 2 - EEPROM page A0h\r\n");
-			return rc;
-		}
-	rc = init_SFP_A2(&data->dev_sfp2_A2);
-		if (rc) {
-			printf("Failed to start i2c device: SFP 2 - EEPROM page A2h\r\n");
-			return rc;
-		}
-	rc = init_SFP_A0(&data->dev_sfp3_A0);
-		if (rc) {
-			printf("Failed to start i2c device: SFP 3 - EEPROM page A0h\r\n");
-			return rc;
-		}
-	rc = init_SFP_A2(&data->dev_sfp3_A2);
-		if (rc) {
-			printf("Failed to start i2c device: SFP 3 - EEPROM page A2h\r\n");
-			return rc;
-		}
-	rc = init_SFP_A0(&data->dev_sfp4_A0);
-		if (rc) {
-			printf("Failed to start i2c device: SFP 4 - EEPROM page A0h\r\n");
-			return rc;
-		}
-	rc = init_SFP_A2(&data->dev_sfp4_A2);
-		if (rc) {
-			printf("Failed to start i2c device: SFP 4 - EEPROM page A2h\r\n");
-			return rc;
-		}
-	rc = init_SFP_A0(&data->dev_sfp5_A0);
-		if (rc) {
-			printf("Failed to start i2c device: SFP 5 - EEPROM page A0h\r\n");
-			return rc;
-		}
-	rc = init_SFP_A2(&data->dev_sfp5_A2);
-		if (rc) {
-			printf("Failed to start i2c device: SFP 5 - EEPROM page A2h\r\n");
-			return rc;
-		}*/
-	return 0;
-}
-/**
- * Stops every I2C Sensors
- *
- * @param DPB_I2cSensors *data: struct which contains every I2C sensor available
- *
- * @returns 0.
- */
-int stop_I2cSensors(struct DPB_I2cSensors *data){
-
-	i2c_stop(&data->dev_pcb_temp);
-
-	i2c_stop(&data->dev_sfp0_2_volt);
-	i2c_stop(&data->dev_sfp3_5_volt);
-	i2c_stop(&data->dev_som_volt);
-
-	i2c_stop(&data->dev_sfp0_A0);
-	i2c_stop(&data->dev_sfp1_A0);
-	i2c_stop(&data->dev_sfp2_A0);
-	i2c_stop(&data->dev_sfp3_A0);
-	i2c_stop(&data->dev_sfp4_A0);
-	i2c_stop(&data->dev_sfp5_A0);
-
-	i2c_stop(&data->dev_sfp0_A2);
-	i2c_stop(&data->dev_sfp1_A2);
-	i2c_stop(&data->dev_sfp2_A2);
-	i2c_stop(&data->dev_sfp3_A2);
-	i2c_stop(&data->dev_sfp4_A2);
-	i2c_stop(&data->dev_sfp5_A2);
-
-	return 0;
-}
 /************************** IIO_EVENT_MONITOR Functions ******************************/
 /**
  * Start IIO EVENT MONITOR to enable Xilinx-AMS events
@@ -596,7 +266,7 @@ int xlnx_ams_read_volt(int *chan, int n, float *res){
 	return 0;
 	}
 /**
- * DEtermines the new limit of the alarm of the channel n
+ * Determines the new limit of the alarm of the channel n
  *
  * @param int chan: channel whose alarm limit will be changed
  * @param char *ev_type: string that determines the type of the event
@@ -616,10 +286,6 @@ int xlnx_ams_set_limits(int chan, char *ev_type, char *ch_type, float val){
 		char adc_buff [8];
 		long fsize;
 		int thres;
-		char ev_str[80];
-	    int fd;
-	    char ena = '1';
-	    char disab = '0';
 		uint16_t adc_code;
 
 		if(val<0) //Cannot be negative
@@ -638,11 +304,6 @@ int xlnx_ams_set_limits(int chan, char *ev_type, char *ch_type, float val){
 		strcat(thres_str, "_thresh_");
 		strcat(thres_str, ev_type);
 		strcat(thres_str, "_value");
-
-		strcpy(ev_str, "/sys/bus/iio/devices/iio:device0/events/in_");
-		strcat(ev_str, ch_type);
-		strcat(ev_str, buffer);
-		strcat(ev_str, "_thresh_");
 
 		scale = fopen(scale_str,"r");
 		thres = open(thres_str, O_WRONLY);
@@ -685,8 +346,6 @@ int xlnx_ams_set_limits(int chan, char *ev_type, char *ch_type, float val){
 				fclose(offset);
 
 			    adc_code = (uint16_t) (1024*val)/atof(scale_string) - atof(offset_string);
-				strcat(ev_str, "rising_en");
-				fd = open(ev_str, O_WRONLY);
 
 			}
 			else if(!strcmp("voltage",ch_type)){
@@ -702,8 +361,6 @@ int xlnx_ams_set_limits(int chan, char *ev_type, char *ch_type, float val){
 
 				adc_code = (uint16_t)(1024*val)/atof(scale_string);
 
-				strcat(ev_str, "either_en");
-				fd = open(ev_str, O_WRONLY);
 				fclose(scale);
 
 				//return 0;
@@ -714,15 +371,241 @@ int xlnx_ams_set_limits(int chan, char *ev_type, char *ch_type, float val){
 			snprintf(adc_buff, sizeof(adc_buff), "%d",adc_code);
 			write (thres, &adc_buff, sizeof(adc_buff));
 			close(thres);
-	        write (fd, &disab, 1);
-	        usleep(10);
-	        write(fd,&ena,1);
-	        close(fd);
 			}
 	return 0;
 	}
 
+/************************** I2C Devices Functions ******************************/
+/**
+ * Initialize every I2C sensor available
+ *
+ * @param DPB_I2cSensors *data; struct which contains every I2C sensor available
+ *
+ * @return Negative integer if initialization fails.If not, returns 0 every I2C sensor initialized.
+ */
+int init_I2cSensors(struct DPB_I2cSensors *data){
+
+	int rc;
+	data->dev_pcb_temp.filename = "/dev/i2c-2";
+	data->dev_pcb_temp.addr = 0x18;
+
+	data->dev_som_volt.filename = "/dev/i2c-2";
+	data->dev_som_volt.addr = 0x40;
+	data->dev_sfp0_2_volt.filename = "/dev/i2c-3";
+	data->dev_sfp0_2_volt.addr = 0x40;
+	data->dev_sfp3_5_volt.filename = "/dev/i2c-3";
+	data->dev_sfp3_5_volt.addr = 0x41;
+
+	data->dev_sfp0_A0.filename = "/dev/i2c-6";
+	data->dev_sfp0_A0.addr = 0x50;
+	data->dev_sfp1_A0.filename = "/dev/i2c-10";
+	data->dev_sfp1_A0.addr = 0x50;
+	data->dev_sfp2_A0.filename = "/dev/i2c-8";
+	data->dev_sfp2_A0.addr = 0x50;
+	data->dev_sfp3_A0.filename = "/dev/i2c-12";
+	data->dev_sfp3_A0.addr = 0x50;
+	data->dev_sfp4_A0.filename = "/dev/i2c-9";
+	data->dev_sfp4_A0.addr = 0x50;
+	data->dev_sfp5_A0.filename = "/dev/i2c-13";
+	data->dev_sfp5_A0.addr = 0x50;
+
+	data->dev_sfp0_A2.filename = "/dev/i2c-6";
+	data->dev_sfp0_A2.addr = 0x51;
+	data->dev_sfp1_A2.filename = "/dev/i2c-10";
+	data->dev_sfp1_A2.addr = 0x51;
+	data->dev_sfp2_A2.filename = "/dev/i2c-8";
+	data->dev_sfp2_A2.addr = 0x51;
+	data->dev_sfp3_A2.filename = "/dev/i2c-12";
+	data->dev_sfp3_A2.addr = 0x51;
+	data->dev_sfp4_A2.filename = "/dev/i2c-9";
+	data->dev_sfp4_A2.addr = 0x51;
+	data->dev_sfp5_A2.filename = "/dev/i2c-13";
+	data->dev_sfp5_A2.addr = 0x51;
+
+
+	rc = init_tempSensor(&data->dev_pcb_temp);
+	if (rc) {
+		printf("Failed to start i2c device: Temp. Sensor\r\n");
+		return rc;
+	}
+
+	rc = init_voltSensor(&data->dev_sfp0_2_volt);
+	if (rc) {
+		printf("Failed to start i2c device: SFP 0-2 Voltage Sensor\r\n");
+		return rc;
+	}
+
+	rc = init_voltSensor(&data->dev_sfp3_5_volt);
+	if (rc) {
+		printf("Failed to start i2c device: SFP 3-5 Voltage Sensor\r\n");
+		return rc;
+	}
+
+	rc = init_voltSensor(&data->dev_som_volt);
+	if (rc) {
+		printf("Failed to start i2c device: SoM Voltage Sensor\r\n");
+		return rc;
+	}
+
+	rc = init_SFP_A0(&data->dev_sfp0_A0);
+		if (rc) {
+			printf("Failed to start i2c device: SFP 0 - EEPROM page A0h\r\n");
+			return rc;
+		}
+	rc = init_SFP_A2(&data->dev_sfp0_A2);
+		if (rc) {
+			printf("Failed to start i2c device: SFP 0 - EEPROM page A2h\r\n");
+			return rc;
+		}
+	/*rc = init_SFP_A0(&data->dev_sfp1_A0);
+		if (rc) {
+			printf("Failed to start i2c device: SFP 1 - EEPROM page A0h\r\n");
+			return rc;
+		}
+	rc = init_SFP_A2(&data->dev_sfp1_A2);
+		if (rc) {
+			printf("Failed to start i2c device: SFP 1 - EEPROM page A2h\r\n");
+			return rc;
+		}
+	rc = init_SFP_A0(&data->dev_sfp0_A2);
+		if (rc) {
+			printf("Failed to start i2c device: SFP 2 - EEPROM page A0h\r\n");
+			return rc;
+		}
+	rc = init_SFP_A2(&data->dev_sfp2_A2);
+		if (rc) {
+			printf("Failed to start i2c device: SFP 2 - EEPROM page A2h\r\n");
+			return rc;
+		}
+	rc = init_SFP_A0(&data->dev_sfp3_A0);
+		if (rc) {
+			printf("Failed to start i2c device: SFP 3 - EEPROM page A0h\r\n");
+			return rc;
+		}
+	rc = init_SFP_A2(&data->dev_sfp3_A2);
+		if (rc) {
+			printf("Failed to start i2c device: SFP 3 - EEPROM page A2h\r\n");
+			return rc;
+		}
+	rc = init_SFP_A0(&data->dev_sfp4_A0);
+		if (rc) {
+			printf("Failed to start i2c device: SFP 4 - EEPROM page A0h\r\n");
+			return rc;
+		}
+	rc = init_SFP_A2(&data->dev_sfp4_A2);
+		if (rc) {
+			printf("Failed to start i2c device: SFP 4 - EEPROM page A2h\r\n");
+			return rc;
+		}
+	rc = init_SFP_A0(&data->dev_sfp5_A0);
+		if (rc) {
+			printf("Failed to start i2c device: SFP 5 - EEPROM page A0h\r\n");
+			return rc;
+		}
+	rc = init_SFP_A2(&data->dev_sfp5_A2);
+		if (rc) {
+			printf("Failed to start i2c device: SFP 5 - EEPROM page A2h\r\n");
+			return rc;
+		}*/
+
+
+	rc = mcp9844_set_limits(data,0,75);
+	if (rc) {
+		printf("Failed to set MCP9844 Upper Limit\r\n");
+		return rc;
+	}
+
+	rc = mcp9844_set_limits(data,2,90);
+	if (rc) {
+		printf("Failed to set MCP9844 Critical Limit\r\n");
+		return rc;
+	}
+
+	return 0;
+}
+/**
+ * Stops every I2C Sensors
+ *
+ * @param DPB_I2cSensors *data: struct which contains every I2C sensor available
+ *
+ * @returns 0.
+ */
+int stop_I2cSensors(struct DPB_I2cSensors *data){
+
+	i2c_stop(&data->dev_pcb_temp);
+
+	i2c_stop(&data->dev_sfp0_2_volt);
+	i2c_stop(&data->dev_sfp3_5_volt);
+	i2c_stop(&data->dev_som_volt);
+
+	i2c_stop(&data->dev_sfp0_A0);
+	i2c_stop(&data->dev_sfp1_A0);
+	i2c_stop(&data->dev_sfp2_A0);
+	i2c_stop(&data->dev_sfp3_A0);
+	i2c_stop(&data->dev_sfp4_A0);
+	i2c_stop(&data->dev_sfp5_A0);
+
+	i2c_stop(&data->dev_sfp0_A2);
+	i2c_stop(&data->dev_sfp1_A2);
+	i2c_stop(&data->dev_sfp2_A2);
+	i2c_stop(&data->dev_sfp3_A2);
+	i2c_stop(&data->dev_sfp4_A2);
+	i2c_stop(&data->dev_sfp5_A2);
+
+	return 0;
+}
+
 /************************** Temp.Sensor Functions ******************************/
+/**
+ * Initialize MCP9844 Temperature Sensor
+ *
+ * @param I2cDevice *dev: device to be initialized
+ *
+ * @return Negative integer if initialization fails.If not, returns 0 and the device initialized
+ *
+ * @note This also checks via Manufacturer and Device ID that the device is correct
+ */
+int init_tempSensor (struct I2cDevice *dev) {
+	int rc = 0;
+	uint8_t manID_buf[2] = {0,0};
+	uint8_t manID_reg = MCP9844_MANUF_ID_REG;
+	uint8_t devID_buf[2] = {0,0};
+	uint8_t devID_reg = MCP9844_DEVICE_ID_REG;
+
+	rc = i2c_start(dev);  //Start I2C device
+		if (rc) {
+			return rc;
+		}
+	// Write Manufacturer ID address in register pointer
+	rc = i2c_write(dev,&manID_reg,1);
+	if(rc < 0)
+		return rc;
+
+	// Read MSB and LSB of Manufacturer ID
+	rc = i2c_read(dev,manID_buf,2);
+	if(rc < 0)
+			return rc;
+	if(!((manID_buf[0] == 0x00) && (manID_buf[1] == 0x54))){ //Check Manufacturer ID to verify is the right component
+		printf("Manufacturer ID does not match the corresponding device: Temperature Sensor\r\n");
+		return -EINVAL;
+	}
+
+	// Write Device ID address in register pointer
+	rc = i2c_write(dev,&devID_reg,1);
+	if(rc < 0)
+		return rc;
+
+	// Read MSB and LSB of Device ID
+	rc = i2c_read(dev,devID_buf,2);
+	if(rc < 0)
+			return rc;
+	if(!((devID_buf[0] == 0x06) && (devID_buf[1] == 0x01))){//Check Device ID to verify is the right component
+			printf("Device ID does not match the corresponding device: Temperature Sensor\r\n");
+			return -EINVAL;
+	}
+	return 0;
+
+}
 
 /**
  * Reads ambient temperature and stores the value in *res
@@ -734,6 +617,7 @@ int xlnx_ams_set_limits(int chan, char *ev_type, char *ch_type, float val){
  *
  * @note The magnitude conversion depends if the temperature is below 0ºC or above. It also clear flag bits.
  */
+
 int mcp9844_read_temperature(struct DPB_I2cSensors *data,float *res) {
 	int rc = 0;
 	struct I2cDevice dev = data->dev_pcb_temp;
@@ -770,11 +654,16 @@ int mcp9844_read_temperature(struct DPB_I2cSensors *data,float *res) {
  * @return Negative integer if writing fails or limit chosen is incorrect.
  * @return 0 if everything is okay and modifies the temperature alarm limit
  */
-int mcp9844_set_limits(struct DPB_I2cSensors *data,int n, short temp) {
+int mcp9844_set_limits(struct DPB_I2cSensors *data,int n, float temp_val) {
 	int rc = 0;
 	struct I2cDevice dev = data->dev_pcb_temp;
-	uint8_t temp_buf[2] = {0,0};
+	uint8_t temp_buf[3] = {0,0,0};
 	uint8_t temp_reg ;
+	uint16_t temp;
+
+	if((temp_val<-40)|(temp_val>125))
+		return -EINVAL;
+
 	switch(n){
 		case MCP9844_TEMP_UPPER_LIM: //0
 			temp_reg = MCP9844_TEMP_UPPER_LIM_REG;
@@ -788,24 +677,25 @@ int mcp9844_set_limits(struct DPB_I2cSensors *data,int n, short temp) {
 		default:
 			return -EINVAL;
 	}
-	if(temp < 0){
-		temp = -temp;
+	if(temp_val<0){
+		temp_val = -temp_val;
+		temp = (short) temp_val/ 0.25;
 		temp = temp << 2 ;
 		temp = temp & 0x0FFF;
 		temp = temp | 0x1000;
 	}
 	else{
+		temp = (short) temp_val/ 0.25;
 		temp = temp << 2 ;
 		temp = temp & 0x0FFF;
 	}
-	temp_buf[1] = temp & 0x00FF;
-	temp_buf[0] = (temp >> 8) & 0x00FF;
-	rc = i2c_write(&dev,&temp_reg,1);
+
+	temp_buf[2] = temp & 0x00FF;
+	temp_buf[1] = (temp >> 8) & 0x00FF;
+	temp_buf[0] = temp_reg;
+	rc = i2c_write(&dev,temp_buf,3);
 	if(rc < 0)
 		return rc;
-	rc = i2c_write(&dev,temp_buf,2);
-	if(rc < 0)
-			return rc;
 	return 0;
 }
 /**
@@ -822,6 +712,7 @@ int mcp9844_set_config(struct DPB_I2cSensors *data,uint8_t *bit_ena,uint8_t *bit
 	int rc = 0;
 	struct I2cDevice dev = data->dev_pcb_temp;
 	uint8_t config_buf[2] = {0,0};
+	uint8_t conf_buf[3] = {0,0,0};
 	uint8_t config_reg = MCP9844_CONFIG_REG;
 	uint8_t array_size = sizeof(bit_num);
 	uint16_t mask;
@@ -849,12 +740,10 @@ int mcp9844_set_config(struct DPB_I2cSensors *data,uint8_t *bit_ena,uint8_t *bit
 			return -EINVAL;
 		}
 	}
-	config_buf[1] = config & 0x00FF;
-	config_buf[0] = (config >> 8) & 0x00FF;
-	rc = i2c_write(&dev,&config_reg,1);
-	if(rc < 0)
-		return rc;
-	rc = i2c_write(&dev,config_buf,2);
+	conf_buf[2] = config & 0x00FF;
+	conf_buf[1] = (config >> 8) & 0x00FF;
+	conf_buf[0] = config_reg;
+	rc = i2c_write(&dev,conf_buf,3);
 	if(rc < 0)
 			return rc;
 	return 0;
@@ -919,6 +808,106 @@ int mcp9844_read_alarms(struct DPB_I2cSensors *data) {
 }
 
 /************************** SFP Functions ******************************/
+/**
+ * Initialize SFP EEPROM page 1 as an I2C device
+ *
+ * @param I2cDevice *dev: SFP of which EEPROM is to be initialized
+ *
+ * @return Negative integer if initialization fails.If not, returns 0 and the EEPROM page initialized as I2C device
+ *
+ * @note This also checks via Physical device, SFP function  and the checksum registers that the device is correct and the EEPROM is working properly.
+ */
+int init_SFP_A0(struct I2cDevice *dev) {
+	int rc = 0;
+	uint8_t SFPphys_reg = SFP_PHYS_DEV;
+	uint8_t SFPphys_buf[2] = {0,0};
+
+	rc = i2c_start(dev); //Start I2C device
+		if (rc) {
+			return rc;
+		}
+	//Read SFP Physcial device register
+	rc = i2c_readn_reg(dev,SFPphys_reg,SFPphys_buf,1);
+		if(rc < 0)
+			return rc;
+
+	//Read SFP function register
+	SFPphys_reg = SFP_FUNCT;
+	rc = i2c_readn_reg(dev,SFPphys_reg,&SFPphys_buf[1],1);
+	if(rc < 0)
+			return rc;
+	if(!((SFPphys_buf[0] == 0x03) && (SFPphys_buf[1] == 0x04))){ //Check Physical device and function to verify is the right component
+			printf("Device ID does not match the corresponding device: SFP-Avago\r\n");
+			return -EINVAL;
+	}
+	rc = checksum_check(dev, SFP_PHYS_DEV,0x7F,63); //Check checksum register to verify is the right component and the EEPROM is working correctly
+	if(rc < 0)
+				return rc;
+	rc = checksum_check(dev, SFP_CHECKSUM2_A0,0xFA,31);//Check checksum register to verify is the right component and the EEPROM is working correctly
+	if(rc < 0)
+				return rc;
+	return 0;
+
+}
+/**
+ * Initialize SFP EEPROM page 2 as an I2C device
+ *
+ * @param I2cDevice *dev: SFP of which EEPROM is to be initialized
+ *
+ * @return Negative integer if initialization fails.If not, returns 0 and the EEPROM page initialized as I2C device
+ *
+ * @note This also checks via the checksum register that the EEPROM is working properly.
+ */
+int init_SFP_A2(struct I2cDevice *dev) {
+	int rc = 0;
+
+	rc = i2c_start(dev);
+		if (rc) {
+			return rc;
+		}
+	rc = checksum_check(dev,SFP_MSB_HTEMP_ALARM_REG,0x61,95);//Check checksum register to verify is the right component and the EEPROM is working correctly
+	if(rc < 0)
+				return rc;
+	return 0;
+
+}
+/**
+ *Compares expected SFP checksum to its current value
+ *
+ * @param I2cDevice *dev: SFP of which the checksum is to be checked
+ * @param uint8_t ini_reg: Register where the checksum count starts
+ * @param uint8_t checksum_val: Checksum value expected
+ * @param int size: number of registers summed for the checksum
+ *
+ * @return Negative integer if checksum is incorrect, and 0 if it is correct
+ */
+int checksum_check(struct I2cDevice *dev,uint8_t ini_reg, uint8_t checksum_val, int size){
+	int rc = 0;
+	int sum = 0;
+	uint8_t byte_buf[size] ;
+
+	rc = i2c_readn_reg(dev,ini_reg,byte_buf,1);  //Read every register from ini_reg to ini_reg+size-1
+			if(rc < 0)
+				return rc;
+	for(int n=1;n<size;n++){
+	ini_reg ++;
+	rc = i2c_readn_reg(dev,ini_reg,&byte_buf[n],1);
+		if(rc < 0)
+			return rc;
+	}
+
+	for(int i=0;i<size;i++){
+		sum += byte_buf[i];  //Sum every register read in order to obtain the checksum
+	}
+	uint8_t calc_checksum = (sum & 0xFF); //Only taking the 8 LSB of the checksum as the checksum register is only 8 bits
+
+	if (checksum_val != calc_checksum){ //Check the obtained checksum equals the device checksum register
+		printf("Checksum value does not match the expected value \r\n");
+		return -EHWPOISON;
+	}
+	return 0;
+}
+
 /**
  * Reads SFP temperature and stores the value in *res
  *
@@ -1346,6 +1335,57 @@ int sfp_avago_read_alarms(struct DPB_I2cSensors *data,int n) {
 
 /************************** Volt. and Curr. Sensor Functions ******************************/
 /**
+ * Initialize INA3221 Voltage and Current Sensor
+ *
+ * @param I2cDevice *dev: device to be initialized
+ *
+ * @return Negative integer if initialization fails.If not, returns 0 and the device initialized
+ *
+ * @note This also checks via Manufacturer and Device ID that the device is correct
+ */
+int init_voltSensor (struct I2cDevice *dev) {
+	int rc = 0;
+	uint8_t manID_buf[2] = {0,0};
+	uint8_t manID_reg = INA3221_MANUF_ID_REG;
+	uint8_t devID_buf[2] = {0,0};
+	uint8_t devID_reg = INA3221_DIE_ID_REG;
+
+	rc = i2c_start(dev); //Start I2C device
+		if (rc) {
+			return rc;
+		}
+	// Write Manufacturer ID address in register pointer
+	rc = i2c_write(dev,&manID_reg,1);
+	if(rc < 0)
+		return rc;
+
+	// Read MSB and LSB of Manufacturer ID
+	rc = i2c_read(dev,manID_buf,2);
+	if(rc < 0)
+			return rc;
+	if(!((manID_buf[0] == 0x54) && (manID_buf[1] == 0x49))){ //Check Manufacturer ID to verify is the right component
+		printf("Manufacturer ID does not match the corresponding device: Voltage Sensor\r\n");
+		return -EINVAL;
+	}
+
+	// Write Device ID address in register pointer
+	rc = i2c_write(dev,&devID_reg,1);
+	if(rc < 0)
+		return rc;
+
+	// Read MSB and LSB of Device ID
+	rc = i2c_read(dev,devID_buf,2);
+	if(rc < 0)
+			return rc;
+	if(!((devID_buf[0] == 0x32) && (devID_buf[1] == 0x20))){ //Check Device ID to verify is the right component
+			printf("Device ID does not match the corresponding device: Voltage Sensor\r\n");
+			return -EINVAL;
+	}
+	return 0;
+
+}
+
+/**
  * Reads INA3221 Voltage and Current Sensor bus voltage from each of its 3 channels and stores the values in *res
  *
  * @param struct DPB_I2cSensors *data: being the corresponding I2C device INA3221 Voltage and Current Sensor
@@ -1565,10 +1605,11 @@ int ina3221_read_alarms(struct DPB_I2cSensors *data,int n){
  */
 int ina3221_set_limits(struct DPB_I2cSensors *data,int n,int ch,int alarm_type ,float curr) {
 	int rc = 0;
-	uint8_t volt_buf[2] = {0,0};
+	uint8_t volt_buf[3] = {0,0,0};
 	uint8_t volt_reg ;
 	uint16_t volt_lim;
 	struct I2cDevice dev;
+
 	if(curr >= 1.5)
 		return EINVAL;
 	switch(n){
@@ -1610,14 +1651,12 @@ int ina3221_set_limits(struct DPB_I2cSensors *data,int n,int ch,int alarm_type ,
 		volt_lim = (curr * 0.05 * 1e6)/40; //0.05 = Resistor value
 		volt_lim = volt_lim << 3 ;
 	}
-	volt_buf[1] = volt_lim & 0x00FF;
-	volt_buf[0] = (volt_lim >> 8) & 0x00FF;
-	rc = i2c_write(&dev,&volt_reg,1);
+	volt_buf[2] = volt_lim & 0x00FF;
+	volt_buf[1] = (volt_lim >> 8) & 0x00FF;
+	volt_buf[0] = volt_reg;
+	rc = i2c_write(&dev,volt_buf,3);
 	if(rc < 0)
 		return rc;
-	rc = i2c_write(&dev,volt_buf,2);
-	if(rc < 0)
-			return rc;
 	return 0;
 }
 /**
@@ -1634,11 +1673,13 @@ int ina3221_set_limits(struct DPB_I2cSensors *data,int n,int ch,int alarm_type ,
 int ina3221_set_config(struct DPB_I2cSensors *data,uint8_t *bit_ena,uint8_t *bit_num, int n) {
 	int rc = 0;
 	uint8_t config_buf[2] = {0,0};
+	uint8_t conf_buf[3] = {0,0,0};
 	uint8_t config_reg = INA3221_CONFIG_REG;
 	uint8_t array_size = sizeof(bit_num);
 	uint16_t mask;
 	uint16_t config;
 	struct I2cDevice dev;
+
 	if(array_size != sizeof(bit_ena))
 		return -EINVAL;
 	switch(n){
@@ -1676,18 +1717,17 @@ int ina3221_set_config(struct DPB_I2cSensors *data,uint8_t *bit_ena,uint8_t *bit
 			return -EINVAL;
 		}
 	}
-	config_buf[1] = config & 0x00FF;
-	config_buf[0] = (config >> 8) & 0x00FF;
-	rc = i2c_write(&dev,&config_reg,1);
+	conf_buf[2] = config & 0x00FF;
+	conf_buf[1] = (config >> 8) & 0x00FF;
+	conf_buf[0] = config_reg;
+	rc = i2c_write(&dev,conf_buf,3);
 	if(rc < 0)
 		return rc;
-	rc = i2c_write(&dev,config_buf,2);
-	if(rc < 0)
-			return rc;
 	return 0;
 }
+
 /************************** Threads declaration ******************************/
-static int monitoring_thread_count;
+
 /**
  * Periodic thread that every x seconds reads every magnitude of every sensor available and stores it.
  *
@@ -2019,7 +2059,7 @@ static void *i2c_alarms_thread(void *arg){
 	}
 	while(1){
 		sem_wait(&i2c_sync); //Semaphore to sync I2C usage
-		//rc = mcp9844_read_alarms(data);
+		rc = mcp9844_read_alarms(data);
 		if (rc) {
 			printf("Error\r\n");
 			return NULL;
@@ -2040,12 +2080,12 @@ static void *i2c_alarms_thread(void *arg){
 			return NULL;
 		}
 
-		//rc = sfp_avago_read_alarms(data,0);
+		/*rc = sfp_avago_read_alarms(data,0);
 		if (rc) {
 			printf("Error\r\n");
 			return NULL;
 		}
-		/*
+
 		rc = sfp_avago_read_alarms(data,1)
 		if (rc) {
 			printf("Error\r\n");
@@ -2225,6 +2265,7 @@ int main(){
 		printf("Error\r\n");
 		return rc;
 	}
+
 	sem_init(&i2c_sync,0,1);
 	/* Block all real time signals so they can be used for the timers.
 	   Note: this has to be done in main() before any threads are created
@@ -2238,7 +2279,7 @@ int main(){
 
 	pthread_create(&t_1, NULL, ams_alarms_thread,NULL); //Create thread 1 - read AMS alarms
 	pthread_create(&t_2, NULL, i2c_alarms_thread,(void *)&data); //Create thread 2 - read alarms every x miliseconds
-	//pthread_create(&t_3, NULL, monitoring_thread,(void *)&data );//Create thread 3 - monitors magnitudes every x seconds
+	pthread_create(&t_3, NULL, monitoring_thread,(void *)&data );//Create thread 3 - monitors magnitudes every x seconds
 
 	while(1){
 		sleep(1000000);

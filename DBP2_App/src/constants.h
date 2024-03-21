@@ -157,5 +157,8 @@ struct wrapper
     sem_t full;
     sem_t ams_sync;
 };
+int memoryID;
+struct wrapper *memory;
 
+static int monitoring_thread_count;
 
