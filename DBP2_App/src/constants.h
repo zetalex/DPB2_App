@@ -160,5 +160,5 @@ struct wrapper
 int memoryID;
 struct wrapper *memory;
 
-static int monitoring_thread_count;
+//static int monitoring_thread_count;
 

@@ -16,6 +16,7 @@
 #include <sys/shm.h>
 #include <fcntl.h>
 #include <time.h>
+#include "json-c/json.h"
 
 #include "i2c.h"
 #include "constants.h"
@@ -66,23 +67,25 @@ int xlnx_ams_set_limits(int, char *, char *, float);
 int mcp9844_read_temperature(struct DPB_I2cSensors *,float *);
 int mcp9844_set_limits(struct DPB_I2cSensors *,int, float);
 int mcp9844_set_config(struct DPB_I2cSensors *,uint8_t *,uint8_t *);
-int mcp9844_interruptions(struct DPB_I2cSensors *, uint8_t );
-int mcp9844_read_alarms(struct DPB_I2cSensors *);
+int mcp9844_interruptions(json_object *,struct DPB_I2cSensors *, uint8_t );
+int mcp9844_read_alarms(json_object *,struct DPB_I2cSensors *);
 int sfp_avago_read_temperature(struct DPB_I2cSensors *,int , float *);
 int sfp_avago_read_voltage(struct DPB_I2cSensors *,int , float *);
 int sfp_avago_read_lbias_current(struct DPB_I2cSensors *,int, float *);
 int sfp_avago_read_tx_av_optical_pwr(struct DPB_I2cSensors *,int, float *);
 int sfp_avago_read_rx_av_optical_pwr(struct DPB_I2cSensors *data,int, float *);
-int sfp_avago_status_interruptions(uint8_t, int);
-int sfp_avago_alarms_interruptions(struct DPB_I2cSensors *,uint16_t , int );
-int sfp_avago_read_alarms(struct DPB_I2cSensors *,int ) ;
+int sfp_avago_status_interruptions(json_object *,uint8_t, int);
+int sfp_avago_alarms_interruptions(json_object *,struct DPB_I2cSensors *,uint16_t , int );
+int sfp_avago_read_alarms(json_object *,struct DPB_I2cSensors *,int ) ;
 int ina3221_get_voltage(struct DPB_I2cSensors *,int , float *);
 int ina3221_get_current(struct DPB_I2cSensors *,int , float *);
-int ina3221_critical_interruptions(struct DPB_I2cSensors *,uint16_t , int , char **);
-int ina3221_warning_interruptions(struct DPB_I2cSensors *,uint16_t , int , char **);
-int ina3221_read_alarms(struct DPB_I2cSensors *,int);
+int ina3221_critical_interruptions(json_object *,struct DPB_I2cSensors *,uint16_t , int );
+int ina3221_warning_interruptions(json_object *,struct DPB_I2cSensors *,uint16_t , int );
+int ina3221_read_alarms(json_object *,struct DPB_I2cSensors *,int);
 int ina3221_set_limits(struct DPB_I2cSensors *,int ,int ,int  ,float );
 int ina3221_set_config(struct DPB_I2cSensors *,uint8_t *,uint8_t *, int );
+int parsing_mon_data_into_array (json_object *,float , char *, int );
+int parsing_alm_data_into_array (json_object *,char *,char *, int , float ,int32_t );
 static void *monitoring_thread(void *);
 static void *i2c_alarms_thread(void *);
 static void *ams_alarms_thread(void *);
@@ -756,23 +759,20 @@ int mcp9844_set_config(struct DPB_I2cSensors *data,uint8_t *bit_ena,uint8_t *bit
  *
  * @return 0 and handles interruption depending on the active flags
  */
-int mcp9844_interruptions(struct DPB_I2cSensors *data, uint8_t flag_buf){
-	time_t timestamp;
+int mcp9844_interruptions(json_object *jarray,struct DPB_I2cSensors *data, uint8_t flag_buf){
+	int32_t timestamp;
 	float res [1];
 	mcp9844_read_temperature(data,res);
 
 	if((flag_buf & 0x80) == 0x80){
 		timestamp = time(NULL);
-		printf("Chip: MCP9844. Event type: critical. Timestamp: %ld. Channel type: Temperature. Channel: 1. Value: %f ºC\n",timestamp,res[0]);
-	}
+		parsing_alm_data_into_array(jarray,"Board Temperature","critical", 99, res[0],timestamp);	}
 	if((flag_buf & 0x40) == 0x40){
 		timestamp = time(NULL);
-		printf("Chip: MCP9844. Event type: rising. Timestamp: %ld. Channel type: Temperature. Channel: 1. Value: %f ºC\n",timestamp,res[0]);
-	}
+		parsing_alm_data_into_array(jarray,"Board Temperature","rising", 99, res[0],timestamp);	}
 	if((flag_buf & 0x20) == 0x20){
 		timestamp = time(NULL);
-		printf("Chip: MCP9844. Event type: falling. Timestamp: %ld. Channel type: Temperature. Channel: 1. Value: %f ºC\n",timestamp,res[0]);
-	}
+		parsing_alm_data_into_array(jarray,"Board Temperature","falling", 99, res[0],timestamp);	}
 	return 0;
 }
 /**
@@ -784,7 +784,7 @@ int mcp9844_interruptions(struct DPB_I2cSensors *data, uint8_t flag_buf){
  *
  * @note It also clear flag bits.
  */
-int mcp9844_read_alarms(struct DPB_I2cSensors *data) {
+int mcp9844_read_alarms(json_object *jarray,struct DPB_I2cSensors *data) {
 	int rc = 0;
 	struct I2cDevice dev = data->dev_pcb_temp;
 	uint8_t alarm_buf[1] = {0};
@@ -801,7 +801,7 @@ int mcp9844_read_alarms(struct DPB_I2cSensors *data) {
 	if(rc < 0)
 			return rc;
 	if((alarm_buf[0] & 0xE0) != 0){
-		mcp9844_interruptions(data,alarm_buf[0]);
+		mcp9844_interruptions(jarray,data,alarm_buf[0]);
 	}
 	alarm_buf[0] = alarm_buf[0] & 0x1F;	//Clear Flag bits
 	return 0;
@@ -1196,17 +1196,16 @@ int sfp_avago_read_rx_av_optical_pwr(struct DPB_I2cSensors *data,int n, float *r
  *
  * @return 0 and handles interruption depending on the active status flags
  */
-int sfp_avago_status_interruptions(uint8_t status, int n){
-	time_t timestamp;
+int sfp_avago_status_interruptions(json_object *jarray,uint8_t status, int n){
+	int32_t timestamp;
 
 	if((status & 0x02) != 0){
 		timestamp = time(NULL);
-		printf("Chip: SFP-%d. Event type: rising. Timestamp: %ld. Channel type: RxLOS. Channel: %d. Value: RxLOS\n",n,timestamp,n);
+		parsing_alm_data_into_array(jarray,"SFP RxLOS","critical", n, 0,timestamp);
 	}
 	if((status & 0x04) != 0){
 		timestamp = time(NULL);
-		printf("Chip: SFP-%d. Event type: rising. Timestamp: %ld. Channel type: TxFault. Channel: %d. Value: TxFault\n",n,timestamp,n);
-	}
+		parsing_alm_data_into_array(jarray,"SFP TxFault","critical", n, 0,timestamp);	}
 	return 0;
 }
 /**
@@ -1217,50 +1216,50 @@ int sfp_avago_status_interruptions(uint8_t status, int n){
  *
  * @return 0 and handles interruption depending on the active alarms flags
  */
-int sfp_avago_alarms_interruptions(struct DPB_I2cSensors *data,uint16_t flags, int n){
-	time_t timestamp;
+int sfp_avago_alarms_interruptions(json_object *jarray,struct DPB_I2cSensors *data,uint16_t flags, int n){
+	int32_t timestamp;
 	float res [1];
 
 	if((flags & 0x0080) == 0x0080){
 		timestamp = time(NULL);
 		sfp_avago_read_rx_av_optical_pwr(data,n,res);
-		printf("Chip: SFP-%d. Event type: rising. Timestamp: %ld. Channel type: RxAvOptPwr. Channel: %d. Value: %f W\n",n,timestamp,n,res[0]);}
+		parsing_alm_data_into_array(jarray,"SFP Rx Optical Power","rising", n, res[0],timestamp);	}
 	if((flags & 0x0040) == 0x0040){
 		timestamp = time(NULL);
 		sfp_avago_read_rx_av_optical_pwr(data,n,res);
-		printf("Chip: SFP-%d. Event type: falling. Timestamp: %ld. Channel type: RxAvOptPwr. Channel: %d. Value: %f W\n",n,timestamp,n,res[0]);	}
+		parsing_alm_data_into_array(jarray,"SFP Rx Optical Power","falling", n, res[0],timestamp);	}
 	if((flags & 0x0200) == 0x0200){
 		timestamp = time(NULL);
 		sfp_avago_read_tx_av_optical_pwr(data,n,res);
-		printf("Chip: SFP-%d. Event type: rising. Timestamp: %ld. Channel type: TxAvOptPwr. Channel: %d. Value: %f W\n",n,timestamp,n,res[0]);	}
+		parsing_alm_data_into_array(jarray,"SFP Tx Optical Power","rising", n, res[0],timestamp);	}
 	if((flags & 0x0100) == 0x0100){
 		timestamp = time(NULL);
 		sfp_avago_read_tx_av_optical_pwr(data,n,res);
-		printf("Chip: SFP-%d. Event type: falling. Timestamp: %ld. Channel type: TxAvOptPwr. Channel: %d. Value: %f W\n",n,timestamp,n,res[0]);	}
+		parsing_alm_data_into_array(jarray,"SFP Tx Optical Power","falling", n, res[0],timestamp);	}
 	if((flags & 0x0800) == 0x0800){
 		timestamp = time(NULL);
 		sfp_avago_read_lbias_current(data,n,res);
-		printf("Chip: SFP-%d. Event type: rising. Timestamp: %ld. Channel type: LbiasCurr. Channel: %d. Value: %f A\n",n,timestamp,n,res[0]);	}
+		parsing_alm_data_into_array(jarray,"SFP Laser Bias Current","rising", n, res[0],timestamp);	}
 	if((flags & 0x0400) == 0x0400){
 		timestamp = time(NULL);
 		sfp_avago_read_lbias_current(data,n,res);
-		printf("Chip: SFP-%d. Event type: falling. Timestamp: %ld. Channel type: LbiasCurr. Channel: %d. Value: %f A\n",n,timestamp,n,res[0]);	}
+		parsing_alm_data_into_array(jarray,"SFP Laser Bias Current","falling", n, res[0],timestamp);	}
 	if((flags & 0x2000) == 0x2000){
 		timestamp = time(NULL);
 		sfp_avago_read_voltage(data,n,res);
-		printf("Chip: SFP-%d. Event type: rising. Timestamp: %ld. Channel type: Vcc. Channel: %d. Value: %f V\n",n,timestamp,n,res[0]);	}
+		parsing_alm_data_into_array(jarray,"SFP Supply Voltage","rising", n, res[0],timestamp);	}
 	if((flags & 0x1000) == 0x1000){
 		timestamp = time(NULL);
 		sfp_avago_read_voltage(data,n,res);
-		printf("Chip: SFP-%d. Event type: falling. Timestamp: %ld. Channel type: Vcc. Channel: %d. Value: %f V\n",n,timestamp,n,res[0]);	}
+		parsing_alm_data_into_array(jarray,"SFP Supply Voltage","falling", n, res[0],timestamp);	}
 	if((flags & 0x8000) == 0x8000){
 		timestamp = time(NULL);
 		sfp_avago_read_temperature(data,n,res);
-		printf("Chip: SFP-%d. Event type: rising. Timestamp: %ld. Channel type: Temp. Channel: %d. Value: %f ºC\n",n,timestamp,n,res[0]);	}
+		parsing_alm_data_into_array(jarray,"SFP Temperature","rising", n, res[0],timestamp);	}
 	if((flags & 0x4000) == 0x4000){
 		timestamp = time(NULL);
 		sfp_avago_read_temperature(data,n,res);
-		printf("Chip: SFP-%d. Event type: falling. Timestamp: %ld. Channel type: Temp. Channel: %d. Value: %f ºC\n",n,timestamp,n,res[0]);	}
+		parsing_alm_data_into_array(jarray,"SFP Temperature","falling", n, res[0],timestamp);	}
 	printf("\n");
 	return 0;
 }
@@ -1272,7 +1271,7 @@ int sfp_avago_alarms_interruptions(struct DPB_I2cSensors *data,uint16_t flags, i
  *
  * @return  0 and if there is any flag active calls the corresponding function to handle the interruption.
  */
-int sfp_avago_read_alarms(struct DPB_I2cSensors *data,int n) {
+int sfp_avago_read_alarms(json_object *jarray,struct DPB_I2cSensors *data,int n) {
 	int rc = 0;
 	uint8_t flag_buf[2] = {0,0};
 	uint8_t status_buf[1] = {0};
@@ -1325,10 +1324,10 @@ int sfp_avago_read_alarms(struct DPB_I2cSensors *data,int n) {
 	uint16_t flags =  ((uint16_t) (flag_buf[0] << 8)  + flag_buf[1]);
 
 	if((status_buf[0] & 0x06) != 0){
-		sfp_avago_status_interruptions(status_buf[0],n);
+		sfp_avago_status_interruptions(jarray,status_buf[0],n);
 	}
 	if((flags & 0xFFC0) != 0){
-		sfp_avago_alarms_interruptions(data,flags,n);
+		sfp_avago_alarms_interruptions(jarray,data,flags,n);
 	}
 	return 0;
 }
@@ -1492,23 +1491,32 @@ int ina3221_get_current(struct DPB_I2cSensors *data,int n, float *res){
  *
  * @return 0 and handles interruption depending on the active alarms flags
  */
-int ina3221_critical_interruptions(struct DPB_I2cSensors *data,uint16_t mask, int n, char **text){
-	time_t timestamp;
+int ina3221_critical_interruptions(json_object *jarray,struct DPB_I2cSensors *data,uint16_t mask, int n){
+	int32_t timestamp;
 	float res[3];
 	ina3221_get_current(data,n,res);
+	int k = 0;
+	if (n == 1)
+		k = 3;
 
 	if((mask & 0x0080) == 0x0080){
 		timestamp = time(NULL);
-		printf("Chip:%s. Event type: critical. Timestamp: %ld. Channel type: Current. Channel: 1. Value: %f A\n",text[0],timestamp,res[0]);
-	}
+		if(n == 2)
+			parsing_alm_data_into_array(jarray,"SoM Current(1.8V)","critical", 99, res[2],timestamp);
+		else
+			parsing_alm_data_into_array(jarray,"SFP Current","critical", k+2, res[2],timestamp);		}
 	if((mask & 0x0100) == 0x0100){
 		timestamp = time(NULL);
-		printf("Chip:%s. Event type: critical. Timestamp: %ld. Channel type: Current. Channel: 2. Value: %f A\n",text[0],timestamp,res[1]);
-	}
+		if(n == 2)
+			parsing_alm_data_into_array(jarray,"SoM Current(1.8V)","critical", 99, res[2],timestamp);
+		else
+			parsing_alm_data_into_array(jarray,"SFP Current","critical", k+2, res[2],timestamp);	}
 	if((mask & 0x0200) == 0x0200){
 		timestamp = time(NULL);
-		printf("Chip:%s. Event type: critical. Timestamp: %ld. Channel type: Current. Channel: 3. Value: %f A\n",text[0],timestamp,res[2]);
-	}
+		if(n == 2)
+			parsing_alm_data_into_array(jarray,"SoM Current(1.8V)","critical", 99, res[2],timestamp);
+		else
+			parsing_alm_data_into_array(jarray,"SFP Current","critical", k+2, res[2],timestamp);	}
 	return 0;
 }
 /**
@@ -1519,24 +1527,33 @@ int ina3221_critical_interruptions(struct DPB_I2cSensors *data,uint16_t mask, in
  *
  * @return 0 and handles interruption depending on the active alarms flags
  */
-int ina3221_warning_interruptions(struct DPB_I2cSensors *data,uint16_t mask, int n, char **text){
+int ina3221_warning_interruptions(json_object *jarray,struct DPB_I2cSensors *data,uint16_t mask, int n){
 
-	time_t timestamp;
+	int32_t timestamp;
 	float res[3];
 	ina3221_get_current(data,n,res);
+	int k = 0;
+	if (n == 1)
+		k = 3;
 
 	if((mask & 0x0008) == 0x0008){
 		timestamp = time(NULL);
-		printf("Chip:%s. Event type: rising. Timestamp: %ld. Channel type: Current. Channel: 1. Value: %f A\n",text[0],timestamp,res[0]);
-	}
+		if(n == 2)
+			parsing_alm_data_into_array(jarray,"SoM Current(12V)","rising", 99, res[0],timestamp);
+		else
+			parsing_alm_data_into_array(jarray,"SFP Current","rising", k, res[0],timestamp);	}
 	if((mask & 0x0010) == 0x0010){
 		timestamp = time(NULL);
-		printf("Chip:%s. Event type: rising. Timestamp: %ld. Channel type: Current. Channel: 2. Value: %f A\n",text[0],timestamp,res[1]);
-	}
+		if(n == 2)
+			parsing_alm_data_into_array(jarray,"SoM Current(3.3V)","rising", 99, res[1],timestamp);
+		else
+			parsing_alm_data_into_array(jarray,"SFP Current","rising", k+1, res[1],timestamp);	}
 	if((mask & 0x0020) == 0x0020){
 		timestamp = time(NULL);
-		printf("Chip:%s. Event type: rising. Timestamp: %ld. Channel type: Current. Channel: 3. Value: %f A\n",text[0],timestamp,res[2]);
-	}
+		if(n == 2)
+			parsing_alm_data_into_array(jarray,"SoM Current(1.8V)","rising", 99, res[2],timestamp);
+		else
+			parsing_alm_data_into_array(jarray,"SFP Current","rising", k+2, res[2],timestamp);	}
 	return 0;
 }
 /**
@@ -1547,25 +1564,21 @@ int ina3221_warning_interruptions(struct DPB_I2cSensors *data,uint16_t mask, int
  *
  * @return  0 and if there is any flag active calls the corresponding function to handle the interruption.
  */
-int ina3221_read_alarms(struct DPB_I2cSensors *data,int n){
+int ina3221_read_alarms(json_object *jarray,struct DPB_I2cSensors *data,int n){
 	int rc = 0;
 	uint8_t mask_buf[2] = {0,0};
 	uint8_t mask_reg = INA3221_MASK_ENA_REG;
 	struct I2cDevice dev;
-	char *arr[] = {"0"};
 
 	switch(n){
 		case DEV_SFP0_2_VOLT:
 			dev = data->dev_sfp0_2_volt;
-			arr[0] = "INA3221-SFP0-2";
 		break;
 		case DEV_SFP3_5_VOLT:
 			dev = data->dev_sfp3_5_volt;
-			arr[0] = "INA3221-SFP3-5";
 		break;
 		case DEV_SOM_VOLT:
 			dev = data->dev_som_volt;
-			arr[0] = "INA3221-SoM";
 		break;
 		default:
 			return -EINVAL;
@@ -1583,10 +1596,10 @@ int ina3221_read_alarms(struct DPB_I2cSensors *data,int n){
 
 	uint16_t mask_int = (uint16_t)(mask_buf[0] << 8) + (mask_buf[1]);
 	if((mask_int & 0x0380)!= 0){
-		ina3221_critical_interruptions(data,mask_int,n,arr);
+		ina3221_critical_interruptions(jarray,data,mask_int,n);
 	}
 	else if((mask_int & 0x0038)!= 0){
-		ina3221_warning_interruptions(data,mask_int,n,arr);
+		ina3221_warning_interruptions(jarray,data,mask_int,n);
 	}
 
 	return 0;
@@ -1725,6 +1738,70 @@ int ina3221_set_config(struct DPB_I2cSensors *data,uint8_t *bit_ena,uint8_t *bit
 		return rc;
 	return 0;
 }
+/************************** JSON functions ******************************/
+/**
+ * Parses monitoring data into a JSON array so as to include it in a JSON string
+ *
+ * @param json_object *jarray: JSON array in which the data will be stored
+ * @param int chan: Number of measured channel, if chan is 99 means channel will not be parsed
+ * @param float val: Measured magnitude value
+ * @param char *magnitude: Name of the measured magnitude
+ *
+ * @return: 0
+ */
+int parsing_mon_data_into_array (json_object *jarray,float val, char *magnitude, int chan)
+{
+	json_object * jobj = json_object_new_object();
+
+	json_object *jdouble = json_object_new_double((double) val);
+	json_object *jstring = json_object_new_string(magnitude);
+	json_object *jint = json_object_new_int(chan);
+
+	json_object_object_add(jobj,"magnitudename", jstring);
+	if (chan != 99)
+		json_object_object_add(jobj,"channel", jint);
+	json_object_object_add(jobj,"value", jdouble);
+
+	json_object_array_add(jarray,jobj);
+
+	return 0;
+}
+/**
+ * Parses alarms data into a JSON array so as to include it in a JSON string
+ *
+ * @param json_object *jarray: JSON array in which the data will be stored
+ * @param int chan: Number of measured channel, if chan is 99 means channel will not be parsed
+ * @param float val: Measured magnitude value
+ * @param char *chip: Name of the chip that triggered the alarm
+ * @param char *ev_type: Type of event that has occurred
+ * @param char *ch_type: Magnitude that has triggered the alarm
+ * @param int32_t timestamp: Time when the event occurred
+ *
+ * @return: 0
+ */
+int parsing_alm_data_into_array (json_object *jarray,char *chip,char *ev_type, int chan, float val,int32_t timestamp)
+{
+	json_object * jobj = json_object_new_object();
+
+	json_object *jdouble = json_object_new_double((double) val);
+	json_object *jchip = json_object_new_string(chip);
+	json_object *jev_type = json_object_new_string(ev_type);
+	json_object *jchan = json_object_new_int(chan);
+	json_object *jtimestamp = json_object_new_int(timestamp);
+
+	json_object_object_add(jobj,"magnitudename", jchip);
+	json_object_object_add(jobj,"event type", jev_type);
+	json_object_object_add(jobj,"event timestamp", jtimestamp);
+	if (chan != 99)
+		json_object_object_add(jobj,"channel", jchan);
+
+	json_object_object_add(jobj,"value", jdouble);
+
+	json_object_array_add(jarray,jobj);
+
+	return 0;
+}
+
 
 /************************** Threads declaration ******************************/
 
@@ -1740,6 +1817,10 @@ static void *monitoring_thread(void *arg)
 	struct periodic_info info;
 	int rc ;
 	struct DPB_I2cSensors *data = arg;
+
+	char *curr;
+	char *volt;
+	char *pwr;
 
 	float ams_temp[3];
 	float ams_volt[25];
@@ -1999,41 +2080,88 @@ static void *monitoring_thread(void *arg)
 			printf("Error\r\n");
 			return NULL;
 		}
-		printf("Temperatura ambiente: %f ºC\n",temp[0]);
-		printf("\n");
-		printf("Temperatura SFP: %f ºC\n",sfp_temp_0[0]);
-		printf("Tensión SFP: %f V\n",sfp_vcc_0[0]);
-		printf("Corriente polarización del láser SFP: %f A\n",sfp_txbias_0[0]);
-		printf("Potencia óptica transmitida SFP: %f W\n",sfp_txpwr_0[0]);
-		printf("Potencia óptica recibida SFP: %f W\n",sfp_rxpwr_0[0]);
-		printf("\n");
-		for(int m = 0; m<3;m++){
-			printf("Temperatura AMS - Canal %d: %f ºC - Iteración: %d\n",temp_chan[m],ams_temp[m],monitoring_thread_count);
-		}
-		printf("\n");
-		for(int n = 0; n<25;n++){
-			printf("Tensión AMS - Canal %d: %f V - Iteración: %d\n",volt_chan[n],ams_volt[n],monitoring_thread_count);
-		}
-		printf("\n");
+
+		json_object * jobj = json_object_new_object();
+		json_object *jdata = json_object_new_object();
+		json_object *jlv = json_object_new_array();
+		json_object *jhv = json_object_new_array();
+		json_object *jdig0 = json_object_new_array();
+		json_object *jdig1 = json_object_new_array();
+		json_object *jdpb = json_object_new_array();
+
+		parsing_mon_data_into_array(jdpb,temp[0],"Board Temperature",99);
+
+		parsing_mon_data_into_array(jdpb,sfp_temp_0[0],"SFP Temperature",0);
+		//parsing_mon_data_into_array(jdpb,sfp_vcc_0[0],"SFP Supply Voltage",0);
+		parsing_mon_data_into_array(jdpb,sfp_txbias_0[0],"SFP Laser Bias Current",0);
+		parsing_mon_data_into_array(jdpb,sfp_txpwr_0[0],"SFP Tx Optical Power",0);
+		parsing_mon_data_into_array(jdpb,sfp_rxpwr_0[0],"SFP Rx Optical Power",0);
+
+		parsing_mon_data_into_array(jdpb,ams_temp[0],"LPD Temperature",temp_chan[0]);
+		parsing_mon_data_into_array(jdpb,ams_temp[1],"FPD Temperature",temp_chan[1]);
+		parsing_mon_data_into_array(jdpb,ams_temp[2],"PL Temperature",temp_chan[2]);
+		/*for(int n = 0; n<25;n++){
+			parsing_mon_data_into_array(jdpb,ams_volt[n],"AMS Voltage",volt_chan[n]);		}*/
+
 		for(int j=0;j<3;j++){
-		printf("Tensión SFP0-2 - Canal %d: %f V - Iteración: %d\n",j+1,volt_sfp0_2[j],monitoring_thread_count);
-		printf("Corriente SFP0-2 - Canal %d: %f A - Iteración: %d\n",j+1,curr_sfp0_2[j],monitoring_thread_count);
-		printf("Potencia consumida SFP0-2 - Canal %d: %f W - Iteración: %d\n",j+1,curr_sfp0_2[j]*volt_sfp0_2[j],monitoring_thread_count);
+			parsing_mon_data_into_array(jdpb,volt_sfp0_2[j],"SFP Voltage",j);
+			parsing_mon_data_into_array(jdpb,curr_sfp0_2[j],"SFP Current",j);
+			parsing_mon_data_into_array(jdpb,curr_sfp0_2[j]*volt_sfp3_5[j],"SFP Power",j);
 		}
-		printf("\n");
 		for(int k=0;k<3;k++){
-		printf("Tensión SFP3-5 - Canal %d: %f V - Iteración: %d\n",k+1,volt_sfp3_5[k],monitoring_thread_count);
-		printf("Corriente SFP3-5 - Canal %d: %f A - Iteración: %d\n",k+1,curr_sfp3_5[k],monitoring_thread_count);
-		printf("Potencia consumida SFP3-5 - Canal %d: %f W - Iteración: %d\n",k+1,curr_sfp3_5[k]*volt_sfp3_5[k],monitoring_thread_count);
+			parsing_mon_data_into_array(jdpb,volt_sfp3_5[k],"SFP Voltage",k+3);
+			parsing_mon_data_into_array(jdpb,curr_sfp3_5[k],"SFP Current",k+3);
+			parsing_mon_data_into_array(jdpb,curr_sfp3_5[k]*volt_sfp3_5[k],"SFP Power",k+3);
 		}
-		printf("\n");
 		for(int l=0;l<3;l++){
-		printf("Tensión SoM - Canal %d: %f V - Iteración: %d\n",l+1,volt_som[l],monitoring_thread_count);
-		printf("Corriente SoM - Canal %d: %f A - Iteración: %d\n",l+1,curr_som[l],monitoring_thread_count);
-		printf("Potencia consumida SoM - Canal %d: %f W - Iteración: %d\n",l+1,curr_som[l]*volt_som[l],monitoring_thread_count);
+			switch(l){
+			case 0:
+				volt = "SoM Voltage (+12V)";
+				curr = "SoM Current (+12V)";
+				pwr = "SoM Power (+12V)";
+				break;
+			case 1:
+				volt = "SoM Voltage (+3.3V)";
+				curr = "SoM Current (+3.3V)";
+				pwr = "SoM Power (+3.3V)";
+				break;
+			case 2:
+				volt = "SoM Voltage (+1.8V)";
+				curr = "SoM Current (+1.8V)";
+				pwr = "SoM Power (+1.8V)";
+				break;
+			default:
+				volt = "SoM Voltage (+12V)";
+				curr = "SoM Current (+12V)";
+				pwr = "SoM Power (+12V)";
+			break;
+			}
+			parsing_mon_data_into_array(jdpb,volt_som[l],volt,99);
+			parsing_mon_data_into_array(jdpb,curr_som[l],curr,99);
+			parsing_mon_data_into_array(jdpb,curr_som[l]*volt_som[l],pwr,99);
 		}
+
+		json_object_object_add(jdata,"LV", jlv);
+		json_object_object_add(jdata,"HV", jhv);
+		json_object_object_add(jdata,"Dig0", jdig0);
+		json_object_object_add(jdata,"Dig1", jdig1);
+		json_object_object_add(jdata,"DPB", jdpb);
+
+		int32_t timestamp = time(NULL);
+		json_object *jdevice = json_object_new_string("ID DPB");
+		json_object *jtimestamp = json_object_new_int(timestamp);
+		json_object_object_add(jobj,"timestamp", jtimestamp);
+		json_object_object_add(jobj,"device", jdevice);
+		json_object_object_add(jobj,"data",jdata);
+
+		/*FILE* fptr;
+		const char *serialized_json = json_object_to_json_string(jobj);
+		fptr =  fopen("/run/media/mmcblk0p1/sample.json", "a");
+		fwrite(serialized_json,sizeof(char),strlen(serialized_json),fptr);
+		fclose(fptr);
 		printf("\n");
-		monitoring_thread_count++;
+		printf("The json object created: %sn",json_object_to_json_string(jobj));*/
+
 		wait_period(&info);
 	}
 	//stop_I2cSensors(&data);
@@ -2059,60 +2187,81 @@ static void *i2c_alarms_thread(void *arg){
 	}
 	while(1){
 		sem_wait(&i2c_sync); //Semaphore to sync I2C usage
-		rc = mcp9844_read_alarms(data);
+
+		json_object * jobj = json_object_new_object();
+		json_object *jdata = json_object_new_object();
+		json_object *jlv = json_object_new_array();
+		json_object *jhv = json_object_new_array();
+		json_object *jdig0 = json_object_new_array();
+		json_object *jdig1 = json_object_new_array();
+		json_object *jdpb = json_object_new_array();
+
+		rc = mcp9844_read_alarms(jdpb,data);
 		if (rc) {
 			printf("Error\r\n");
 			return NULL;
 		}
-		rc = ina3221_read_alarms(data,0);
+		rc = ina3221_read_alarms(jdpb,data,0);
 		if (rc) {
 			printf("Error\r\n");
 			return NULL;
 		}
-		rc = ina3221_read_alarms(data,1);
+		rc = ina3221_read_alarms(jdpb,data,1);
 		if (rc) {
 			printf("Error\r\n");
 			return NULL;
 		}
-		rc = ina3221_read_alarms(data,2);
+		rc = ina3221_read_alarms(jdpb,data,2);
 		if (rc) {
 			printf("Error\r\n");
 			return NULL;
 		}
 
-		/*rc = sfp_avago_read_alarms(data,0);
+		/*rc = sfp_avago_read_alarms(jdpb,data,0);
 		if (rc) {
 			printf("Error\r\n");
 			return NULL;
 		}
 
-		rc = sfp_avago_read_alarms(data,1)
+		rc = sfp_avago_read_alarms(jdpb,data,1)
 		if (rc) {
 			printf("Error\r\n");
 			return NULL;
 		}
-		rc = sfp_avago_read_alarms(data,2
+		rc = sfp_avago_read_alarms(jdpb,data,2)
 		if (rc) {
 			printf("Error\r\n");
 			return NULL;
 		}
-		rc = sfp_avago_read_alarms(data,3)	monitoring_thread_count++;
-		wait_period(&info);
+		rc = sfp_avago_read_alarms(jdpb,data,3)
 		if (rc) {
 			printf("Error\r\n");
 			return NULL;
 		}
-		rc = sfp_avago_read_alarms(data,4)
+		rc = sfp_avago_read_alarms(jdpb,data,4)
 		if (rc) {
 			printf("Error\r\n");
 			return NULL;
 		}
-		rc = sfp_avago_read_alarms(data,5)
+		rc = sfp_avago_read_alarms(jdpb,data,5)
 		if (rc) {
 			printf("Error\r\n");
 			return NULL;
 		}
 		*/
+
+		json_object_object_add(jdata,"LV", jlv);
+		json_object_object_add(jdata,"HV", jhv);
+		json_object_object_add(jdata,"Dig0", jdig0);
+		json_object_object_add(jdata,"Dig1", jdig1);
+		json_object_object_add(jdata,"DPB", jdpb);
+
+		int32_t timestamp = time(NULL);
+		json_object *jdevice = json_object_new_string("ID DPB");
+		json_object *jtimestamp = json_object_new_int(timestamp);
+		json_object_object_add(jobj,"timestamp", jtimestamp);
+		json_object_object_add(jobj,"device", jdevice);
+		json_object_object_add(jobj,"alarm data",jdata);
 		sem_post(&i2c_sync); //Free semaphore to sync I2C usage
 		wait_period(&info);
 	}
