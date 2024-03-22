@@ -18,13 +18,15 @@
 
 <h3 align="center">Grado en Ingeniería de Tecnologías y Servicios de Telecomunicación</h3>
 
-# Introduction
-
-## The neutrino itself
+# Introduction:TFG Objectives
 It is well known that telecommunications has played a pivotal role in the course of society since its emergence, being a discipline that today is necessary in almost any field, whether day-to-day or professional.
 
 Telecommunications encompasses several branches of knowledge, in which I specialise in the field of electronic systems.
 That is why this Final Project of the Degree in Telecommunication Technologies and Services Engineering is a clear evidence of the importance of electronic systems in the advancement of human beings to explore and investigate the behaviour of the universe.
+
+To be continued...
+
+# The neutrino itself
 
 Within the field of physics there are countless subfields that study different aspects of everything around us. The project on which this dissertation is based is based on the speciality of physics called *Particle physics*, which is also known as high-energy physics, because many of these particles can only be seen in large collisions provoked in particle accelerators. This discipline of physics is responsible for demonstrating the existence of particles classified according to certain characteristics as bosons or fermions. Nonetheless, it also encounters the difficulty of having been able to demonstrate particles that are almost non-detectable to this day.
 
@@ -36,7 +38,7 @@ $$(1.1)
 
 The first person to postulate the existence of the neutrino theoretically was Wolfgang Pauli in 1930, but it remained undetected for 25 years because this hypothetically predicted particle had to be massless, chargeless and without strong interaction.
 
-Finally, in 1956,  Clyde Cowan, Frederick Reines, Francis B. "Kiko" Harrison, Herald W. Kruse, and Austin D. McGuire were able to demonstrate the existence of the neutrino experimentally by using a beam of neutrons to pump a tank of pure water. By observing the subsequent emission of the protons, they were able to demonstrate the existence of the neutrino. This test was called the neutrino experiment.
+Finally, in 1956, Clyde Cowan, Frederick Reines, Francis B. "Kiko" Harrison, Herald W. Kruse, and Austin D. McGuire were able to demonstrate the existence of the neutrino experimentally by using a beam of neutrons to pump a tank of pure water. By observing the subsequent emission of the protons, they were able to demonstrate the existence of the neutrino. This test was called the neutrino experiment.
 
 Over the years, different types of radioactive decays have been discovered that can give rise to neutrinos, such as natural and artificial nuclear reactions, supernova events or the spin-down of a neutron star. Furthermore, it has been discovered that there are different leptonic flavours of neutrinos originating from the weak interactions, electron neutrino, muon neutrino and tau neutrino,each flavor is associated with the correspondingly named charged lepton and similar to some other neutral particles, neutrinos oscillate between different flavors in flight as a consequence.
 
@@ -117,7 +119,7 @@ In the pursuit of understanding the universe at its most fundamental level, the 
 
 As it has been mentioned previuously, the HKK project involves research institutes from all over the world, which are in charge of different tasks within the project whether they are related to physics, electronics or any other relevant field. The project tasks have been divided in 7 different FD (Far Detector) groups.
 
-This TFG is developed inside of the FD4 group as our group in the I3M at the UPV belongs to this FD group. FD4 group tasks focus on developing electronics front-end inside the vessel so as to be able to gather information from the sensors, transform it in order to allow the processing unit to process the data properly.
+This TFG is developed inside of the FD4 group as our group in the I3M at the UPV belongs to this FD group. FD4 group tasks focus on developing electronics front-end inside the vessel for the inner detector of the observatory so as to be able to gather information from the sensors, transform it in order to allow the processing unit to process the data properly.
 
 ![Diagram of communication between the different modules of the vessel](/DBP2_App/doc/diag/Bloques_Vasija.jpg)
 <figcaption>Diagram of communication between the different modules of the vessel</figcaption>.
@@ -128,8 +130,6 @@ As it can be seen in the previous figure, the electronics inside the vessel cons
 The UPV is in charge of the development of the DPB focusing on collecting and transmitting information to the DAQ and on employing redundancy to maximise reliability.
 This is because the DBP, being the hub of the front-end electronics inside the vessel, is responsible for communicating all the modules and as the vessel is submerged in water, the electronics must be reliable enough to last for more than 10 years without needing to be removed from the vessel.
 
-# TFG Objectives
-
 
 # Technology which is going to be used
 
@@ -137,14 +137,14 @@ Due to the amount of data we intend to work with and the need to customise our b
 
 The SoM will be integrated on a board designed exclusively for our project with the necessary peripherals. With this SoM implementation, we will enjoy great flexibility and customisation in our design without sacrificing the processing power of a high-performance chip such as the one offered by AMD.
 
-# Initialisation of the environment to be used on the board
+# Initialization of the environment to be used on the board
 Starting with the environment to work on the DPB (Data Processing Board) or DPM (Data Processing Module), we will use PetaLinux, a Xilinx software development tool based on a light version of Linux.
 
 The universal availability of the Linux source code and the infinite number of drivers available in Linux gives us greater flexibility and ease of working at the application level on the DPB.
 
-To implement this operating system (OS) on the DPB we have used the Xilinx software, Vivado, and through the JTAG port we have loaded on a 16 GB eMMC as non-volatile memory, both the relevant boot files and the custom image of the PetaLinux project, then we have selected, from the board, the eMMC as the main boot option. In the boot process, the OS is loaded onto the RAM and the RAM is worked on.
+To implement this operating system (OS) on the DPB we have used the Xilinx software, Vivado, and through the JTAG port we have loaded on a 16 GB eMMC as non-volatile memory, both the relevant boot files and the custom image of the PetaLinux project, then we have selected the eMMC as the main boot option by by means of switches from the board itself. In the boot process, the OS is loaded onto the RAM and the RAM is worked on.
 
-Once the OS has been implemented, the connection with the DPB has to be configured. Despite the possibility of maintaining the connection via JTAG, the main source of communication of the DPB is going to be via Ethernet, so one of the SFP ports of the DPB has been used to make an Ethernet connection with the equipment by means of an SFP transceiver. For this purpose, the configuration of a 125 MHz PLL for the corresponding Ethernet clock signal was included in the customisation of the PetaLinux version.
+Once the OS has been implemented, the connection with the DPB has to be configured. Despite the possibility of maintaining the connection via JTAG, the main source of communication of the DPB is going to be via Ethernet,through SSH protocol, so one of the SFP ports of the DPB has been used to make an Ethernet connection with the equipment by means of an SFP transceiver. For this purpose, the configuration of a 125 MHz PLL for the corresponding Ethernet clock signal was included in the customisation of the PetaLinux version.
 
 
 Once the connection has been configured, a local DHCP server has been set up to assign a fixed IP to the DPB and facilitate the connection via SSH to the board. For this purpose, the subnet has been declared with a very basic configuration on the server:
@@ -189,7 +189,7 @@ As can be seen, the current sensors, the SFP connectors and the temperature sens
 
 # Detailed information about the available sensors and their usefulness for our interests.
 
-Regarding the sensor units available in our DPB we find, as previously mentioned in the I<sup>2</sup>C section, a temperature sensor (MCP9844), several current sensors and voltage monitoring (INA3221) for the SFP transceivers and the SoM and the SFP transceivers themselves that provide us with very relevant information about their operating status and that we should keep track of.
+Regarding the sensor units available in our DPB we find, as previously mentioned in the I<sup>2</sup>C section, a temperature sensor (MCP9844), several current and voltage sensors (INA3221) for the SFP transceivers and the SoM and the SFP transceivers themselves, which provide us with very relevant information about their operating status and that we should keep track of.
 
 ## Current sensors INA3221
 
