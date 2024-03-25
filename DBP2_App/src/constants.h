@@ -1,5 +1,7 @@
 /************************** Constant Definitions *****************************/
-
+#define INA3221_NUM_CHAN 3
+#define AMS_TEMP_NUM_CHAN 3
+#define AMS_VOLT_NUM_CHAN 21
 /******************************************************************************
 * Temperature Sensor Register Set - Temperature value, alarm value and alarm flags.
 ****************************************************************************/
@@ -137,11 +139,12 @@
 #define DEV_SFP3_5_VOLT 0x1
 #define DEV_SOM_VOLT 0x2
 /******************************************************************************
-*Threads timers.
+*Threads timers (ms).
 ****************************************************************************/
 #define MONIT_THREAD_PERIOD 10000000
 #define ALARMS_THREAD_PERIOD 100
 #define AMS_ALARMS_THREAD_PERIOD 20
+#define COMMAND_THREAD_PERIOD 20
 /******************************************************************************
 *Shared Memory.
 ****************************************************************************/
@@ -162,3 +165,31 @@ struct wrapper *memory;
 
 //static int monitoring_thread_count;
 
+/******************************************************************************
+*AMS channel descrpitor.
+****************************************************************************/
+char *ams_channels[] = {
+        "LPD temperature.",
+        "FPD temperature.",
+        "VCC PS LPD voltage.",
+        "VCC PS FPD voltage.",
+        "PS Aux voltage reference.",
+        "DDR I/O VCC voltage.",
+        "PS IO Bank 503 voltage.",
+        "PS IO Bank 500 voltage.",
+        "VCCO_PSIO1 voltage.",
+        "VCCO_PSIO2 voltage.",
+        "VCC_PS_GTR voltage.",
+        "VTT_PS_GTR voltage.",
+        "VCC_PSADC voltage.",
+        "PL temperature.",
+        "PL Internal voltage.",
+        "PL Auxiliary voltage.",
+        "ADC Reference P+ voltage.",
+        "ADC Reference N- voltage.",
+        "PL Block RAM voltage.",
+        "LPD Internal voltage.",
+        "FPD Internal voltage.",
+        "PS Auxiliary voltage.",
+        "PL VCCADC voltage."
+    };

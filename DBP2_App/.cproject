@@ -108,6 +108,8 @@
                                 <option id="xilinx.gnu.c.link.option.libs.1404200938" name="Libraries (-l)" superClass="xilinx.gnu.c.link.option.libs" useByScannerDiscovery="false" valueType="libs">
                                     									
                                     <listOptionValue builtIn="false" value="json-c"/>
+                                    									
+                                    <listOptionValue builtIn="false" value="m"/>
                                     								
                                 </option>
                                 								
@@ -263,9 +265,11 @@
                                     								
                                 </option>
                                 								
-                                <option id="xilinx.gnu.c.link.option.libs.309831043" superClass="xilinx.gnu.c.link.option.libs" useByScannerDiscovery="false" valueType="libs">
+                                <option id="xilinx.gnu.c.link.option.libs.309831043" name="Libraries (-l)" superClass="xilinx.gnu.c.link.option.libs" useByScannerDiscovery="false" valueType="libs">
                                     									
                                     <listOptionValue builtIn="false" value="json-c"/>
+                                    									
+                                    <listOptionValue builtIn="false" value="m"/>
                                     								
                                 </option>
                                 								

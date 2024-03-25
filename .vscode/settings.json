@@ -4,7 +4,7 @@
         "i2c.h": "c",
         "shm.h": "c"
     },
-    "cSpell.language": "es",
+    "cSpell.language": "en-GB",
     "cSpell.words": [
         "alert",
         "Alert",
@@ -17,6 +17,7 @@
         "Contains",
         "conversions",
         "corresponding",
+        "deﬁned",
         "digitalizadoras",
         "distinitos",
         "driver",
@@ -26,6 +27,7 @@
         "equiavale",
         "Ethernet",
         "exceeded",
+        "ﬂavor",
         "fotomultiplicadores",
         "Frames",
         "histéresis",
@@ -57,6 +59,7 @@
         "transceptores",
         "UART",
         "ultrapura",
+        "ultrapure",
         "Upper",
         "Vitis",
         "Vivado",

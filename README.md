@@ -19,12 +19,28 @@
 <h3 align="center">Grado en Ingeniería de Tecnologías y Servicios de Telecomunicación</h3>
 
 # Introduction:TFG Objectives
-It is well known that telecommunications has played a pivotal role in the course of society since its emergence, being a discipline that today is necessary in almost any field, whether day-to-day or professional.
+It is well known that telecommunications has played a pivotal role in the course of society since its emergence, being a discipline that nowadays is necessary in almost everywhere, whether for 2-person telephone communication or for military applications.
 
-Telecommunications encompasses several branches of knowledge, in which I specialise in the field of electronic systems.
-That is why this Final Project of the Degree in Telecommunication Technologies and Services Engineering is a clear evidence of the importance of electronic systems in the advancement of human beings to explore and investigate the behaviour of the universe.
+The field of telecommunications encompasses several branches of knowledge, in which I specialize in the field of electronic systems.
+Therefore, this Final Degree Thesis of the Degree in Telecommunication Technologies and Services Engineering is a clear evidence of the importance of electronic systems in the advancement of human beings to explore and investigate the behaviour of the universe in all of its aspects.
 
-To be continued...
+This Final Degree Thesis is part of the Hyper-Kamiokande (HKK) project, which will be described in more detail in the following sections. It is a massive global project that started in 2018 with around 300 researchers from 15 different countries, and over time the number has grown, which means that project coordination is crucial in the development of the whole project.
+The responsibilities of the UPV form the nucleus of the experiment's electronics, given the module's design originating from the UPV, particularly the Institute for Molecular Imaging Technologies (i3M). This TFG can be seen as a step forward in the development of the Date Processing Board (DPB) software, making use of the tools available and those provided by the HKK project partners. The objectives of this dissertation are summarised in the following list:
+
+- **Develop DPB software** in order to allow us to read the information collected by the sensors, process commands coming from the Data Adquisition Module (DAQ) and transmit the gathered data as packets to the DAQ.
+
+- **Learn how to work in embedded environments** as it is the AMD Vitis software platform, which allow us to develop C or C++ application code that will run on ARM processors. Therefore, we will be able to debug and run code on our DPB System on Module (SoM).
+
+- **Programme software in Linux** for our DPB as it runs on an embedded OS derived from Linux, Petalinux. Therefore to develop software that will run on this OS, Linux drivers will be used and modified if necessary to achieve the desired functionality. The operation and execution flow of the drivers themselves must be understood in order to be used.
+
+- **Develop *slow control* applications** 
+
+- **Create date structures**
+
+- **Managing alarm systems**
+
+- **Test preparation and automation**
+
 
 # The neutrino itself
 
@@ -49,16 +65,16 @@ The discipline that studies the phenomena caused by neutrinos from space encount
 
 ## Hyper-Kamiokande Project (HKK) physical basis and its predecessor Super-Kamiokande
 
-The physics apparatus used to study neutrinos is referred to as a neutrino detector, built to be isolated from any other inﬂuence like cosmic rays or background radiation .These neutrino detectors are huge structures that work following a neutrino detection technique of the existent ones let it be scintillators (like in the Cowan-Reines neutrino experiment), radiochemical methods, radio detectors or Cherenkov light detectors.The experiment that gives name to this chapter is based on the latter: the Cherenkov light detection. 
+The physics apparatus used to study neutrinos is referred to as a neutrino detector, built to be isolated from any other inﬂuence like cosmic rays or background radiation .These neutrino detectors are huge structures that work following a neutrino detection technique of the existent ones let it be scintillators (like in the Cowan-Reines neutrino experiment), radiochemical methods, radio detectors or *Cherenkov light* detectors.The experiment that gives name to this chapter is based on the latter: the *Cherenkov light* detection. 
 
-This detectors are huge water-ﬁlled tanks enriched with deuterium and gadolinium. This medium is ideal for neutrino interaction as the interaction of one of this subatomic particles with the electrons or nuclei of water can produce a charged particle faster than the speed of light in water. This produces a cone of light called Cherenkov light and can be deﬁned as the equivalent of light to a sonic boom in acoustic waves.
+This detectors are huge water-ﬁlled tanks enriched with deuterium and gadolinium. This medium is ideal for neutrino interaction as the interaction of one of this subatomic particles with the electrons or nuclei of water can produce a charged particle faster than the speed of light in water. This produces a cone of light called *Cherenkov light* and can be deﬁned as the equivalent of light to a sonic boom in acoustic waves.
 
 The water tank is surrounded by photosensible sensors called Phototubes, a cell ﬁlled with gas or a vacuum tube sensitive to light. The most used king of phototube is the Photomultipliertube (PMT) due to its high sensitiveness.
 
-This PMT detects the Cherenkov light produced by the neutrino interaction. By sensing the pattern of light many information of the neutrino can be inferred, such as direction, energy and sometimes the ﬂavor information of the incident neutrino.
+This PMT detects the *Cherenkov light* produced by the neutrino interaction. By sensing the pattern of light many information of the neutrino can be inferred, such as direction, energy and sometimes the ﬂavor information of the incident neutrino.
 
-![How a PMT detects Cherenkov Light phenomenon](/DBP2_App/doc/figures/CHERK_LIGHT.png)
-<figcaption>How a PMT detects Cherenkov Light phenomenon</figcaption>.
+![How a PMT detects *Cherenkov light* phenomenon](/DBP2_App/doc/figures/CHERK_LIGHT.png)
+<figcaption>How a PMT detects *Cherenkov light* phenomenon</figcaption>.
 <br>
 
 These detections are exceedingly rare due to the low probability of a neutrino interacting with matter. Therefore, the larger the water tank and the greater the number of PMTs, the more interactions can be detected within the same timeframe.
@@ -452,11 +468,7 @@ This information is differentiated into different channels which are explained i
 |              | 27      | FPD Internal voltage measurement, VCC_PSINTFP (supply5).   | Voltage     | *in_voltage27_raw, in_voltage27_scale*            |
 |              | 28      | PS Auxiliary voltage measurement (supply6).                 | Voltage     | *in_voltage28_raw, in_voltage28_scale*            |
 |              | 29      | PL VCCADC voltage measurement (vccams).                     | Voltage     | *in_voltage29_raw, in_voltage29_scale*            |
-|              | 30      | Differential analog input signal voltage measurment.        | Voltage     | *in_voltage30_raw, in_voltage30_scale*            |
-|              | 31      | VUser0 voltage measurement (supply7).                       | Voltage     | *in_voltage31_raw, in_voltage31_scale*            |
-|              | 32      | VUser1 voltage measurement (supply8).                       | Voltage     | *in_voltage32_raw, in_voltage32_scale*            |
-|              | 33      | VUser2 voltage measurement (supply9).                       | Voltage     | *in_voltage33_raw, in_voltage33_scale*            |
-|              | 34      | VUser3 voltage measurement (supply10).                      | Voltage     | *in_voltage34_raw, in_voltage34_scale*            |
+              
 
 The chart starts from channel 7 as the previous channels are from the AMS CTRL sysmon block and display repeated information from the PL.
 
