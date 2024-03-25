@@ -19,9 +19,9 @@
 <h3 align="center">Grado en Ingeniería de Tecnologías y Servicios de Telecomunicación</h3>
 
 # Introduction:TFG Objectives
-It is well known that telecommunications has played a pivotal role in the course of society since its emergence, being a discipline that nowadays is necessary in almost everywhere, whether for 2-person telephone communication or for military applications.
+It is well known that telecommunications have played a pivotal role in the course of society since its emergence, being a discipline that nowadays is necessary in almost everywhere, whether for 2-person telephone communication or for military applications.
 
-The field of telecommunications encompasses several branches of knowledge, in which I specialize in the field of electronic systems.
+The field of telecommunications encompasses several branches of knowledge, one of them being electronic systems, where I sepcialize.
 Therefore, this Final Degree Thesis of the Degree in Telecommunication Technologies and Services Engineering is a clear evidence of the importance of electronic systems in the advancement of human beings to explore and investigate the behaviour of the universe in all of its aspects.
 
 This Final Degree Thesis is part of the Hyper-Kamiokande (HKK) project, which will be described in more detail in the following sections. It is a massive global project that started in 2018 with around 300 researchers from 15 different countries, and over time the number has grown, which means that project coordination is crucial in the development of the whole project.
@@ -86,9 +86,9 @@ The largest neutrino detector currently in operation is the Super-Kamiokande (SK
 
 ## Structure of the HKK 
 
-Hyper-Kamiokande is a neutrino observatory project still under construction (estimated to start operation in 2027), which takes place in the Kamioka mines in Japan replacing the Super-Kamiokande. Although the project is based in Japan, it involves research institutes from 22 different countries. The aim of the project is to search for anti-neutrinos coming from supernovas, proton decays and detect neutrinos from natural sources such as the Earth, the atmosphere, the Sun and the cosmos, as well as to study neutrino oscillations from the neutrino beam of the artificial accelerator.
+Hyper-Kamiokande is a neutrino detector project still under construction (estimated to start operation in 2027), which takes place in the Kamioka mines in Japan replacing the Super-Kamiokande. Although the project is based in Japan, it involves research institutes from 22 different countries. The aim of the project is to search for anti-neutrinos coming from supernovas, proton decays and detect neutrinos from natural sources such as the Earth, the atmosphere, the Sun and the cosmos, as well as to study neutrino oscillations from the neutrino beam of the artificial accelerator.
 
-Hyper-Kamiokande is planned to be the world's largest neutrino observatory, surpassing its predecessor Super-Kamiokande, which is 71 metres high and 68 metres in diameter. The observatory, filled with ultrapure water, will have about 40,000 photomultiplier tubes as detectors inside the observatory and 10,000 detectors outside the observatory. Although HKK is bigger than SKK, by including almost 4 times the number of PMTs of its predecessor, HKK achieves a 40% photo-cathode coverage, the same as SKK.
+Hyper-Kamiokande is planned to be the world's largest neutrino detector, surpassing its predecessor Super-Kamiokande, which is 71 metres high and 68 metres in diameter. The detector, filled with ultrapure water, will have about 40,000 photomultiplier tubes as detectors inside the detector and 10,000 detectors outside the detector. Although HKK is bigger than SKK, by including almost 4 times the number of PMTs of its predecessor, HKK achieves a 40% photo-cathode coverage, the same as SKK.
 
 
 ![HKK water tank concept sketch](/DBP2_App/doc/figures/HK-Sketch.png)
@@ -103,15 +103,15 @@ The detector design comprises a cylindrical tank with outer dimensions of 78 met
 ![PMT strucutre](/DBP2_App/doc/figures/PMT-str.png)
 <figcaption>PMT strucutre</figcaption>
 <br>
-The PMTs, along with the rest of the electronics, will be housed in hermetically sealed vessels submerged in the water inside the observatory, following the same structure as the SKK.
+The PMTs, along with the rest of the electronics, will be housed in hermetically sealed vessels submerged in the water inside the detector, following the same structure as the SKK.
 
 ![Interior of the vessel](/DBP2_App/doc/figures/Vasija.jpg)
 <figcaption>Interior of the vessel</figcaption>
 <br>
 
-As can be seen in the previous figure, the electronics are concentrated inside the vessel, where the information from the PMTs passes through digitisers to the DPB. The DPB is responsible for communicating the different modules both outside and inside the vessel, it acts as a hub inside the vessel.
+As can be seen in the previous figure, the electronics are concentrated inside the vessel, where the information from the PMTs is sampled in the digitizers and then sent to the DPB. The DPB is responsible for communicating the different modules both outside and inside the vessel, it acts as a hub inside the vessel.
 
-Since the electronics are located in a place that is difficult to access, as it would mean emptying the observatory of water, high reliability is required in this project, at least 10 years. For this reason, robust systems have been chosen and the electronics used must be monitored.
+Since the electronics are located in a place that is difficult to access, as it would mean emptying the detector of water, high reliability is required in this project, at least 10 years. For this reason, robust systems have been chosen and the electronics used must be monitored.
 
 ## HKK objectives
 
@@ -135,32 +135,63 @@ In the pursuit of understanding the universe at its most fundamental level, the 
 
 As it has been mentioned previuously, the HKK project involves research institutes from all over the world, which are in charge of different tasks within the project whether they are related to physics, electronics or any other relevant field. The project tasks have been divided in 7 different FD (Far Detector) groups.
 
-This TFG is developed inside of the FD4 group as our group in the I3M at the UPV belongs to this FD group. FD4 group tasks focus on developing electronics front-end inside the vessel for the inner detector of the observatory so as to be able to gather information from the sensors, transform it in order to allow the processing unit to process the data properly.
+This TFG is developed inside of the FD4 group as our group in the I3M at the UPV belongs to this FD group. FD4 group tasks focus on developing electronics front-end inside the vessel for the inner sensors of the neutrino detector so as to be able to gather information from the sensors, transform it in order to allow the processing unit to process the data properly.
 
 ![Diagram of communication between the different modules of the vessel](/DBP2_App/doc/diag/Bloques_Vasija.jpg)
 <figcaption>Diagram of communication between the different modules of the vessel</figcaption>.
 <br> 
 
-As it can be seen in the previous figure, the electronics inside the vessel consits of high and low voltage modules, digitizers and the DPB, and communicate outside the vessel with the DAQ.
+As it can be seen in the previous figure, the electronics inside the vessel consits of high and low voltage modules used as power supplies for the rest of the components, digitizers and the DPB, and communicate outside the vessel with the DAQ.
 
 The UPV is in charge of the development of the DPB focusing on collecting and transmitting information to the DAQ and on employing redundancy to maximise reliability.
-This is because the DBP, being the hub of the front-end electronics inside the vessel, is responsible for communicating all the modules and as the vessel is submerged in water, the electronics must be reliable enough to last for more than 10 years without needing to be removed from the vessel.
+This is because the DBP, being the hub of the front-end electronics inside the vessel, is responsible for communicating all the modules and as the vessel is submerged in water, the electronics must be reliable enough to last for more than 10 years without needing to be repaired or replaced.
 
 
-# Technology which is going to be used
+# Leveraged technology
 
-Due to the amount of data we intend to work with and the need to customise our board for our application, we have chosen to use a SoM with the AMD Zynq UltraScale+ MPSoC as the processing system, which is combined in the SoM together with logic devices which form a user-programmable logic. The MPSoC includes various controllers such as UART, I2C or eMMC ports which provide communication with the peripherals and integrates a monitoring system for the chip itself and its subsystems. In addition, the Zynq UltraScale+ has support for lightweight operating systems, which can be a great benefit if you take advantage of the functionality of the operating system's own drivers.
+Due to the amount of data we intend to work with and the need to customise our board for our application, we have chosen to use a SoM with the AMD Zynq UltraScale+ MPSoC as the processing system, which is combined in the SoM together with logic devices which form a user-programmable logic. The MPSoC includes various controllers such as UART, I2C or eMMC interfaces which provide communication with the peripherals and integrates a monitoring system for the chip itself and its subsystems. In addition, the Zynq UltraScale+ has support for lightweight operating systems, which can be a great benefit if you take advantage of the functionality of the operating system's own drivers.
 
 The SoM will be integrated on a board designed exclusively for our project with the necessary peripherals. With this SoM implementation, we will enjoy great flexibility and customisation in our design without sacrificing the processing power of a high-performance chip such as the one offered by AMD.
 
-# Initialization of the environment to be used on the board
+# System on Module (SoM) and Data Processing Board (DPB) election
+
+In the realm of embedded systems development, System-on-Module (SoM) technology has emerged as a transformative solution, particularly for academic institutions like universities engaged in research and development projects. SoM refers to a compact, integrated circuit board that encapsulates essential components such as processors, memory, and I/O interfaces within a single package.
+
+## Understanding System-on-Module (SoM)
+
+System-on-Module (SoM) is a comprehensive computing platform condensed into a small, modular package. These modules typically include a microprocessor or System-on-Chip (SoC), memory components (both RAM and ROM), storage options, power management circuitry, and various peripheral interfaces. SoM modules are standardized in form factors such as COM Express, SMARC, and Qseven, facilitating easy integration into diverse hardware configurations.
+
+**Advantages of SoM Technology:**
+
+1. **Cost Efficiency:**
+   - **Reduced Development Costs:** One of the primary advantages of SoM technology for universities lies in its ability to lower development costs. Instead of investing resources in designing custom PCBs and integrating individual components, universities can procure pre-built SoM modules. While the upfront cost of SoM modules may seem higher compared to standalone chips, the overall development expenditure, including labour and prototyping, is significantly reduced.
+   - **Lower Total Cost of Ownership (TCO):** Despite initial investment differences, SoM technology often leads to a lower Total Cost of Ownership (TCO) over the project lifecycle. This is attributed to reduced development time, minimized risk of errors during hardware integration, and streamlined maintenance processes.
+  
+2. **Time Efficiency:**
+   - **Accelerated Development Cycles:** SoM modules expedite the development process by eliminating the need for designing intricate hardware configurations from scratch. This acceleration is particularly beneficial for universities engaged in time-sensitive research projects or academic initiatives with strict deadlines.
+   - **Rapid Prototyping:** SoM technology facilitates rapid prototyping, allowing researchers and students to quickly iterate through design concepts and experiment with various configurations. This agility fosters innovation and enables timely validation of hypotheses.
+
+3. **Risk Mitigation:**
+   - **Enhanced Reliability:** SoM modules undergo rigorous testing and validation procedures during manufacturing, ensuring high levels of reliability and performance. By leveraging pre-tested and validated modules, universities mitigate the risk of hardware failures and associated costs, safeguarding project budgets and timelines.
+   - **Quality Assurance:** SoM vendors adhere to industry standards and quality control measures, providing universities with assurance regarding the integrity and functionality of the modules. This reliability is crucial for academic endeavors where consistency and reproducibility are paramount.
+
+4. **Resource Optimization:**
+   - **Focused Resource Allocation:** By adopting SoM technology, universities can reallocate resources previously dedicated to hardware design towards other aspects of research and development, such as software development, data analysis, and experimentation. This focused resource allocation enhances overall project efficiency and productivity.
+   - **Skills Utilization:** SoM technology reduces the dependency on specialized hardware design expertise within university research teams. Instead, academic resources can be channeled towards leveraging domain-specific knowledge and interdisciplinary collaboration, fostering a conducive environment for innovation and knowledge exchange.
+
+Therefore, as part of a university research institute, it has been decided to commission a specialised company, Enclustra, to manufacture the customised SoM. This avoids possible problems with the manufacturing and welding of the SoM, as this will be taken care of by Enclustra. 
+
+
+# Preparation of the environment to be used on the board
 Starting with the environment to work on the DPB (Data Processing Board) or DPM (Data Processing Module), we will use PetaLinux, a Xilinx software development tool based on a light version of Linux.
 
 The universal availability of the Linux source code and the infinite number of drivers available in Linux gives us greater flexibility and ease of working at the application level on the DPB.
 
-To implement this operating system (OS) on the DPB we have used the Xilinx software, Vivado, and through the JTAG port we have loaded on a 16 GB eMMC as non-volatile memory, both the relevant boot files and the custom image of the PetaLinux project, then we have selected the eMMC as the main boot option by by means of switches from the board itself. In the boot process, the OS is loaded onto the RAM and the RAM is worked on.
+To implement this operating system (OS) on the DPB we have used the Xilinx software, Vivado, and through the JTAG port we have loaded on a 16 GB eMMC as non-volatile memory, both the relevant boot files and the custom image of the PetaLinux project, *image.ub*.  As boot files we find *BOOT.BIN* which is the First Stage Boot Loader and *boot.scr*, which is a script on how to boot up. Then we have selected the eMMC as the main boot option by by means of switches from the board itself. In the boot process, the OS is loaded onto the RAM and the RAM is worked on.
 
-Once the OS has been implemented, the connection with the DPB has to be configured. Despite the possibility of maintaining the connection via JTAG, the main source of communication of the DPB is going to be via Ethernet,through SSH protocol, so one of the SFP ports of the DPB has been used to make an Ethernet connection with the equipment by means of an SFP transceiver. For this purpose, the configuration of a 125 MHz PLL for the corresponding Ethernet clock signal was included in the customisation of the PetaLinux version.
+Once the OS has been implemented, the connection with the DPB has to be configured. Despite the possibility of maintaining the connection via JTAG, the main source of communication of the DPB is going to be via Ethernet,through SSH protocol, so one of the SFP ports of the DPB has been used to make an Ethernet connection with the equipment by means of an SFP transceiver. For this purpose, the configuration of a 125 MHz PLL for the corresponding Ethernet clock signal was included in the customization of the PetaLinux version. 
+
+It should be noted that the main communication with the DPB will be via Ethernet, so the JTAG port after the initial loading of the boot files will only be considered for debugging actions.
 
 
 Once the connection has been configured, a local DHCP server has been set up to assign a fixed IP to the DPB and facilitate the connection via SSH to the board. For this purpose, the subnet has been declared with a very basic configuration on the server:
@@ -183,7 +214,7 @@ To finish with the establishment of the working environment, we only have to cre
 # I<sup>2</sup>C protocol and how it is implemented on our board
 To achieve communication between the different components on the board and the terminal, the I<sup>2</sup>C protocol is used, a communication protocol based on a Master-Slave system where the communication bus is divided into 2 lines, SCL for the clock and SDA for the data, which are connected to a pull-up resistor each, so the default level is high level.
 
-The operation of this protocol consists of the start of the transmission by the Master which jointly indicates the address of the slave to which it is directed with an address of 7 bits (we have sensors that have an address of 6 bits plus a reserved bit that we use to differentiate in a physical way), in addition it is indicated with a bit if the operation to be carried out is reading or writing. The data transmission is guided by the clock line and the data is transmitted in byte size, transmitting from MSB to LSB.
+The operation of this protocol consists of the start of the transmission by the Master which jointly indicates the address of the slave to which it is directed with an address of 7 bits (we have sensors that have an address of 6 bits plus a reserved bit, which can be configurated to differentiate each slave in a physical way), in addition, it is indicated with a bit if the operation to be carried out is reading or writing. The data transmission is guided by the clock line and the data is transmitted in byte size, transmitting from MSB to LSB.
 
 ![I<sup>2</sup>C Address and Data Frames](/DBP2_App/doc/figures/I2C_ADD_DAT_FRAME.png)
 <figcaption>Addressing and data frames I<sup>2</sup>C</figcaption>.
@@ -203,7 +234,7 @@ In the previous block diagram you can see how the I<sup>2</sup>C buses of our DP
 
 As can be seen, the current sensors, the SFP connectors and the temperature sensor that we intend to use all use the I<sup>2</sup>C protocol to communicate. However, the temperature sensor and the current sensors use 16-bit registers, while the SFPs use 1-byte sized registers. The I<sup>2</sup>C protocol carries byte-sized frames, so in the case of 16-bit registers it involves performing 2 consecutive operations (either read or write) on the same register address, whereas for 8-bit registers it will involve a single operation per register address. In our case, the Linux I<sup>2</sup>C driver will make it much easier to perform this type of consecutive operations.
 
-# Detailed information about the available sensors and their usefulness for our interests.
+# Detailed information about the available sensors and their capabilities for slow control tasks.
 
 Regarding the sensor units available in our DPB we find, as previously mentioned in the I<sup>2</sup>C section, a temperature sensor (MCP9844), several current and voltage sensors (INA3221) for the SFP transceivers and the SoM and the SFP transceivers themselves, which provide us with very relevant information about their operating status and that we should keep track of.
 
@@ -253,11 +284,15 @@ For *Shunt Voltage* the full scale range is 163.8 mV and the LSB is 40 $mu$V, in
 <!---
 Registers Temp.Sens
 -->
-The temperature sensor MCP9844 is a great tool to monitor the temperature of the environment where our DPB works, an essential magnitude to ensure a correct conditioning for the operation of our electronics.
+The temperature sensor MCP9844 is a great IC to monitor the temperature of the environment where our DPB works, an essential magnitude to ensure operating conditions within the working range of our electronics.
 
 This temperature sensor provides us with the events tool that facilitates the monitoring of the ambient temperature. The MCP9844 allows us to set temperature limits, only modifiable if enabled in the configuration register, both upper and lower and even critical temperature (only higher than the upper limit). Once the limits have been established, from the configuration register you can enable or disable the events and you can configure the event as an interruption or as a comparison, decide whether the event is active at high or low level and decide whether only the critical temperature limit is taken into account or all the limits are taken into account.
 
 In addition, the sensor has several functionalities such as the option to include a certain hysteresis value to the temperature limits (only applicable in case of temperature drop), the possibility to modify the measurement resolution (lower resolution value will imply a longer conversion time) or the possibility to switch off the sensor if desired.
+
+![Operation of the alarms MCP9844 Temperature Sensor](/DBP2_App/doc/figures/TempSensAlarm.png)
+<figcaption>Operation of the alarms MCP9844 Temperature Sensor</figcaption>
+<br>
 
 Below is a table of the registers presented by this temperature sensor and its default value.
 
@@ -281,12 +316,12 @@ In this case the temperature data is encoded in 2's complement and is presented 
 
 If Temperature $\ge$ 0°C
 $$
-T_{A}(ºC) = (UpperByte * 2^{4} + LowerByte* 2^{4}) 
+T_{A}(ºC) = (UpperByte * 2^{4} + LowerByte* 2^{-4}) 
 $$(2.2.1)
 
 If Temperature < 0°C
 $$
-T_{A}(ºC) = (UpperByte * 2^{4} + LowerByte* 2^{4})-256
+T_{A}(ºC) = (UpperByte * 2^{4} + LowerByte* 2^{-4})-256
 $$(2.2.2)
 
 Where *UpperByte* are bits 15-8 of the T<sub>A</sub> register and *LowerByte* are bits 7-0 of the same register.
@@ -297,7 +332,7 @@ In the case of the temperature limits these are defined by 11 bits, 1 bit determ
 
 Los transceptores SFP de fibra óptica tienen la función principal ser los puertos de comunicación de la placa. These transceivers have an EEPROM memory that is divided into two pages, which correspond to the slave addresses I<sup>2</sup>C 0x50 and 0x51 in our case.
 
-The SFPs collect information on highly relevant real-time quantities and are located on the second page of the EEPROM (0x51), such as the temperature at which they are located, the supply voltage supplied to them, the laser bias current and both the transmitted and received optical power. 
+The SFPs collect information on highly relevant real-time quantities and are located on the second page of the EEPROM (0x51), such as the temperature within the module, the supply voltage supplied to them, the laser bias current and both the transmitted and received optical power. 
 
 On the same second page of the SFP EEPROM is the possibility to use alerts and warnings based on a range already determined by the manufacturer to monitor the status of the SFP transceivers.
 
@@ -438,9 +473,9 @@ As for the registers dedicated to the <i>flags</i>, these contain the indicator 
  
 # Data gathering from AMS, PS and PL SYSMON and channel differentiation
 
-Due to the sensors together with ADC converters with which Xilinx has equipped our module and its system monitoring tools (SYSMON), we can access a large amount of real-time information from the PS and the PL via the linux driver "xilinx-ams". 
+Due to the sensors together with ADC converters with which Xilinx has equipped our module and its system monitoring hardware block (SYSMON), we can access a large amount of real-time information from the PS and the PL via the linux driver "xilinx-ams". This linux driver exports real-time data into files using sysfs, a pseudo file system provided by the Linux kernel which exports information into virtual files. 
 
-This information is differentiated into different channels which are explained in the following table.
+This information collected from the PS and PL is differentiated into different channels which are explained in the following table.
 
 | Sysmon Block | Channel | Details                                                     | Measurement | File Descriptor                    |
 |--------------|---------|-------------------------------------------------------------|-------------|-----------------------------|
@@ -470,11 +505,11 @@ This information is differentiated into different channels which are explained i
 |              | 29      | PL VCCADC voltage measurement (vccams).                     | Voltage     | *in_voltage29_raw, in_voltage29_scale*            |
               
 
-The chart starts from channel 7 as the previous channels are from the AMS CTRL sysmon block and display repeated information from the PL.
+The chart starts from channel 7 as the previous channels are from the AMS CTRL SYSMON block and display repeated information from the PL.
 
-The information obtained is displayed in ADC code in the *_raw* file and has to be scaled with the value obtained in the *_scale* file. In the case of temperature, an offset from the *_offset* file must also be applied. 
+The information obtained is displayed in ADC code in the *_raw* file and has to be scaled with the value obtained in the *_scale* file. In the case of temperature, an offset from the *_offset* file must also be applied. Every file is a virtual file generated by sysfs file system. 
 
-The expressions used to pass the values read to the corresponding magnitude are shown below.
+The expressions used to convert the values read to the corresponding magnitude are shown below.
 
 $$
 V_{XX}(V) = (in\_voltageXX\_raw * in\_voltageXX\_scale) * \frac{1}{2^{n\_bits}}
@@ -486,21 +521,25 @@ $$(3.2)
 
 Where XX defines the selected channel number in voltage or temperature and "n_bits" defines the number of bits of the ADC used, in our case 10 bits. The offset in the case of temperature is added since a negative number is returned.
 
-Xilinx also offers alarms applied to the voltages and temperatures measured on the previously mentioned channels and the Linux driver allows us to configure and read these alarms also using the *iio_event_monitor* tool of Linux itself. In the case of temperature, there are only alarms that are activated if a certain temperature is exceeded, while in the case of voltage, there are alarms for both overvoltage and undervoltage, but without specifying whether the limit exceeded is the lower or upper limit (shown as *either*).
+Xilinx also offers alarms applied to the voltages and temperatures measured on the previously mentioned channels and the Linux driver allows us to configure and read these alarms also using the *IIO_EVENT_MONITOR* tool of Linux itself. *IIO_EVENT_MONITOR* is a generic application from the Linux kernel developed to catch and report different types of events from Industrial Input Output (IIO) devices. In order to detect events or enabling event detection, the *IIO_EVENT_MONITOR* application works with sysfs file system. 
+
+In the case of temperature, there are only alarms that are activated if a certain temperature is exceeded, while in the case of voltage, there are alarms for both overvoltage and undervoltage, but without specifying whether the limit exceeded is the lower or upper limit as the alarm is a single bit, so it does not discriminate between falling or rising event (shown as *either*).
+
+![AMS alarms register set](/DBP2_App/doc/figures/AMS_ALARMS_REG.png)
+<figcaption>AMS alarms register set</figcaption>
+<br>
 
 # Programming
 
 After an exhaustive study of all the sensing elements, the operation of each one, their corresponding characteristics and alerts and the communication channel with these devices, I can start programming the different functions that will allow us to communicate with these devices and configure them to our needs or obtain the desired information.
 
-Regarding the application to be programmed, it has been decided that it will be an application that will have several threads and sub-processes that will allow us to monitor the status of the DPB periodically, control the different alarms that we have and attend to interruptions. The threads will be defined using POSIX threads execution model implemented as [pthreads](https://linux.die.net/man/7/pthreads) in C programming language 
+Regarding the application to be programmed, it has been decided that it will be an application that will have several threads and sub-processes that will allow us to monitor the status of the DPB periodically, control the different alarms that we have and attend to interruptions. The threads will be defined using POSIX threads execution model implemented as [pthreads](https://linux.die.net/man/7/pthreads) in C programming language.All the gathered information will then be transmitted to the DAQ in a JSON format.
 
-
-All the gathered information will then be transmitted to the DAQ in a JSON format. 
-The DAQ will also send configuration commands from the sensors and the application will have to act according to these commands.
+The DAQ will also send configuration commands and the application will have parse and read the command and act according to these commands.
 
 ## Device and AMS alarms initialization
 
-In order to start the application, all the I<sup>2</sup>C devices to be used must be initialized, as well as the IIO_EVENT_MONITOR to be able to receive the alarms coming from the AMS.
+In order to start the application, all the I<sup>2</sup>C devices to be used must be initialized, as well as the *IIO_EVENT_MONITOR* to be able to receive the alarms coming from the AMS.
 
 ```c
 struct DPB_I2cSensors{
@@ -524,7 +563,7 @@ struct DPB_I2cSensors{
 };
 
 ```
-Firstly, every I<sup>2</sup>C device has been gathered and globally defined in a strcut. Then, the following functions have been developed to initialize each of the I<sup>2</sup>C devices:
+Firstly, every I<sup>2</sup>C device has been gathered and globally defined in a struct. Then, the following functions have been developed to initialize each of the I<sup>2</sup>C devices:
 
 ```c
 int init_tempSensor (struct I2cDevice *dev) {
@@ -533,43 +572,11 @@ int init_tempSensor (struct I2cDevice *dev) {
 	uint8_t manID_reg = MCP9844_MANUF_ID_REG;
 	uint8_t devID_buf[2] = {0,0};
 	uint8_t devID_reg = MCP9844_DEVICE_ID_REG;
-
-	rc = i2c_start(dev);  //Start I2C device
-		if (rc) {
-			return rc;
-		}
-	// Write Manufacturer ID address in register pointer
-	rc = i2c_write(dev,&manID_reg,1);
-	if(rc < 0)
-		return rc;
-
-	// Read MSB and LSB of Manufacturer ID
-	rc = i2c_read(dev,manID_buf,2);
-	if(rc < 0)
-			return rc;
-	if(!((manID_buf[0] == 0x00) && (manID_buf[1] == 0x54))){ //Check Manufacturer ID to verify is the right component
-		printf("Manufacturer ID does not match the corresponding device: Temperature Sensor\r\n");
-		return -EINVAL;
-	}
-
-	// Write Device ID address in register pointer
-	rc = i2c_write(dev,&devID_reg,1);
-	if(rc < 0)
-		return rc;
-
-	// Read MSB and LSB of Device ID
-	rc = i2c_read(dev,devID_buf,2);
-	if(rc < 0)
-			return rc;
-	if(!((devID_buf[0] == 0x06) && (devID_buf[1] == 0x01))){//Check Device ID to verify is the right component
-			printf("Device ID does not match the corresponding device: Temperature Sensor\r\n");
-			return -EINVAL;
-	}
-	return 0;
-
-}
+	:
+	:
+	:
 ```
-As it can be seen in the function init_tempSensor(), every I<sup>2</sup>C device is initialized following a simialr strucutre. Firstly, the device is started using the fucntion i2c_start from the I<sup>2</sup>C linux driver, then we check if we are initializing the correct device by checking specific registers and comparing them to their expected value and if any step fails, the function returns ans specifies the error.
+As it can be seen in the function init_tempSensor(), every I<sup>2</sup>C device is initialized following a similar strucutre. Firstly, the device is started using the fucntion i2c_start from the I<sup>2</sup>C linux driver, then we check if we are initializing the correct device by checking specific registers and comparing them to their expected value and if any step fails, the function returns ans specifies the error.
 
 For SFPs, the initialization process is a bit different since each of the two pages of their EEPROM is initialized as an independent devices. Furthermore, we use the checksum contained in the memory pages to verify the proper status of the memory pages.
 
@@ -603,7 +610,7 @@ int checksum_check(struct I2cDevice *dev,uint8_t ini_reg, uint8_t checksum_val, 
 	return 0;
 }
 ```
-In order to verify the cheksums from any SFP, a function was needed that calculates the current checksum value and compares it to the expected value. So as to calcualte the checksum, the function needs to be given the I<sup>2</sup>C device, the address of the first register to be counted in the checksum calculation, the expected checksum value and the amount of registers to be counted in the checksum calculation.
+In order to verify the checksums from any SFP, a function was needed that calculates the current checksum value and compares it to the expected value. So as to calculate the checksum, the function needs to be given the I<sup>2</sup>C device, the address of the first register to be counted in the checksum calculation, the expected checksum value and the amount of registers to be counted in the checksum calculation.
 
 The function sums every register in the given range, and only takes the 8 LSB as the SFP registers size is 1 byte. 
 
@@ -628,7 +635,7 @@ int stop_I2cSensors(struct DPB_I2cSensors *data){
 ```
 It has also been developed the stop_I2cSensors function to termiante the I<sup>2</sup>C devices by using I<sup>2</sup>C linux driver function i2c_stop(), even though it is not exepcted to be used as the application should be permantently active.
 
-Regarding the IIO_EVENT_MONITOR initialization, it has been executed as a subprocess that will detect AMS alarms as events and it is executed by the following function:
+Regarding the *IIO_EVENT_MONITOR* initialization, it has been executed as a subprocess that will detect AMS alarms as events and it is executed by the following function:
 
 ```c
 int iio_event_monitor_up() {
@@ -655,7 +662,7 @@ int iio_event_monitor_up() {
     return 0;
 }
 ```
-This function executes an IIO_EVENT_MONITOR through its release file. It should be emphasised that this IIO_EVENT_MONITOR is slightly customized by us so as to include shared memory configuration to communicate the main application with it.
+This function executes the *IIO_EVENT_MONITOR* application through its release file. It should be emphasized that this *IIO_EVENT_MONITOR* is slightly customized by us so as to include shared memory configuration to communicate the main application with it.
 
 At first, it was recommended to use the function system() to execute the process as it was a bash script. Nevertheless, it did not resulted as expected so it was decided to use the function [execvp()](https://linux.die.net/man/3/execvp), which also provides us with a more visual and convenient way of passing the necessary arguments to the function. 
 
@@ -669,41 +676,45 @@ In order to read from the SFPs, I used the function i2c_readn_reg() which is an 
 
 Regarding the data provided by the AMS, we obtain them in ADC code by calling a function that will access the sysfs files generated by the "xilinx-ams" driver, and the final magnitude is obtained by applying the conversion explained in the chapter "Data gathering from AMS, PS and PL SYSMON and channel differentiation" depending on whether we are dealing with voltage or temperature.
 
-Every periodic iteration of this thread will store the gathered data and send it in a packet to the DAQ but with less priority than the alarms.
+Every periodic iteration of this thread will store the gathered data and send it in a packet to the DAQ but with less frequency than the alarms.
  
 ## Alarms threads
 
-After developing the monitoring periodic thread, the same periodic structure has been followed for the development of the alarm threads. However, the period will be much shorter than in the monitoring thread as detcting any alarm is much more critical.
+After developing the monitoring periodic thread, the same periodic structure has been followed for the development of the alarm threads. However, the period will be much shorter than in the monitoring thread as detecting any alarm is much more critical.
 
-It has been decided to divide the alarm thread in two different threads, one for the I<sup>2</sup>C devices and the other for the AMS alarms. This decision has been made since the I<sup>2</sup>C devices detect alarm information by reading from a log while the AMS detects it through the IIO_EVENT_MONITOR subprocess. Furthermore, the conversion time of the I<sup>2</sup>C devices restricted the alarm triggering of the AMS too much. Therefore, the period of each thread has been set depending on the most restrivtive conversion time.
+It has been decided to divide the alarm thread in two different threads, one for the I<sup>2</sup>C devices and the other for the AMS alarms. This decision has been made since the I<sup>2</sup>C devices detect alarm information by reading from a log while the AMS detects it through the *IIO_EVENT_MONITOR* subprocess. Furthermore, the conversion time of the I<sup>2</sup>C devices restricted the alarm triggering of the AMS too much. Therefore, the period of each thread has been set depending on the most restrivtive conversion time.
 
-Regarding the I<sup>2</sup>C devices alarms thread, it has been necessary to use a POSIX sempahore, [sempahore](https://pubs.opengroup.org/onlinepubs/009695399/basedefs/semaphore.h.html), to synchronize the I<sup>2</sup>C bus usage and avoid race condition between any other thread.
+Regarding the I<sup>2</sup>C devices alarms thread, it has been necessary to use a POSIX sempahore, [semaphore](https://pubs.opengroup.org/onlinepubs/009695399/basedefs/semaphore.h.html), to synchronize the I<sup>2</sup>C bus usage and avoid race condition between any other thread.
 
-Regarding the functioning of the thread, it calls functions that read the flags registers of the I<sup>2</sup>C devices and check if there is an active flag, clean it if necessary and depending on which flag is activated, the event is communicated to the DAQ. The format for sending alarms from either I<sup>2</sup>C or AMS devices is as follows:
+Regarding the operation of the thread, it calls functions that read the flags registers of the I<sup>2</sup>C devices and check if there is an active flag, clean it if necessary and depending on which flag is activated, the event is communicated to the DAQ. The format for sending alarms from either I<sup>2</sup>C or AMS devices is as follows:
 
  - **Chip:** Indicate which chip has asserted the alarm.
   
 - **Event type:** Indicates if the event is critical or or just a warning that the upper (rising) or lower (falling) limit has been surpassed
   
-- **Timestamp:** Indicates in seconds from the first of January of 1970 the time the event has occurred.
+- **Timestamp:** Indicates in seconds from the first of January of 1970 (UNIX timestamp) the time the event has occurred.
   
-- **Channel type:** Indicates the amgnitude that is measured through the channel.
+- **Channel type:** Indicates the magnitude that is measured through the channel.
   
 - **Channel:** Number of channel, 1 if there is only one channel.
 
 - **Value:** Current value of the magnitude that has triggered the alarm.
 <br>
 
-In order to develop the AMS alarms thread, we fisrtly need the linux kernel tool IIO_EVENT_MONITOR, a generic application to detect events coming from IIO devices, which working along the "xilinx-ams" driver allows us to catch AMS alarms. For this purpose, the IIO_EVENT_MONITOR has been modified in order to be able to transmit the detected event information to our main application.
+In order to develop the AMS alarms thread, we firstly need the Linux kernel tool *IIO_EVENT_MONITOR*, a generic application to detect events coming from IIO devices, which working along the "xilinx-ams" driver allows us to catch AMS alarms. For this purpose, the *IIO_EVENT_MONITOR* has been modified in order to be able to transmit the detected event information to our main application.
 
-First of all, a segment of shared memory has been established between the main application and the IIO_EVENT_MONITOR sub-process to transmit the necessary event information and set up semaphores to synchronise sub-process and thread. One semaphore is used to force the AMS alarm thread to start IIO_EVENT_MONITOR, and the other semaphore is used to indicate to the alarm thread that an event has been detected and the thread will handle it accordingly. 
+First of all, a segment of shared memory has been established between the main application and the *IIO_EVENT_MONITOR* sub-process to transmit the necessary event information and set up semaphores to synchronise sub-process and thread. One semaphore is used to force the AMS alarm thread to start *IIO_EVENT_MONITOR*, and the other semaphore is used to indicate to the alarm thread that an event has been detected and the thread will handle it accordingly. 
 
-As the IIO_EVENT_MONITOR do not provide us the value of the magnitude that has triggered the alarm and do not differenciate rising and falling voltage events, the thread takes care of this.
+As the *IIO_EVENT_MONITOR* does not provide us the value of the magnitude that has triggered the alarm and does not differenciate rising and falling voltage events, the thread takes care of this.
 
 It should be noted that in the process of debugging this thread, several bugs have been detected in the "xilinx-ams" driver that we have solved to ensure the correct functioning of our application.
 
 The first encountered bug is due to the driver masking an alarm when it is triggered so that it is not detected again until it has been previously reset to normal values to avoid the same alarm going off constantly. However, the unmasking process proposed an impossible situation and did not allow an alarm to go off more than once despite a previous reset as it should work. By modifying several logical operations, the problem was solved without affecting its performance.
 
 The other problem we found was a lack of functionality of the driver, since the AMS by default enables hysteresis for the temperature alarm and the lower limit places it at 0 degrees. The problem is that the driver does not allow you to modify the lower limit or disable hysteresis, so it only allowed you to enable temperature alarms once. We made the decision to disable hysteresis from the driver since it does not suit our application and with this we find the desired operation of the AMS alarms
+
+![Difference between AMS temperature alarm with hysteresis on and hysteresis off](/DBP2_App/doc/figures/Operation_ams_alarm.png)
+<figcaption>Difference between AMS temperature alarm with hysteresis on and hysteresis off</figcaption>
+<br>
 
 
