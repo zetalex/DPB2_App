@@ -1867,7 +1867,32 @@ int alarm_json (json_object *jobj,char *chip,char *ev_type, int chan, float val,
 
 	return 0;
 }
+/************************** External monitoring(via GPIO) functions ******************************/
+/**
+ * Checks from GPIO if Ethernet Links status and reports it
+ *
+ * @param void *arg: must contain a struct with every I2C device that wants to be monitored
+ *
+ * @return  0 if link is OK, if not negative integer
+ */
+int eth_link_status ()
+{
 
+	return 0;
+	}
+
+/**
+ * Checks from GPIO if Auroras Links status and reports it
+ *
+ * @param void *arg: must contain a struct with every I2C device that wants to be monitored
+ *
+ * @return  0 if link is OK, if not negative integer
+ */
+int aurora_link_status ()
+{
+
+	return 0;
+	}
 
 /************************** Threads declaration ******************************/
 
