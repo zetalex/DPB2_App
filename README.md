@@ -21,7 +21,7 @@
 # Introduction:TFG Objectives
 It is well known that telecommunications have played a pivotal role in the course of society since its emergence, being a discipline that nowadays is necessary in almost everywhere, whether for 2-person telephone communication or for military applications.
 
-The field of telecommunications encompasses several branches of knowledge, one of them being electronic systems, where I sepcialize.
+The field of telecommunications encompasses several branches of knowledge, one of them being electronic systems, where I specialize.
 Therefore, this Final Degree Thesis of the Degree in Telecommunication Technologies and Services Engineering is a clear evidence of the importance of electronic systems in the advancement of human beings to explore and investigate the behaviour of the universe in all of its aspects.
 
 This Final Degree Thesis is part of the Hyper-Kamiokande (HKK) project, which will be described in more detail in the following sections. It is a massive global project that started in 2018 with around 300 researchers from 15 different countries, and over time the number has grown, which means that project coordination is crucial in the development of the whole project.
@@ -33,13 +33,13 @@ The responsibilities of the UPV form the nucleus of the experiment's electronics
 
 - **Programme software in Linux** for our DPB as it runs on an embedded OS derived from Linux, Petalinux. Therefore to develop software that will run on this OS, Linux drivers will be used and modified if necessary to achieve the desired functionality. The operation and execution flow of the drivers themselves must be understood in order to be used.
 
-- **Develop *slow control* applications** 
+- **Develop *slow control* applications** with the aim of precisely monitoring and managing low-frequency signals or events from the DPB, prioritizing stability and accuracy over real-time responsiveness.
 
-- **Create date structures**
+- **Create date structures** by using JavaScript Object Notation (JSON) format so as to parse the gathered information and be able to communicate with the DAQ by following these data structures.
 
-- **Managing alarm systems**
+- **Manage alarm systems** asserted by the sensing components in the board so as to be able to act and report in case any of the components are in an undesired working area and may compromise the operation or reliability of the DPB. 
 
-- **Test preparation and automation**
+- **Test preparation and automation** using the Robot framework for testing the mass production of boards (about 900 will be produced for the detector). The aim is to integrate the previously designed software into the test software and to prepare and enumerate the test cases in the Robot framework in order to be able to verify all necessary test cases automatically.
 
 
 # The neutrino itself
@@ -278,7 +278,7 @@ Current.Sens
 <br>
 
 It is worth mentioning that all voltage data is given in 2's complement and uses 13 bits, bit 15 of the register (MSB) determines the sign and bit 14-3 the voltage data.
-For *Shunt Voltage* the full scale range is 163.8 mV and the LSB is 40 $mu$V, in the case of *Bus Voltage* the LSB is 8 mV and although the full scale range of the ADC is 32.76 V, the full scale range in the case of *Bus Voltage* is 26 V since it is not recommended to apply more voltage.
+For *Shunt Voltage* the full scale range is 163.8 mV and the LSB is 40 µV, in the case of *Bus Voltage* the LSB is 8 mV and although the full scale range of the ADC is 32.76 V, the full scale range in the case of *Bus Voltage* is 26 V since it is not recommended to apply more voltage.
 
 ## Temperature sensor MCP9844
 <!---
@@ -473,7 +473,7 @@ As for the registers dedicated to the <i>flags</i>, these contain the indicator 
  
 # Data gathering from AMS, PS and PL SYSMON and channel differentiation
 
-Due to the sensors together with ADC converters with which Xilinx has equipped our module and its system monitoring hardware block (SYSMON), we can access a large amount of real-time information from the PS and the PL via the linux driver "xilinx-ams". This linux driver exports real-time data into files using sysfs, a pseudo file system provided by the Linux kernel which exports information into virtual files. 
+Due to the sensors together with ADC converters with which Xilinx has equipped our module and its system monitoring hardware block (SYSMON), we can access a large amount of real-time information from the PS and the PL via the Linux driver "xilinx-ams". This Linux driver exports real-time data into files using *sysfs*, a pseudo file system provided by the Linux kernel which exports information into virtual files. 
 
 This information collected from the PS and PL is differentiated into different channels which are explained in the following table.
 
@@ -507,7 +507,7 @@ This information collected from the PS and PL is differentiated into different c
 
 The chart starts from channel 7 as the previous channels are from the AMS CTRL SYSMON block and display repeated information from the PL.
 
-The information obtained is displayed in ADC code in the *_raw* file and has to be scaled with the value obtained in the *_scale* file. In the case of temperature, an offset from the *_offset* file must also be applied. Every file is a virtual file generated by sysfs file system. 
+The information obtained is displayed in ADC code in the *_raw* file and has to be scaled with the value obtained in the *_scale* file. In the case of temperature, an offset from the *_offset* file must also be applied. Every file is a virtual file generated by the *sysfs* file system. 
 
 The expressions used to convert the values read to the corresponding magnitude are shown below.
 
@@ -521,7 +521,7 @@ $$(3.2)
 
 Where XX defines the selected channel number in voltage or temperature and "n_bits" defines the number of bits of the ADC used, in our case 10 bits. The offset in the case of temperature is added since a negative number is returned.
 
-Xilinx also offers alarms applied to the voltages and temperatures measured on the previously mentioned channels and the Linux driver allows us to configure and read these alarms also using the *IIO_EVENT_MONITOR* tool of Linux itself. *IIO_EVENT_MONITOR* is a generic application from the Linux kernel developed to catch and report different types of events from Industrial Input Output (IIO) devices. In order to detect events or enabling event detection, the *IIO_EVENT_MONITOR* application works with sysfs file system. 
+Xilinx also offers alarms applied to the voltages and temperatures measured on the previously mentioned channels and the Linux driver allows us to configure and read these alarms also using the *IIO_EVENT_MONITOR* tool of Linux itself. *IIO_EVENT_MONITOR* is a generic application from the Linux kernel developed to catch and report different types of events from Industrial Input Output (IIO) devices. In order to detect events or enabling event detection, the *IIO_EVENT_MONITOR* application works with the *sysfs* file system. 
 
 In the case of temperature, there are only alarms that are activated if a certain temperature is exceeded, while in the case of voltage, there are alarms for both overvoltage and undervoltage, but without specifying whether the limit exceeded is the lower or upper limit as the alarm is a single bit, so it does not discriminate between falling or rising event (shown as *either*).
 
@@ -576,7 +576,7 @@ int init_tempSensor (struct I2cDevice *dev) {
 	:
 	:
 ```
-As it can be seen in the function init_tempSensor(), every I<sup>2</sup>C device is initialized following a similar strucutre. Firstly, the device is started using the fucntion i2c_start from the I<sup>2</sup>C linux driver, then we check if we are initializing the correct device by checking specific registers and comparing them to their expected value and if any step fails, the function returns ans specifies the error.
+As it can be seen in the function init_tempSensor(), every I<sup>2</sup>C device is initialized following a similar strucutre. Firstly, the device is started using the fucntion i2c_start from the I<sup>2</sup>C Linux driver, then we check if we are initializing the correct device by checking specific registers and comparing them to their expected value and if any step fails, the function returns ans specifies the error.
 
 For SFPs, the initialization process is a bit different since each of the two pages of their EEPROM is initialized as an independent devices. Furthermore, we use the checksum contained in the memory pages to verify the proper status of the memory pages.
 
@@ -633,7 +633,7 @@ int stop_I2cSensors(struct DPB_I2cSensors *data){
     :
     :
 ```
-It has also been developed the stop_I2cSensors function to termiante the I<sup>2</sup>C devices by using I<sup>2</sup>C linux driver function i2c_stop(), even though it is not exepcted to be used as the application should be permantently active.
+It has also been developed the stop_I2cSensors function to termiante the I<sup>2</sup>C devices by using I<sup>2</sup>C Linux driver function i2c_stop(), even though it is not exepcted to be used as the application should be permantently active.
 
 Regarding the *IIO_EVENT_MONITOR* initialization, it has been executed as a subprocess that will detect AMS alarms as events and it is executed by the following function:
 
@@ -674,7 +674,7 @@ In order to be able to read information from the I<sup>2</sup>C sensors by using
 
 In order to read from the SFPs, I used the function i2c_readn_reg() which is an implicit combination of i2c_write() to write in the register pointer and i2c_read(). As the SFPs do not allow continuous reading and their register size is 1 byte, i2c_readn_reg() has been used two times to read MSB and LSB of the desired data and it has been specified the the appropriate register address for each operation.
 
-Regarding the data provided by the AMS, we obtain them in ADC code by calling a function that will access the sysfs files generated by the "xilinx-ams" driver, and the final magnitude is obtained by applying the conversion explained in the chapter "Data gathering from AMS, PS and PL SYSMON and channel differentiation" depending on whether we are dealing with voltage or temperature.
+Regarding the data provided by the AMS, we obtain them in ADC code by calling a function that will access the *sysfs* files generated by the "xilinx-ams" driver, and the final magnitude is obtained by applying the conversion explained in the chapter "Data gathering from AMS, PS and PL SYSMON and channel differentiation" depending on whether we are dealing with voltage or temperature.
 
 Every periodic iteration of this thread will store the gathered data and send it in a packet to the DAQ but with less frequency than the alarms.
  
