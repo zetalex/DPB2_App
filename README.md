@@ -101,7 +101,7 @@ Hyper-Kamiokande is planned to be the world's largest neutrino detector, surpass
 The detector design comprises a cylindrical tank with outer dimensions of 78 meters in height and 68 meters in diameter. It is filled with 260,000 metric tons of ultrapure water to create a water Cherenkov detector. This tank will be surrounded by highly sensitive photodetectors, which boast a 50% higher efficiency compared to the SKK ones, thus allowing for greater precision in measuring light intensity and detection time. These photomultiplier tubes (PMTs), specifically the Hamatsu R12860 model, will enhance the detection of signatures such as those produced in neutrino interactions. Consequently, this setup will enable researchers to more accurately measure the direction and velocity of neutrinos passing through the detector.
 
 ![PMT strucutre](/DBP2_App/doc/figures/PMT-str.png)
-<figcaption>PMT strucutre</figcaption>
+<figcaption>PMT structure</figcaption>
 <br>
 The PMTs, along with the rest of the electronics, will be housed in hermetically sealed vessels submerged in the water inside the detector, following the same structure as the SKK.
 
