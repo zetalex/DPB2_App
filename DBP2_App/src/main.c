@@ -18,6 +18,8 @@
 #include <time.h>
 #include "json-c/json.h"
 #include <math.h>
+ #include <dirent.h>
+#include <regex.h>
 
 #include "i2c.h"
 #include "constants.h"
@@ -85,8 +87,11 @@ int ina3221_warning_interruptions(struct DPB_I2cSensors *,uint16_t , int );
 int ina3221_read_alarms(struct DPB_I2cSensors *,int);
 int ina3221_set_limits(struct DPB_I2cSensors *,int ,int ,int  ,float );
 int ina3221_set_config(struct DPB_I2cSensors *,uint8_t *,uint8_t *, int );
-int parsing_mon_data_into_array (json_object *,float , char *, int );
+int parsing_mon_sensor_data_into_array (json_object *,float , char *, int );
+int parsing_mon_status_data_into_array (json_object *, int , char *);
 int alarm_json (json_object *,char *,char *, int , float ,int32_t ,char *);
+int get_GPIO_base_address(int *);
+int eth_link_status (char *,int *);
 static void *monitoring_thread(void *);
 static void *i2c_alarms_thread(void *);
 static void *ams_alarms_thread(void *);
@@ -1798,7 +1803,7 @@ int ina3221_set_config(struct DPB_I2cSensors *data,uint8_t *bit_ena,uint8_t *bit
  *
  * @return: 0
  */
-int parsing_mon_data_into_array (json_object *jarray,float val, char *magnitude, int chan)
+int parsing_mon_sensor_data_into_array (json_object *jarray,float val, char *magnitude, int chan)
 {
 	json_object * jobj = json_object_new_object();
 	char buffer[8];
@@ -1812,6 +1817,34 @@ int parsing_mon_data_into_array (json_object *jarray,float val, char *magnitude,
 	if (chan != 99)
 		json_object_object_add(jobj,"channel", jint);
 	json_object_object_add(jobj,"value", jdouble);
+
+	json_object_array_add(jarray,jobj);
+
+	return 0;
+}
+/**
+ * Parses monitoring status data into a JSON array so as to include it in a JSON object
+ *
+ * @param json_object *jarray: JSON array in which the data will be stored
+ * @param int status: Value of the status
+ * @param char *magnitude: Name of the measured magnitude/interface
+ *
+ * @return: 0
+ */
+int parsing_mon_status_data_into_array (json_object *jarray, int status, char *magnitude)
+{
+	json_object * jobj = json_object_new_object();
+	json_object *jstatus ;
+
+	json_object *jstring = json_object_new_string(magnitude);
+	if(status == 1)
+		jstatus = json_object_new_string("ON");
+	else if (status == 0)
+		jstatus = json_object_new_string("OFF");
+
+	json_object_object_add(jobj,"magnitudename", jstring);
+
+	json_object_object_add(jobj,"value", jstatus);
 
 	json_object_array_add(jarray,jobj);
 
@@ -1867,18 +1900,127 @@ int alarm_json (json_object *jobj,char *chip,char *ev_type, int chan, float val,
 
 	return 0;
 }
+/************************** GPIO functions ******************************/
+/**
+ * Gets GPIO base address
+ *
+ * @param int *address: Returns GPIO base address plus corresponding offset
+ *
+ * @return: 0
+ */
+int get_GPIO_base_address(int *address){
+
+	char GPIO_dir[64] = "/sys/class/gpio/";
+	regex_t r1;
+	DIR *dp;
+	FILE *GPIO;
+
+	int data = 0;
+	int i = 0;
+	char *arr[8];
+	long bytes = 0;
+	char label_str[64];
+	struct dirent *entry;
+	dp = opendir (GPIO_dir);
+
+	data = regcomp(&r1, "gpiochip.*", 0);
+
+
+	while ((entry = readdir (dp)) != NULL){
+		data = regexec(&r1, entry->d_name, 0, NULL, 0);
+		if(data == 0){
+			arr[i] = entry->d_name;
+			i++;
+		}
+	}
+	for(int j=0; j<i; j++){
+
+		strcat(GPIO_dir,arr[j]);
+		strcat(GPIO_dir,"/label");
+		GPIO = fopen(GPIO_dir,"r");
+
+		strcpy(GPIO_dir,"/sys/class/gpio/");
+		fread(label_str, sizeof(label_str), 1, GPIO);
+		fwrite(label_str, bytes, 1, stdout);
+		if(!(strcmp(label_str,"zynqmp_gpio\n"))){
+		    	fclose(GPIO);
+		    	strcat(GPIO_dir,arr[j]);
+		    	strcat(GPIO_dir,"/base");
+		    	GPIO = fopen(GPIO_dir,"r");
+		    	fseek(GPIO, 0, SEEK_END);
+		    	long fsize = ftell(GPIO);
+		    	fseek(GPIO, 0, SEEK_SET);  /* same as rewind(f); */
+
+		    	char *add_string = malloc(fsize + 1);
+		    	fread(add_string, fsize, 1, GPIO);
+		    	address[0] = (int) atof(add_string) + 78 ;
+				fclose(GPIO);
+				break;
+			}
+		fclose(GPIO);
+	}
+	return 0;
+}
+
+/**
+ * Gets GPIO base address
+ *
+ * @param int *address: Returns GPIO base address plus corresponding offset
+ *
+ * @return: 0
+ */
+int write_GPIO(int *address){
+
+
+	return 0;
+}
+
+/**
+ * Gets GPIO base address
+ *
+ * @param int *address: Returns GPIO base address plus corresponding offset
+ *
+ * @return: 0
+ */
+int read_GPIO(int *address){
+
+
+	return 0;
+}
+
 /************************** External monitoring(via GPIO) functions ******************************/
 /**
  * Checks from GPIO if Ethernet Links status and reports it
  *
- * @param void *arg: must contain a struct with every I2C device that wants to be monitored
+ * @param char *eth_interface: Name of the Ethernet interface
+ * @param int status: value of the Ethernet interface status
  *
  * @return  0 if link is OK, if not negative integer
  */
-int eth_link_status ()
+int eth_link_status (char *eth_interface, int *status)
 {
+	char eth_link[64];
+	FILE *link_file;
+	long bytes;
 
+	char cmd[64] = "ethtool ";
+
+	strcat(cmd,eth_interface);
+	strcat(cmd," | grep 'Link detected'");
+
+	link_file = popen(cmd, "r");
+	while ((bytes=fread(eth_link, sizeof(eth_link), 1, link_file))>0)
+	    fwrite(eth_link, bytes, 1, stdout);
+
+	strtok("Link detected: ",eth_link);
+	if((strcmp(eth_link,"yes")) == 0)
+		status[0] = 1;
+	else if((strcmp(eth_link,"no")) == 0)
+		status[0] = 0;
+	else
+		return -EINVAL;
 	return 0;
+
 	}
 
 /**
@@ -1908,6 +2050,8 @@ static void *monitoring_thread(void *arg)
 	struct periodic_info info;
 	int rc ;
 	struct DPB_I2cSensors *data = arg;
+
+	int eth_status[2];
 
 	char *curr;
 	char *volt;
@@ -2172,6 +2316,16 @@ static void *monitoring_thread(void *arg)
 			printf("Error\r\n");
 			return NULL;
 		}
+		rc = eth_link_status("eth0",&eth_status[0]);
+		if (rc) {
+			printf("Error\r\n");
+			return NULL;
+		}
+		rc = eth_link_status("eth1",&eth_status[1]);
+		if (rc) {
+			printf("Error\r\n");
+			return NULL;
+		}
 
 		json_object * jobj = json_object_new_object();
 		json_object *jdata = json_object_new_object();
@@ -2181,34 +2335,37 @@ static void *monitoring_thread(void *arg)
 		json_object *jdig1 = json_object_new_array();
 		json_object *jdpb = json_object_new_array();
 
-		parsing_mon_data_into_array(jdpb,temp[0],"PCB Temperature",99);
+		parsing_mon_status_data_into_array(jdpb,eth_status[0],"Main Ethernet Link Status");
+		parsing_mon_status_data_into_array(jdpb,eth_status[1],"Backup Ethernet Link Status");
 
-		parsing_mon_data_into_array(jdpb,sfp_temp_0[0],"SFP Temperature",0);
+		parsing_mon_sensor_data_into_array(jdpb,temp[0],"PCB Temperature",99);
+
+		parsing_mon_sensor_data_into_array(jdpb,sfp_temp_0[0],"SFP Temperature",0);
 		//parsing_mon_data_into_array(jdpb,sfp_vcc_0[0],"SFP Supply Voltage",0);
-		parsing_mon_data_into_array(jdpb,sfp_txbias_0[0],"SFP Laser Bias Current",0);
-		parsing_mon_data_into_array(jdpb,sfp_txpwr_0[0],"SFP Tx Optical Power",0);
-		parsing_mon_data_into_array(jdpb,sfp_rxpwr_0[0],"SFP Rx Optical Power",0);
+		parsing_mon_sensor_data_into_array(jdpb,sfp_txbias_0[0],"SFP Laser Bias Current",0);
+		parsing_mon_sensor_data_into_array(jdpb,sfp_txpwr_0[0],"SFP Tx Optical Power",0);
+		parsing_mon_sensor_data_into_array(jdpb,sfp_rxpwr_0[0],"SFP Rx Optical Power",0);
 
-		parsing_mon_data_into_array(jdpb,ams_temp[0],ams_channels[0],99);
-		parsing_mon_data_into_array(jdpb,ams_temp[1],ams_channels[1],99);
-		parsing_mon_data_into_array(jdpb,ams_temp[2],ams_channels[13],99);
+		parsing_mon_sensor_data_into_array(jdpb,ams_temp[0],ams_channels[0],99);
+		parsing_mon_sensor_data_into_array(jdpb,ams_temp[1],ams_channels[1],99);
+		parsing_mon_sensor_data_into_array(jdpb,ams_temp[2],ams_channels[13],99);
 
 		for(int n = 0; n<AMS_VOLT_NUM_CHAN;n++){
 			if(n != 11){
-				parsing_mon_data_into_array(jdpb,ams_volt[n],ams_channels[n+2],99);	}
+				parsing_mon_sensor_data_into_array(jdpb,ams_volt[n],ams_channels[n+2],99);	}
 		}
 
 		for(int j=0;j<INA3221_NUM_CHAN;j++){
 			pwr_array[j] = volt_sfp0_2[j]*curr_sfp0_2[j];
-			parsing_mon_data_into_array(jdpb,volt_sfp0_2[j],"SFP Voltage",j);
-			parsing_mon_data_into_array(jdpb,curr_sfp0_2[j],"SFP Current",j);
-			parsing_mon_data_into_array(jdpb,pwr_array[j],"SFP Power",j);
+			parsing_mon_sensor_data_into_array(jdpb,volt_sfp0_2[j],"SFP Voltage",j);
+			parsing_mon_sensor_data_into_array(jdpb,curr_sfp0_2[j],"SFP Current",j);
+			parsing_mon_sensor_data_into_array(jdpb,pwr_array[j],"SFP Power",j);
 		}
 		for(int k=0;k<INA3221_NUM_CHAN;k++){
 			pwr_array[k] = volt_sfp3_5[k]*curr_sfp3_5[k];
-			parsing_mon_data_into_array(jdpb,volt_sfp3_5[k],"SFP Voltage",k+3);
-			parsing_mon_data_into_array(jdpb,curr_sfp3_5[k],"SFP Current",k+3);
-			parsing_mon_data_into_array(jdpb,pwr_array[k],"SFP Power",k+3);
+			parsing_mon_sensor_data_into_array(jdpb,volt_sfp3_5[k],"SFP Voltage",k+3);
+			parsing_mon_sensor_data_into_array(jdpb,curr_sfp3_5[k],"SFP Current",k+3);
+			parsing_mon_sensor_data_into_array(jdpb,pwr_array[k],"SFP Power",k+3);
 		}
 		for(int l=0;l<INA3221_NUM_CHAN;l++){
 			switch(l){
@@ -2233,9 +2390,9 @@ static void *monitoring_thread(void *arg)
 				pwr = "SoM Power (+12V)";
 			break;
 			}
-			parsing_mon_data_into_array(jdpb,volt_som[l],volt,99);
-			parsing_mon_data_into_array(jdpb,curr_som[l],curr,99);
-			parsing_mon_data_into_array(jdpb,curr_som[l]*volt_som[l],pwr,99);
+			parsing_mon_sensor_data_into_array(jdpb,volt_som[l],volt,99);
+			parsing_mon_sensor_data_into_array(jdpb,curr_som[l],curr,99);
+			parsing_mon_sensor_data_into_array(jdpb,curr_som[l]*volt_som[l],pwr,99);
 		}
 
 		json_object_object_add(jdata,"LV", jlv);
@@ -2485,7 +2642,7 @@ int main(){
 
 	int rc;
 	struct DPB_I2cSensors data;
-
+	get_GPIO_base_address(&GPIO_BASE_ADDRESS);
 	key_t sharedMemoryKey = MEMORY_KEY;
 	memoryID = shmget(sharedMemoryKey, sizeof(struct wrapper), IPC_CREAT | 0600);
 	if (memoryID == -1) {
