@@ -2452,22 +2452,22 @@ static void *monitoring_thread(void *arg)
 			printf("Error\r\n");
 			return NULL;
 		}
-		rc = read_GPIO(40,&aurora_status[0]);
+		rc = read_GPIO(DIG0_MAIN_AURORA_LINK,&aurora_status[0]);
 		if (rc) {
 			printf("Error\r\n");
 			return NULL;
 		}
-		rc = read_GPIO(41,&aurora_status[1]);
+		rc = read_GPIO(DIG0_BACKUP_AURORA_LINK,&aurora_status[1]);
 		if (rc) {
 			printf("Error\r\n");
 			return NULL;
 		}
-		rc = read_GPIO(42,&aurora_status[2]);
+		rc = read_GPIO(DIG1_MAIN_AURORA_LINK,&aurora_status[2]);
 		if (rc) {
 			printf("Error2\r\n");
 			return NULL;
 		}
-		rc = read_GPIO(43,&aurora_status[3]);
+		rc = read_GPIO(DIG1_BACKUP_AURORA_LINK,&aurora_status[3]);
 		if (rc) {
 			printf("Error\r\n");
 			return NULL;

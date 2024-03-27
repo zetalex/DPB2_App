@@ -5,6 +5,23 @@
 /************************** Global Flags Definitions *****************************/
 int eth0_flag = 0;
 int eth1_flag = 0;
+/************************** GPIO Pins Definitions *****************************/
+#define DIG0_MAIN_AURORA_LINK 40
+#define DIG0_BACKUP_AURORA_LINK 41
+#define DIG1_MAIN_AURORA_LINK 42
+#define DIG1_BACKUP_AURORA_LINK 43
+#define SFP0_PWR_ENA 0
+#define SFP1_PWR_ENA 1
+#define SFP2_PWR_ENA 2
+#define SFP3_PWR_ENA 3
+#define SFP4_PWR_ENA 4
+#define SFP5_PWR_ENA 5
+#define SFP0_TX_ENA 6
+#define SFP1_TX_ENA 7
+#define SFP2_TX_ENA 8
+#define SFP3_TX_ENA 9
+#define SFP4_TX_ENA 10
+#define SFP5_TX_ENA 11
 /******************************************************************************
 * Temperature Sensor Register Set - Temperature value, alarm value and alarm flags.
 ****************************************************************************/
