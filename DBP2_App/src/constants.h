@@ -2,6 +2,9 @@
 #define INA3221_NUM_CHAN 3
 #define AMS_TEMP_NUM_CHAN 3
 #define AMS_VOLT_NUM_CHAN 21
+/************************** Global Flags Definitions *****************************/
+int eth0_flag = 0;
+int eth1_flag = 0;
 /******************************************************************************
 * Temperature Sensor Register Set - Temperature value, alarm value and alarm flags.
 ****************************************************************************/
@@ -173,27 +176,27 @@ struct wrapper *memory;
 *AMS channel descrpitor.
 ****************************************************************************/
 char *ams_channels[] = {
-        "LPD temperature.",
-        "FPD temperature.",
-        "VCC PS LPD voltage.",
-        "VCC PS FPD voltage.",
-        "PS Aux voltage reference.",
-        "DDR I/O VCC voltage.",
-        "PS IO Bank 503 voltage.",
-        "PS IO Bank 500 voltage.",
-        "VCCO_PSIO1 voltage.",
-        "VCCO_PSIO2 voltage.",
-        "VCC_PS_GTR voltage.",
-        "VTT_PS_GTR voltage.",
-        "VCC_PSADC voltage.",
-        "PL temperature.",
-        "PL Internal voltage.",
-        "PL Auxiliary voltage.",
-        "ADC Reference P+ voltage.",
-        "ADC Reference N- voltage.",
-        "PL Block RAM voltage.",
-        "LPD Internal voltage.",
-        "FPD Internal voltage.",
-        "PS Auxiliary voltage.",
-        "PL VCCADC voltage."
+        "PS LPD Temperature",
+        "PS FPD Temperature",
+        "VCC PS LPD voltage",
+        "VCC PS FPD voltage",
+        "PS Aux voltage reference",
+        "DDR I/O VCC voltage",
+        "PS IO Bank 503 voltage",
+        "PS IO Bank 500 voltage",
+        "VCCO_PSIO1 voltage",
+        "VCCO_PSIO2 voltage",
+        "VCC_PS_GTR voltage",
+        "VTT_PS_GTR voltage",
+        "VCC_PSADC voltage",
+        "PL Temperature",
+        "PL Internal voltage",
+        "PL Auxiliary voltage",
+        "ADC Reference P+ voltage",
+        "ADC Reference N- voltage",
+        "PL Block RAM voltage",
+        "LPD Internal voltage",
+        "FPD Internal voltage",
+        "PS Auxiliary voltage",
+        "PL VCCADC voltage"
     };
