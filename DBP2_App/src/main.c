@@ -76,7 +76,8 @@ int sfp_avago_read_temperature(struct DPB_I2cSensors *,int , float *);
 int sfp_avago_read_voltage(struct DPB_I2cSensors *,int , float *);
 int sfp_avago_read_lbias_current(struct DPB_I2cSensors *,int, float *);
 int sfp_avago_read_tx_av_optical_pwr(struct DPB_I2cSensors *,int, float *);
-int sfp_avago_read_rx_av_optical_pwr(struct DPB_I2cSensors *data,int, float *);
+int sfp_avago_read_rx_av_optical_pwr(struct DPB_I2cSensors *,int, float *);
+int sfp_avago_read_status(struct DPB_I2cSensors *,int ,uint8_t *);
 int sfp_avago_status_interruptions(uint8_t, int);
 int sfp_avago_alarms_interruptions(struct DPB_I2cSensors *,uint16_t , int );
 int sfp_avago_read_alarms(struct DPB_I2cSensors *,int ) ;
@@ -88,8 +89,9 @@ int ina3221_read_alarms(struct DPB_I2cSensors *,int);
 int ina3221_set_limits(struct DPB_I2cSensors *,int ,int ,int  ,float );
 int ina3221_set_config(struct DPB_I2cSensors *,uint8_t *,uint8_t *, int );
 int parsing_mon_sensor_data_into_array (json_object *,float , char *, int );
-int parsing_mon_status_data_into_array (json_object *, int , char *);
+int parsing_mon_status_data_into_array(json_object *, int , char *,int );
 int alarm_json (json_object *,char *,char *, int , float ,int32_t ,char *);
+int status_alarm_json (json_object *,char *, int ,int32_t ,char *);
 int get_GPIO_base_address(int *);
 int write_GPIO(int , int );
 int read_GPIO(int ,int *);
@@ -928,9 +930,9 @@ int checksum_check(struct I2cDevice *dev,uint8_t ini_reg, uint8_t checksum_val, 
 /**
  * Reads SFP temperature and stores the value in *res
  *
- * @param struct DPB_I2cSensors *data: being the corresponding I2C device SFP EEPROM page 2
- *
- * @param int n: indicate from which of the 6 SFP is going to be read,float *res where the magnitude value is stored
+ * @param struct DPB_I2cSensors *data: I2C devices
+ * @param int n: indicate from which of the 6 SFP is going to be read
+ * @param float *res where the magnitude value is stored
  *
  * @return Negative integer if reading fails.If not, returns 0 and the stored value in *res
  *
@@ -984,9 +986,9 @@ int sfp_avago_read_temperature(struct DPB_I2cSensors *data,int n, float *res) {
 /**
  * Reads SFP voltage supply and stores the value in *res
  *
- * @param struct DPB_I2cSensors *data: being the corresponding I2C device SFP EEPROM page 2
- *
- * @param int n: indicate from which of the 6 SFP is going to be read,float *res where the magnitude value is stored
+ * @param struct DPB_I2cSensors *data: I2C devices
+ * @param int n: indicate from which of the 6 SFP is going to be read
+ * @param float *res: where the magnitude value is stored
  *
  * @return Negative integer if reading fails.If not, returns 0 and the stored value in *res
  *
@@ -1040,9 +1042,9 @@ int sfp_avago_read_voltage(struct DPB_I2cSensors *data,int n, float *res) {
 /**
  * Reads SFP laser bias current and stores the value in *res
  *
- * @param struct DPB_I2cSensors *data: being the corresponding I2C device SFP EEPROM page 2
- *
- * @param int n: indicate from which of the 6 SFP is going to be read,float *res where the magnitude value is stored
+ * @param struct DPB_I2cSensors *data: I2C devices
+ * @param int n: indicate from which of the 6 SFP is going to be read
+ * @param float *res: where the magnitude value is stored
  *
  * @return Negative integer if reading fails.If not, returns 0 and the stored value in *res
  *
@@ -1096,9 +1098,9 @@ int sfp_avago_read_lbias_current(struct DPB_I2cSensors *data,int n, float *res) 
 /**
  * Reads SFP average transmitted optical power and stores the value in *res
  *
- * @param struct DPB_I2cSensors *data: being the corresponding I2C device SFP EEPROM page 2
- *
- * @param int n: indicate from which of the 6 SFP is going to be read,float *res where the magnitude value is stored
+ * @param struct DPB_I2cSensors *data: I2C devices
+ * @param int n: indicate from which of the 6 SFP is going to be read
+ * @param float *res: where the magnitude value is stored
  *
  * @return Negative integer if reading fails.If not, returns 0 and the stored value in *res
  *
@@ -1152,9 +1154,9 @@ int sfp_avago_read_tx_av_optical_pwr(struct DPB_I2cSensors *data,int n, float *r
 /**
  * Reads SFP average received optical power and stores the value in *res
  *
- * @param struct DPB_I2cSensors *data: being the corresponding I2C device SFP EEPROM page 2
- *
- * @param int n: indicate from which of the 6 SFP is going to be read,float *res where the magnitude value is stored
+ * @param struct DPB_I2cSensors *data: I2C devices
+ * @param int n: indicate from which of the 6 SFP is going to be read,
+ * @param float *res: where the magnitude value is stored
  *
  * @return Negative integer if reading fails.If not, returns 0 and the stored value in *res
  *
@@ -1205,6 +1207,64 @@ int sfp_avago_read_rx_av_optical_pwr(struct DPB_I2cSensors *data,int n, float *r
 	res[0] = (float) ((uint16_t) (power_buf[0] << 8)  + power_buf[1]) * 1e-7;
 	return 0;
 }
+
+/**
+ * HReads SFP current RX_LOS and TX_FAULT status
+ *
+ * @param struct DPB_I2cSensors *data: I2C devices
+ * @param int n: indicate from which of the 6 SFP is dealing with
+ * @param uint8_t * res : stores the current RX_LOS and TX_FAULT status
+ *
+ * @return 0 if reads properly and stores 0 or 1 depending on the current states (1 if status asserted, 0 if not)
+ */
+int sfp_avago_read_status(struct DPB_I2cSensors *data,int n,uint8_t *res) {
+	int rc = 0;
+	uint8_t status_buf[1] = {0};
+	uint8_t status_reg = SFP_STAT_REG;
+
+	struct I2cDevice dev;
+
+	switch(n){
+		case DEV_SFP0:
+			dev = data->dev_sfp0_A2;
+		break;
+		case DEV_SFP1:
+			dev = data->dev_sfp1_A2;
+		break;
+		case DEV_SFP2:
+			dev = data->dev_sfp2_A2;
+		break;
+		case DEV_SFP3:
+				dev = data->dev_sfp3_A2;
+			break;
+		case DEV_SFP4:
+				dev = data->dev_sfp4_A2;
+			break;
+		case DEV_SFP5:
+				dev = data->dev_sfp5_A2;
+			break;
+		default:
+			return -EINVAL;
+		break;
+		}
+
+	// Read status bit register
+	rc = i2c_readn_reg(&dev,status_reg,status_buf,1);
+	if(rc < 0)
+		return rc;
+	//Set RX_LOS Status Flag
+	if(status_buf[0] & 0x02)
+		res[0] = 1;
+	else
+		res[0] = 0;
+	//Set TX_FAULT Status flag
+	if(status_buf[0] & 0x04)
+		res[1] = 1;
+	else
+		res[1] = 0;
+	return 0;
+
+}
 /**
  * Handles SFP status interruptions
  *
@@ -1221,12 +1281,12 @@ int sfp_avago_status_interruptions(uint8_t status, int n){
 	if((status & 0x02) != 0){
 		jobj = json_object_new_object();
 		timestamp = time(NULL);
-		rc = alarm_json(jobj,"SFP RX_LOS Status","status", n, -1,timestamp,"critical");
+		rc = status_alarm_json(jobj,"SFP RX_LOS Status",n,timestamp,"critical");
 	}
 	if((status & 0x04) != 0){
 		jobj = json_object_new_object();
 		timestamp = time(NULL);
-		rc = alarm_json(jobj,"SFP TX_FAULT Status","status", n, -1,timestamp,"critical");
+		rc = status_alarm_json(jobj,"SFP TX_FAULT Status", n,timestamp,"critical");
 	}
 	return 0;
 }
@@ -1831,22 +1891,25 @@ int parsing_mon_sensor_data_into_array (json_object *jarray,float val, char *mag
  * @param json_object *jarray: JSON array in which the data will be stored
  * @param int status: Value of the status
  * @param char *magnitude: Name of the measured magnitude/interface
+ * @param int chan: Number of measured channel, if chan is 99 means channel will not be parsed
  *
  * @return: 0
  */
-int parsing_mon_status_data_into_array (json_object *jarray, int status, char *magnitude)
+int parsing_mon_status_data_into_array(json_object *jarray, int status, char *magnitude, int chan)
 {
 	json_object * jobj = json_object_new_object();
 	json_object *jstatus ;
 
 	json_object *jstring = json_object_new_string(magnitude);
+	json_object *jint = json_object_new_int(chan);
 	if(status == 1)
 		jstatus = json_object_new_string("ON");
 	else if (status == 0)
 		jstatus = json_object_new_string("OFF");
 
 	json_object_object_add(jobj,"magnitudename", jstring);
-
+	if (chan != 99)
+		json_object_object_add(jobj,"channel", jint);
 	json_object_object_add(jobj,"value", jstatus);
 
 	json_object_array_add(jarray,jobj);
@@ -1856,6 +1919,7 @@ int parsing_mon_status_data_into_array (json_object *jarray, int status, char *m
 /**
  * Parses alarms data into a JSON object
  *
+ * @param json_object *jobj: JSON object where data will be parsed
  * @param int chan: Number of measured channel, if chan is 99 means channel will not be parsed
  * @param float val: Measured magnitude value
  * @param char *chip: Name of the chip that triggered the alarm
@@ -1896,12 +1960,59 @@ int alarm_json (json_object *jobj,char *chip,char *ev_type, int chan, float val,
 	json_object_object_add(jalarm_data,"eventtimestamp", jtimestamp);
 	if (chan != 99)
 		json_object_object_add(jalarm_data,"channel", jchan);
-	if(val == 199){
-		json_object *jstatus = json_object_new_string("OFF");
-		json_object_object_add(jalarm_data,"value", jstatus);
+
+	json_object_object_add(jalarm_data,"value", jdouble);
+
+	json_object_object_add(jobj,"data", jalarm_data);
+
+	return 0;
+}
+
+/**
+ * Parses alarms data into a JSON object
+ *
+ * @param json_object *jobj: JSON object where data will be parsed
+ * @param int chan: Number of measured channel, if chan is 99 means channel will not be parsed (also indicates it is not SFP related)
+ * @param char *chip: Name of the chip that triggered the alarm
+ * @param int32_t timestamp: Time when the event occurred
+ * @param char *info_type: Determines the reported event type (inof,warning or critical)
+ *
+ *
+ * @return: 0
+ */
+int status_alarm_json (json_object *jobj,char *chip, int chan,int32_t timestamp,char *info_type)
+{
+	json_object *jalarm_data = json_object_new_object();
+
+	int32_t timestamp_msg = time(NULL);
+
+	json_object *jdevice = json_object_new_string("ID DPB");
+	json_object *jboard = json_object_new_string("DPB");
+	json_object *jinfo_type = json_object_new_string(info_type);
+	json_object *jtimestamp_msg = json_object_new_int(timestamp_msg);
+
+	json_object_object_add(jobj,"timestamp", jtimestamp_msg);
+	json_object_object_add(jobj,"device", jdevice);
+	json_object_object_add(jobj,"board", jboard);
+	json_object_object_add(jobj,"info", jinfo_type);
+
+
+	json_object *jchip = json_object_new_string(chip);
+	json_object *jchan = json_object_new_int(chan);
+	json_object *jtimestamp = json_object_new_int(timestamp);
+	json_object *jstatus ;
+
+	json_object_object_add(jalarm_data,"magnitudename", jchip);
+	json_object_object_add(jalarm_data,"eventtimestamp", jtimestamp);
+	if (chan != 99){
+		json_object_object_add(jalarm_data,"channel", jchan);
+		jstatus = json_object_new_string("ON");
 	}
 	else{
-	json_object_object_add(jalarm_data,"value", jdouble);}
+		jstatus = json_object_new_string("OFF");
+	}
+
+	json_object_object_add(jalarm_data,"value", jstatus);
 
 	json_object_object_add(jobj,"data", jalarm_data);
 
@@ -2148,13 +2259,13 @@ int eth_down_alarm(char *str,int *flag){
 		if(!(strcmp(str,"eth0"))){
 			jobj = json_object_new_object();
 			timestamp = time(NULL);
-			rc = alarm_json(jobj,"Main Ethernet Link Status","falling", 99, 199,timestamp,"critical");
+			rc = status_alarm_json(jobj,"Main Ethernet Link Status",99,timestamp,"critical");
 			return rc;
 		}
 		else if(!(strcmp(str,"eth1"))){
 			jobj = json_object_new_object();
 			timestamp = time(NULL);
-			rc = alarm_json(jobj,"Backup Ethernet Link Status","falling", 99, 199,timestamp,"critical");
+			rc = status_alarm_json(jobj,"Backup Ethernet Link Status",99,timestamp,"critical");
 			return rc;
 		}
 	}
@@ -2203,36 +2314,42 @@ static void *monitoring_thread(void *arg)
 	float sfp_rxpwr_0[1];
 	float sfp_vcc_0[1];
 	float sfp_txbias_0[1];
+	uint8_t sfp_status_0[2];
 
 	/*float sfp_temp_1[1];
 	float sfp_txpwr_1[1];
 	float sfp_rxpwr_1[1];
 	float sfp_vcc_1[1];
 	float sfp_txbias_1[1];
+	uint8_t sfp_status_1[2];
 
 	float sfp_temp_2[1];
 	float sfp_txpwr_2[1];
 	float sfp_rxpwr_2[1];
 	float sfp_vcc_2[1];
 	float sfp_txbias_2[1];
+	uint8_t sfp_status_2[2];
 
 	float sfp_temp_3[1];
 	float sfp_txpwr_3[1];
 	float sfp_rxpwr_3[1];
 	float sfp_vcc_3[1];
 	float sfp_txbias_3[1];
+	uint8_t sfp_status_3[2];
 
 	float sfp_temp_4[1];
 	float sfp_txpwr_4[1];
 	float sfp_rxpwr_4[1];
 	float sfp_vcc_4[1];
 	float sfp_txbias_4[1];
+	uint8_t sfp_status_4[2];
 
 	float sfp_temp_5[1];
 	float sfp_txpwr_5[1];
 	float sfp_rxpwr_5[1];
 	float sfp_vcc_5[1];
-	float sfp_txbias_5[1];*/
+	float sfp_txbias_5[1];
+	uint8_t sfp_status_5[2];*/
 
 	//struct DPB_I2cSensors data;
 
@@ -2275,6 +2392,11 @@ static void *monitoring_thread(void *arg)
 			printf("Error\r\n");
 			return NULL;
 		}
+		rc = sfp_avago_read_status(data,0,sfp_status_0);
+		if (rc) {
+			printf("Error\r\n");
+			return NULL;
+		}
 		/*rc = sfp_avago_read_temperature(data,1,sfp_temp_1);
 		if (rc) {
 			printf("Error\r\n");
@@ -2296,6 +2418,11 @@ static void *monitoring_thread(void *arg)
 			return NULL;
 		}
 		rc = sfp_avago_read_rx_av_optical_pwr(data,1,sfp_rxpwr_1);
+		if (rc) {
+			printf("Error\r\n");
+			return NULL;
+		}
+		rc = sfp_avago_read_status(data,,sfp_status_1);
 		if (rc) {
 			printf("Error\r\n");
 			return NULL;
@@ -2325,6 +2452,11 @@ static void *monitoring_thread(void *arg)
 			printf("Error\r\n");
 			return NULL;
 		}
+		rc = sfp_avago_read_status(data,2,sfp_status_2);
+		if (rc) {
+			printf("Error\r\n");
+			return NULL;
+		}
 		rc = sfp_avago_read_temperature(data,3,sfp_temp_3);
 		if (rc) {
 			printf("Error\r\n");
@@ -2346,6 +2478,11 @@ static void *monitoring_thread(void *arg)
 			return NULL;
 		}
 		rc = sfp_avago_read_rx_av_optical_pwr(data,3,sfp_rxpwr_3);
+		if (rc) {
+			printf("Error\r\n");
+			return NULL;
+		}
+		rc = sfp_avago_read_status(data,3,sfp_status_3);
 		if (rc) {
 			printf("Error\r\n");
 			return NULL;
@@ -2375,6 +2512,11 @@ static void *monitoring_thread(void *arg)
 			printf("Error\r\n");
 			return NULL;
 		}
+		rc = sfp_avago_read_status(data,4,sfp_status_4);
+		if (rc) {
+			printf("Error\r\n");
+			return NULL;
+		}
 		rc = sfp_avago_read_temperature(data,5,sfp_temp_5);
 		if (rc) {
 			printf("Error\r\n");
@@ -2396,6 +2538,11 @@ static void *monitoring_thread(void *arg)
 			return NULL;
 		}
 		rc = sfp_avago_read_rx_av_optical_pwr(data,5,sfp_rxpwr_5);
+		if (rc) {
+			printf("Error\r\n");
+			return NULL;
+		}
+		rc = sfp_avago_read_status(data,5,sfp_status_5);
 		if (rc) {
 			printf("Error\r\n");
 			return NULL;
@@ -2473,7 +2620,6 @@ static void *monitoring_thread(void *arg)
 			return NULL;
 		}
 
-
 		json_object * jobj = json_object_new_object();
 		json_object *jdata = json_object_new_object();
 		json_object *jlv = json_object_new_array();
@@ -2482,22 +2628,58 @@ static void *monitoring_thread(void *arg)
 		json_object *jdig1 = json_object_new_array();
 		json_object *jdpb = json_object_new_array();
 
-		parsing_mon_status_data_into_array(jdpb,eth_status[0],"Main Ethernet Link Status");
-		parsing_mon_status_data_into_array(jdpb,eth_status[1],"Backup Ethernet Link Status");
+		parsing_mon_status_data_into_array(jdpb,eth_status[0],"Main Ethernet Link Status",99);
+		parsing_mon_status_data_into_array(jdpb,eth_status[1],"Backup Ethernet Link Status",99);
 
-		parsing_mon_status_data_into_array(jdig0,aurora_status[0],"Aurora Main Link Status");
-		parsing_mon_status_data_into_array(jdig0,aurora_status[1],"Aurora Backup Link Status");
+		parsing_mon_status_data_into_array(jdig0,aurora_status[0],"Aurora Main Link Status",99);
+		parsing_mon_status_data_into_array(jdig0,aurora_status[1],"Aurora Backup Link Status",99);
 
-		parsing_mon_status_data_into_array(jdig1,aurora_status[2],"Aurora Main Link Status");
-		parsing_mon_status_data_into_array(jdig1,aurora_status[3],"Aurora Backup Link Status");
+		parsing_mon_status_data_into_array(jdig1,aurora_status[2],"Aurora Main Link Status",99);
+		parsing_mon_status_data_into_array(jdig1,aurora_status[3],"Aurora Backup Link Status",99);
 
 		parsing_mon_sensor_data_into_array(jdpb,temp[0],"PCB Temperature",99);
 
 		parsing_mon_sensor_data_into_array(jdpb,sfp_temp_0[0],"SFP Temperature",0);
-		//parsing_mon_data_into_array(jdpb,sfp_vcc_0[0],"SFP Supply Voltage",0);
 		parsing_mon_sensor_data_into_array(jdpb,sfp_txbias_0[0],"SFP Laser Bias Current",0);
 		parsing_mon_sensor_data_into_array(jdpb,sfp_txpwr_0[0],"SFP TX Power",0);
 		parsing_mon_sensor_data_into_array(jdpb,sfp_rxpwr_0[0],"SFP RX Power",0);
+		parsing_mon_status_data_into_array(jdpb,sfp_status_0[0],"SFP RX_LOS Status",0);
+		parsing_mon_status_data_into_array(jdpb,sfp_status_0[1],"SFP TX_FAULT Status",0);
+
+		/*parsing_mon_sensor_data_into_array(jdpb,sfp_temp_1[0],"SFP Temperature",1);
+		parsing_mon_sensor_data_into_array(jdpb,sfp_txbias_1[0],"SFP Laser Bias Current",1);
+		parsing_mon_sensor_data_into_array(jdpb,sfp_txpwr_1[0],"SFP TX Power",1);
+		parsing_mon_sensor_data_into_array(jdpb,sfp_rxpwr_1[0],"SFP RX Power",1);
+		parsing_mon_status_data_into_array(jdpb,sfp_status_1[0],"SFP RX_LOS Status",1);
+		parsing_mon_status_data_into_array(jdpb,sfp_status_1[1],"SFP TX_FAULT Status",1);
+
+		parsing_mon_sensor_data_into_array(jdpb,sfp_temp_2[0],"SFP Temperature",2);
+		parsing_mon_sensor_data_into_array(jdpb,sfp_txbias_2[0],"SFP Laser Bias Current",2);
+		parsing_mon_sensor_data_into_array(jdpb,sfp_txpwr_2[0],"SFP TX Power",2);
+		parsing_mon_sensor_data_into_array(jdpb,sfp_rxpwr_2[0],"SFP RX Power",2);
+		parsing_mon_status_data_into_array(jdpb,sfp_status_2[0],"SFP RX_LOS Status",2);
+		parsing_mon_status_data_into_array(jdpb,sfp_status_2[1],"SFP TX_FAULT Status",2);
+
+		parsing_mon_sensor_data_into_array(jdpb,sfp_temp_3[0],"SFP Temperature",3);
+		parsing_mon_sensor_data_into_array(jdpb,sfp_txbias_3[0],"SFP Laser Bias Current",3);
+		parsing_mon_sensor_data_into_array(jdpb,sfp_txpwr_3[0],"SFP TX Power",3);
+		parsing_mon_sensor_data_into_array(jdpb,sfp_rxpwr_3[0],"SFP RX Power",3);
+		parsing_mon_status_data_into_array(jdpb,sfp_status_3[0],"SFP RX_LOS Status",3);
+		parsing_mon_status_data_into_array(jdpb,sfp_status_3[1],"SFP TX_FAULT Status",3);
+
+		parsing_mon_sensor_data_into_array(jdpb,sfp_temp_4[0],"SFP Temperature",4);
+		parsing_mon_sensor_data_into_array(jdpb,sfp_txbias_4[0],"SFP Laser Bias Current",4);
+		parsing_mon_sensor_data_into_array(jdpb,sfp_txpwr_4[0],"SFP TX Power",4);
+		parsing_mon_sensor_data_into_array(jdpb,sfp_rxpwr_4[0],"SFP RX Power",4);
+		parsing_mon_status_data_into_array(jdpb,sfp_status_4[0],"SFP RX_LOS Status",4);
+		parsing_mon_status_data_into_array(jdpb,sfp_status_4[1],"SFP TX_FAULT Status",4);
+
+		parsing_mon_sensor_data_into_array(jdpb,sfp_temp_5[0],"SFP Temperature",5);
+		parsing_mon_sensor_data_into_array(jdpb,sfp_txbias_5[0],"SFP Laser Bias Current",5);
+		parsing_mon_sensor_data_into_array(jdpb,sfp_txpwr_5[0],"SFP TX Power",5);
+		parsing_mon_sensor_data_into_array(jdpb,sfp_rxpwr_5[0],"SFP RX Power",5);
+		parsing_mon_status_data_into_array(jdpb,sfp_status_5[0],"SFP RX_LOS Status",5);
+		parsing_mon_status_data_into_array(jdpb,sfp_status_5[1],"SFP TX_FAULT Status",5);*/
 
 		parsing_mon_sensor_data_into_array(jdpb,ams_temp[0],ams_channels[0],99);
 		parsing_mon_sensor_data_into_array(jdpb,ams_temp[1],ams_channels[1],99);
