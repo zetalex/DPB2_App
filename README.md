@@ -330,7 +330,7 @@ In the case of the temperature limits these are defined by 11 bits, 1 bit determ
 
 ## SFP Transceiver AFBR-5715ALZ
 
-Los transceptores SFP de fibra óptica tienen la función principal ser los puertos de comunicación de la placa. These transceivers have an EEPROM memory that is divided into two pages, which correspond to the slave addresses I<sup>2</sup>C 0x50 and 0x51 in our case.
+Fibre optic SFP transceivers have the primary function of being the communication ports on the board. These transceivers have an EEPROM memory that is divided into two pages, which correspond to the slave addresses I<sup>2</sup>C 0x50 and 0x51 in our case.
 
 The SFPs collect information on highly relevant real-time quantities and are located on the second page of the EEPROM (0x51), such as the temperature within the module, the supply voltage supplied to them, the laser bias current and both the transmitted and received optical power. 
 
@@ -341,9 +341,7 @@ Although the first page of the EEPROM is mainly based on transceiver identificat
 In both pages of the EEPROM we find one or more registers dedicated to a Checksum that will allow us to check the status of the EEPROM itself.
 
 Below are several tables representing the EEPROM registers of the SFP transceivers.
-<!---
-Registers SFP 0x50
--->
+
 
 | Byte Decimal | Data Notes |
 |--------------|------------|
@@ -372,9 +370,7 @@ Registers SFP 0x50
 <figcaption>SFP transceiver EEPROM page 1 registers</figcaption>
 <br>
 
-<!---
-Registers SFP 0x51
--->
+
 | Byte Decimal | Notes                    | Byte Decimal | Notes                      | Byte Decimal | Notes                           |
 |--------------|--------------------------|--------------|----------------------------|--------------|---------------------------------|
 | 0            | Temp H Alarm MSB        | 26           | Tx Pwr L Alarm MSB        | 104          | Real Time Rx P<sub>AV</sub> MSB          |
@@ -419,9 +415,7 @@ To interpret the data of the magnitudes on page 2 in bit format, the following c
 
 As can be seen in the register table on the second page of the EEPROM, there is a status register and this describes the following cases.
 
-<!---
-SFP Status Table
--->
+
 | Bit # | Status/Control Name | Description |
 |-------|----------------------|-------------|
 | 7     | Tx Disable State     | Digital state of SFP Tx Disable Input Pin (1 = Tx_Disable asserted) |
@@ -433,10 +427,8 @@ SFP Status Table
 
 <figcaption>Breakdown of SFP transceiver status bits</figcaption>
 <br>
-<!---
-SFP Flags Table
--->
-As for the registers dedicated to the <i>flags</i>, these contain the indicator bits of the previously mentioned alerts and warnings. The following table shows their distribution in the relevant registers.
+
+As for the registers dedicated to the flags, these contain the indicator bits of the previously mentioned alerts and warnings. The following table shows their distribution in the relevant registers.
 
 <br>
 
@@ -464,7 +456,7 @@ As for the registers dedicated to the <i>flags</i>, these contain the indicator 
 |      | 0     | Tx Power Low Warning | Set when transmitted average optical power exceeds low warning threshold. |
 |------|-------|---------------|-------------|
 | 117  | 7     | Rx Power High Warning | Set when received P_Avg optical power exceeds high warning threshold. |
-|      | 9     | Rx Power Low Warning | Set when received P_Avg optical power exceeds low warning threshold. |
+|      | 6     | Rx Power Low Warning | Set when received P_Avg optical power exceeds low warning threshold. |
 
 <figcaption>Breakdown of the <i>flags</i> of SFP transceivers</figcaption>
 <br>
@@ -473,7 +465,7 @@ As for the registers dedicated to the <i>flags</i>, these contain the indicator 
  
 # Data gathering from AMS, PS and PL SYSMON and channel differentiation
 
-Due to the sensors together with ADC converters with which Xilinx has equipped our module and its system monitoring hardware block (SYSMON), we can access a large amount of real-time information from the PS and the PL via the Linux driver "xilinx-ams". This Linux driver exports real-time data into files using *sysfs*, a pseudo file system provided by the Linux kernel which exports information into virtual files. 
+Due to the sensors together with ADC converters with which Xilinx has equipped our module and its system monitoring hardware block (SYSMON), we can access a large amount of real-time information from the PS and the PL via the Linux driver "xilinx-ams". 
 
 This information collected from the PS and PL is differentiated into different channels which are explained in the following table.
 
@@ -521,7 +513,7 @@ $$(3.2)
 
 Where XX defines the selected channel number in voltage or temperature and "n_bits" defines the number of bits of the ADC used, in our case 10 bits. The offset in the case of temperature is added since a negative number is returned.
 
-Xilinx also offers alarms applied to the voltages and temperatures measured on the previously mentioned channels and the Linux driver allows us to configure and read these alarms also using the *IIO_EVENT_MONITOR* tool of Linux itself. *IIO_EVENT_MONITOR* is a generic application from the Linux kernel developed to catch and report different types of events from Industrial Input Output (IIO) devices. In order to detect events or enabling event detection, the *IIO_EVENT_MONITOR* application works with the *sysfs* file system. 
+Xilinx also offers alarms applied to the voltages and temperatures measured on the previously mentioned channels and the Linux driver allows us to configure and read these alarms also using the *IIO_EVENT_MONITOR* tool of Linux itself. In order to detect events or enabling event detection, the *IIO_EVENT_MONITOR* application works along with the *sysfs* file system. 
 
 In the case of temperature, there are only alarms that are activated if a certain temperature is exceeded, while in the case of voltage, there are alarms for both overvoltage and undervoltage, but without specifying whether the limit exceeded is the lower or upper limit as the alarm is a single bit, so it does not discriminate between falling or rising event (shown as *either*).
 

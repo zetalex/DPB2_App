@@ -91,12 +91,13 @@ int ina3221_set_config(struct DPB_I2cSensors *,uint8_t *,uint8_t *, int );
 int parsing_mon_sensor_data_into_array (json_object *,float , char *, int );
 int parsing_mon_status_data_into_array(json_object *, int , char *,int );
 int alarm_json (json_object *,char *,char *, int , float ,int32_t ,char *);
-int status_alarm_json (json_object *,char *, int ,int32_t ,char *);
+int status_alarm_json (json_object *,char *,char *, int ,int32_t ,char *);
 int get_GPIO_base_address(int *);
 int write_GPIO(int , int );
 int read_GPIO(int ,int *);
 int eth_link_status (char *,int *);
 int eth_down_alarm(char *,int *);
+int aurora_down_alarm(int ,int *);
 static void *monitoring_thread(void *);
 static void *i2c_alarms_thread(void *);
 static void *ams_alarms_thread(void *);
@@ -1281,12 +1282,12 @@ int sfp_avago_status_interruptions(uint8_t status, int n){
 	if((status & 0x02) != 0){
 		jobj = json_object_new_object();
 		timestamp = time(NULL);
-		rc = status_alarm_json(jobj,"SFP RX_LOS Status",n,timestamp,"critical");
+		rc = status_alarm_json(jobj,"DPB","SFP RX_LOS Status",n,timestamp,"critical");
 	}
 	if((status & 0x04) != 0){
 		jobj = json_object_new_object();
 		timestamp = time(NULL);
-		rc = status_alarm_json(jobj,"SFP TX_FAULT Status", n,timestamp,"critical");
+		rc = status_alarm_json(jobj,"DPB","SFP TX_FAULT Status", n,timestamp,"critical");
 	}
 	return 0;
 }
@@ -1974,20 +1975,21 @@ int alarm_json (json_object *jobj,char *chip,char *ev_type, int chan, float val,
  * @param json_object *jobj: JSON object where data will be parsed
  * @param int chan: Number of measured channel, if chan is 99 means channel will not be parsed (also indicates it is not SFP related)
  * @param char *chip: Name of the chip that triggered the alarm
+ * @param char *board: Name of the board where the alarm is asserted
  * @param int32_t timestamp: Time when the event occurred
  * @param char *info_type: Determines the reported event type (inof,warning or critical)
  *
  *
  * @return: 0
  */
-int status_alarm_json (json_object *jobj,char *chip, int chan,int32_t timestamp,char *info_type)
+int status_alarm_json (json_object *jobj,char *board,char *chip, int chan,int32_t timestamp,char *info_type)
 {
 	json_object *jalarm_data = json_object_new_object();
 
 	int32_t timestamp_msg = time(NULL);
 
 	json_object *jdevice = json_object_new_string("ID DPB");
-	json_object *jboard = json_object_new_string("DPB");
+	json_object *jboard = json_object_new_string(board);
 	json_object *jinfo_type = json_object_new_string(info_type);
 	json_object *jtimestamp_msg = json_object_new_int(timestamp_msg);
 
@@ -2259,19 +2261,85 @@ int eth_down_alarm(char *str,int *flag){
 		if(!(strcmp(str,"eth0"))){
 			jobj = json_object_new_object();
 			timestamp = time(NULL);
-			rc = status_alarm_json(jobj,"Main Ethernet Link Status",99,timestamp,"critical");
+			rc = status_alarm_json(jobj,"DPB","Main Ethernet Link Status",99,timestamp,"critical");
 			return rc;
 		}
 		else if(!(strcmp(str,"eth1"))){
 			jobj = json_object_new_object();
 			timestamp = time(NULL);
-			rc = status_alarm_json(jobj,"Backup Ethernet Link Status",99,timestamp,"critical");
+			rc = status_alarm_json(jobj,"DPB","Backup Ethernet Link Status",99,timestamp,"critical");
 			return rc;
 		}
 	}
 	return 0;
 }
+/**
+* Checks from GPIO if Ethernet Links status has changed from up to down and reports it if necessary
+ *
+ * @param int aurora_link: Choose main or backup link of Dig0 or Dig1 (O: Dig0 Main, 1:Dig0 Backup, 2:Dig1 Main, 3:Dig1 Backup)
+ * @param int flags: indicates current status of the link
+ *
+ * @return  0 if parameters are OK, if not negative integer
+ */
+int aurora_down_alarm(int aurora_link,int *flag){
 
+	int aurora_status[1];
+	int rc = 0;
+	int address = 0;
+	int32_t timestamp ;
+	char *link_id;
+	json_object *jobj = json_object_new_object();
+
+    if((flag[0] != 0) && (flag[0] != 1)){
+    	return -EINVAL;
+    }
+	if((aurora_link>3) | (aurora_link<0)){
+		return -EINVAL;}
+	switch(aurora_link){
+	case 0:
+		address = DIG0_MAIN_AURORA_LINK;
+		link_id = "Aurora Main Link Status";
+		break;
+	case 1:
+		address = DIG0_BACKUP_AURORA_LINK;
+		link_id = "Aurora Main Link Status";
+		break;
+	case 2:
+		address = DIG1_MAIN_AURORA_LINK;
+		link_id = "Aurora Main Link Status";
+		break;
+	case 3:
+		address = DIG1_BACKUP_AURORA_LINK;
+		link_id = "Aurora Main Link Status";
+		break;
+	default:
+		return -EINVAL;
+	}
+
+	rc = read_GPIO(address,&aurora_status[0]);
+	if (rc) {
+		printf("Error\r\n");
+		return rc;
+	}
+	if((flag[0] == 0) & (aurora_status[0] == 1)){
+		flag[0] = aurora_status[0];}
+	if((flag[0] == 1) & (aurora_status[0] == 0)){
+		flag[0] = aurora_status[0];
+		if(aurora_link<2){
+			jobj = json_object_new_object();
+			timestamp = time(NULL);
+			rc = status_alarm_json(jobj,"Dig0",link_id,99,timestamp,"critical");
+			return rc;
+		}
+		else{
+			jobj = json_object_new_object();
+			timestamp = time(NULL);
+			rc = status_alarm_json(jobj,"Dig1",link_id,99,timestamp,"critical");
+			return rc;
+		}
+	}
+	return 0;
+}
 /************************** Threads declaration ******************************/
 
 /**
@@ -2786,6 +2854,26 @@ static void *i2c_alarms_thread(void *arg){
 			printf("Error\r\n");
 			return NULL;
 		}
+		rc = aurora_down_alarm(0,&dig0_main_flag);
+		if (rc) {
+			printf("Error\r\n");
+			return NULL;
+		}
+		rc = aurora_down_alarm(1,&dig0_backup_flag);
+		if (rc) {
+			printf("Error\r\n");
+			return NULL;
+		}
+		rc = aurora_down_alarm(2,&dig1_main_flag);
+		if (rc) {
+			printf("Error\r\n");
+			return NULL;
+		}
+		rc = aurora_down_alarm(3,&dig1_backup_flag);
+		if (rc) {
+			printf("Error\r\n");
+			return NULL;
+		}
 
 		sem_wait(&i2c_sync); //Semaphore to sync I2C usage
 
@@ -2955,7 +3043,7 @@ static void *ams_alarms_thread(void *arg){
 }
 
 /**
- * Periodic thread that is waiting for an receiving a command from the DAQ and process it
+ * Periodic thread that is waiting for a command from the DAQ and handling it
  *
  * @param void *arg: NULL
  *
@@ -3044,7 +3132,7 @@ int main(){
 	sigprocmask(SIG_BLOCK, &alarm_sig, NULL);
 
 	pthread_create(&t_1, NULL, ams_alarms_thread,NULL); //Create thread 1 - reads AMS alarms
-	pthread_create(&t_2, NULL, i2c_alarms_thread,(void *)&data); //Create thread 2 - reads alarms every x miliseconds
+	pthread_create(&t_2, NULL, i2c_alarms_thread,(void *)&data); //Create thread 2 - reads I2C alarms every x miliseconds
 	pthread_create(&t_3, NULL, monitoring_thread,(void *)&data );//Create thread 3 - monitors magnitudes every x seconds
 	//pthread_create(&t_4, NULL, command_thread,NULL);//Create thread 4 - waits and attends commands
 

@@ -5,6 +5,10 @@
 /************************** Global Flags Definitions *****************************/
 int eth0_flag = 0;
 int eth1_flag = 0;
+int dig0_main_flag = 0;
+int dig1_main_flag = 0;
+int dig0_backup_flag = 0;
+int dig1_backup_flag = 0;
 /************************** GPIO Pins Definitions *****************************/
 #define DIG0_MAIN_AURORA_LINK 40
 #define DIG0_BACKUP_AURORA_LINK 41
