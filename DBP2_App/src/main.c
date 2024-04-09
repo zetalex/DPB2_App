@@ -16,6 +16,7 @@
 #include <sys/shm.h>
 #include <fcntl.h>
 #include <time.h>
+#include <zmq.h>
 #include "json-c/json.h"
 #include <math.h>
  #include <dirent.h>
@@ -2339,6 +2340,38 @@ int aurora_down_alarm(int aurora_link,int *flag){
 		}
 	}
 	return 0;
+}
+
+/************************** ZMQ Functions******************************/
+/*
+* Initilaizes ZMQ monitoring, command and logging sockets
+*
+* @param char *eth_interface: Name of the Ethernet interface
+* @param int status: value of the Ethernet interface flag, determines if the link was previously up
+*
+* @return  0 if parameters OK and reports the event, if not returns negative integer.
+*/
+int zmq_socket_init (){
+
+	int rc = 0;
+    void *mon_context = zmq_ctx_new();
+    void *mon_publisher = zmq_socket(mon_context, ZMQ_PUB);
+    rc = zmq_bind(mon_publisher, "tcp://127.0.0.1:5555");
+	if (rc) {
+		return rc;
+	}
+    void *log_context = zmq_ctx_new();
+    void *log_publisher = zmq_socket(log_context, ZMQ_PUB);
+    rc = zmq_bind(log_publisher, "tcp://127.0.0.1:5556");
+	if (rc) {
+		return rc;
+	}
+    void *cmd_context = zmq_ctx_new();
+    void *cmd_publisher = zmq_socket(cmd_context, ZMQ_PUB);
+    rc = zmq_bind(cmd_publisher, "tcp://127.0.0.1:5557");
+	if (rc) {
+		return rc;
+	}
 }
 /************************** Threads declaration ******************************/
 
