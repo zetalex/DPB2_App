@@ -117,7 +117,7 @@ Since the electronics are located in a place that is difficult to access, as it 
 
 The HKK experiment stands at the forefront of contemporary neutrino research, poised to unlock profound insights into the fundamental properties of these elusive particles. With its innovative design and enhanced capabilities, HKK ventures into uncharted territories of particle physics, aiming to shed light on mysteries ranging from neutrino oscillations to the enigmatic nature of dark matter.
 
-In the realm of neutrino oscillation measurements, HKK endeavors to employ both accelerator and atmospheric neutrinos to unravel mysteries such as determining the mass hierarchy, investigating CP violation in the lepton sector, and precisely measuring oscillation parameters. Additionally, it aims to explore phenomena such as sterile neutrinos and potential violations of Lorentz invariance.
+In the realm of neutrino oscillation measurements, HKK endeavours to employ both accelerator and atmospheric neutrinos to unravel mysteries such as determining the mass hierarchy, investigating CP violation in the lepton sector, and precisely measuring oscillation parameters. Additionally, it aims to explore phenomena such as sterile neutrinos and potential violations of Lorentz invariance.
 
 In solar neutrino measurements, HKK aims to address discrepancies observed between solar and reactor neutrino measurements, particularly focusing on the θ<sub>12</sub> sector. It intends to achieve this by studying day-night asymmetry in solar neutrino flux and exploring novel avenues such as monitoring solar fusion reactions and observing higher-energy neutrino flux.
 
