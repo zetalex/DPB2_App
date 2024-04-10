@@ -26,6 +26,7 @@ int dig1_backup_flag = 0;
 #define SFP3_TX_ENA 9
 #define SFP4_TX_ENA 10
 #define SFP5_TX_ENA 11
+#define SFP0_RX_LOS 14
 /******************************************************************************
 * Temperature Sensor Register Set - Temperature value, alarm value and alarm flags.
 ****************************************************************************/

@@ -55,6 +55,15 @@ struct DPB_I2cSensors{
 *Local Semaphores.
 ****************************************************************************/
 sem_t i2c_sync;
+/******************************************************************************
+*ZMQ Socket Initializer
+****************************************************************************/
+void *mon_context ;
+void *mon_publisher;
+void *log_context ;
+void *log_publisher ;
+void *cmd_context;
+void *cmd_router;
 /************************** Function Prototypes ******************************/
 
 int init_tempSensor (struct I2cDevice *);
@@ -99,6 +108,7 @@ int read_GPIO(int ,int *);
 int eth_link_status (char *,int *);
 int eth_down_alarm(char *,int *);
 int aurora_down_alarm(int ,int *);
+int zmq_socket_init ();
 static void *monitoring_thread(void *);
 static void *i2c_alarms_thread(void *);
 static void *ams_alarms_thread(void *);
@@ -1967,6 +1977,9 @@ int alarm_json (json_object *jobj,char *chip,char *ev_type, int chan, float val,
 
 	json_object_object_add(jobj,"data", jalarm_data);
 
+	const char *serialized_json = json_object_to_json_string(jobj);
+	zmq_send (log_publisher, strdup(serialized_json), strlen(serialized_json), 0);
+
 	return 0;
 }
 
@@ -2018,6 +2031,9 @@ int status_alarm_json (json_object *jobj,char *board,char *chip, int chan,int32_
 	json_object_object_add(jalarm_data,"value", jstatus);
 
 	json_object_object_add(jobj,"data", jalarm_data);
+
+	const char *serialized_json = json_object_to_json_string(jobj);
+	zmq_send(log_publisher, strdup(serialized_json), strlen(serialized_json), 0);
 
 	return 0;
 }
@@ -2227,7 +2243,43 @@ int eth_link_status (char *eth_interface, int *status)
 		return -EINVAL;
 	return 0;
 
+}
+
+/************************** External monitoring (via GPIO) functions ******************************/
+/**
+ * Updates Ethernet interface status to ON/OFF
+ *
+ * @param char *eth_interface: Name of the Ethernet interface
+ * @param int val: value of the Ethernet interface status
+ *
+ * @return  0 if parameters are OK, if not negative integer
+ */
+int eth_link_status_config (char *eth_interface, int val)
+{
+	char eth_link[32];
+	char cmd[64];
+	if(strcmp(eth_interface,"ETH0") == 0){
+		strcpy(eth_link,"eth0");
 	}
+	else{
+		strcpy(eth_link,"eth1");
+	}
+	strcpy(cmd,"ifconfig ");
+	strcat(cmd,eth_link);
+	if(val == 1){
+		strcat(cmd," up");
+	}
+	else if (val == 0){
+		strcat(cmd," down");
+	}
+	else{
+		return -EINVAL;
+	}
+	system(cmd);
+
+	return 0;
+
+}
 /************************** External alarms (via GPIO) functions ******************************/
 /*
 * Checks from GPIO if Ethernet Links status has changed from up to down and reports it if necessary
@@ -2344,38 +2396,186 @@ int aurora_down_alarm(int aurora_link,int *flag){
 
 /************************** ZMQ Functions******************************/
 /*
-* Initilaizes ZMQ monitoring, command and logging sockets
-*
-* @param char *eth_interface: Name of the Ethernet interface
-* @param int status: value of the Ethernet interface flag, determines if the link was previously up
+* Initializes ZMQ monitoring, command and logging sockets
 *
 * @return  0 if parameters OK and reports the event, if not returns negative integer.
 */
 int zmq_socket_init (){
 
 	int rc = 0;
-    void *mon_context = zmq_ctx_new();
-    void *mon_publisher = zmq_socket(mon_context, ZMQ_PUB);
+    mon_context = zmq_ctx_new();
+    mon_publisher = zmq_socket(mon_context, ZMQ_PUB);
     rc = zmq_bind(mon_publisher, "tcp://127.0.0.1:5555");
 	if (rc) {
 		return rc;
 	}
-    void *log_context = zmq_ctx_new();
-    void *log_publisher = zmq_socket(log_context, ZMQ_PUB);
+    log_context = zmq_ctx_new();
+    log_publisher = zmq_socket(log_context, ZMQ_PUB);
     rc = zmq_bind(log_publisher, "tcp://127.0.0.1:5556");
 	if (rc) {
 		return rc;
 	}
-    void *cmd_context = zmq_ctx_new();
-    void *cmd_publisher = zmq_socket(cmd_context, ZMQ_PUB);
-    rc = zmq_bind(cmd_publisher, "tcp://127.0.0.1:5557");
+    cmd_context = zmq_ctx_new();
+    cmd_router = zmq_socket(cmd_context, ZMQ_ROUTER);
+    rc = zmq_bind(cmd_router, "tcp://127.0.0.1:5557");
 	if (rc) {
 		return rc;
 	}
+	return 0;
+}
+/************************** Command handling Functions******************************/
+/*
+* Handles received DPB command
+*
+* @return  0 if parameters OK and reports the event, if not returns negative integer.
+*/
+void dpb_command_handling(struct DPB_I2cSensors *data, char **cmd){
+
+	regex_t r1;
+	int reg_exp;
+	int rc;
+	int bool_set;
+	int bool_read[1];
+	int ams_chan[1];
+	int chan ;
+	float val_read[1];
+	float ina3221_read[3];
+
+
+	reg_exp = regcomp(&r1, "SFP.*", 0);
+	reg_exp = regexec(&r1, cmd[3], 0, NULL, 0);
+	if(reg_exp == 0){  //SFP
+		char *sfp_num_str = strtok(cmd[3],"SFP");
+		int sfp_num = atoi(sfp_num_str);
+
+		if(strcmp(cmd[2],"STATUS") == 0){
+			if(strcmp(cmd[0],"READ") == 0){
+				rc = read_GPIO(SFP0_TX_ENA+(sfp_num*4),bool_read);
+			}
+			else{
+				bool_set=((strcmp(cmd[4],"ON") == 0)?(1):(0));
+				rc = write_GPIO(SFP0_TX_ENA+sfp_num,bool_set);
+			}
+		}
+		if(strcmp(cmd[2],"VOLT") == 0){
+			if(strcmp(cmd[0],"READ") == 0){
+				rc = sfp_avago_read_voltage(data,sfp_num,val_read);
+			}
+		}
+		if(strcmp(cmd[2],"CURR") == 0){
+			if(strcmp(cmd[0],"READ") == 0){
+				rc = ina3221_get_current(data,(sfp_num/3),ina3221_read);
+				val_read[0] = ina3221_read[sfp_num%3];
+			}
+			else{
+				rc = ina3221_set_limits(data,(sfp_num/3),sfp_num%3,1,atof(cmd[4]));
+			}
+		}
+		if(strcmp(cmd[2],"TEMP") == 0){
+			if(strcmp(cmd[0],"READ") == 0){
+				rc = sfp_avago_read_temperature(data,sfp_num,val_read);
+			}
+		}
+		if(strcmp(cmd[2],"RXPWR") == 0){
+			if(strcmp(cmd[0],"READ") == 0){
+				rc = sfp_avago_read_rx_av_optical_pwr(data,sfp_num,val_read);
+			}
+		}
+		if(strcmp(cmd[2],"TXPWR") == 0){
+			if(strcmp(cmd[0],"READ") == 0){
+				rc = sfp_avago_read_tx_av_optical_pwr(data,sfp_num,val_read);
+			}
+		}
+	}
+	else{
+		if(strcmp(cmd[2],"STATUS") == 0){
+			if(strcmp(cmd[0],"READ") == 0){
+				if(strcmp(cmd[3],"ETH0") == 0){
+					rc = eth_link_status("eth0",bool_read);
+				}
+				else{
+					rc = eth_link_status("eth1",bool_read);
+				}
+			}
+			else{
+				bool_set=((strcmp(cmd[4],"ON") == 0)?(1):(0));
+				rc = eth_link_status_config(cmd[3], bool_set);
+			}
+		}
+		if(strcmp(cmd[2],"VOLT") == 0){
+			if(strcmp(cmd[0],"READ") == 0){
+				if(strcmp(cmd[0],"FPDCPU") == 0){
+					ams_chan[0] = 10;
+					rc = xlnx_ams_read_volt(ams_chan,1,val_read);
+				}
+				else if(strcmp(cmd[0],"LPDCPU") == 0){
+					ams_chan[0] = 9;
+					rc = xlnx_ams_read_volt(ams_chan,1,val_read);
+				}
+				else{
+					chan = ((strcmp(cmd[3],"12V") == 0)) ? 0 : ((strcmp(cmd[3],"3V3") == 0)) ? 1 : 2;
+					rc = ina3221_get_voltage(data,2,ina3221_read);
+					val_read[0] = ((strcmp(cmd[3],"12V") == 0))? ina3221_read[0] :((strcmp(cmd[3],"3V3") == 0))? ina3221_read[1] :ina3221_read[2];
+				}
+			}
+			else{
+				if(strcmp(cmd[0],"FPDCPU") == 0){
+					rc = xlnx_ams_set_limits(8,"voltage","rising",atof(cmd[4]));
+				}
+				else if(strcmp(cmd[0],"LPDCPU") == 0){
+					rc = xlnx_ams_set_limits(7,"voltage","rising",atof(cmd[4]));
+				}
+			}
+		}
+		if(strcmp(cmd[2],"CURR") == 0){
+			if(strcmp(cmd[0],"READ") == 0){
+				rc = ina3221_get_current(data,2,ina3221_read);
+				val_read[0] = ((strcmp(cmd[3],"12V") == 0))? ina3221_read[0] :((strcmp(cmd[3],"3V3") == 0))? ina3221_read[1] :ina3221_read[2];
+			}
+			else{
+				chan = ((strcmp(cmd[3],"12V") == 0)) ? 0 : ((strcmp(cmd[3],"3V3") == 0)) ? 1 : 2;
+				rc = ina3221_set_limits(data,2,chan,1,atof(cmd[4]));
+			}
+		}
+		if(strcmp(cmd[2],"TEMP") == 0){
+			if(strcmp(cmd[0],"READ") == 0){
+				if(strcmp(cmd[0],"FPDCPU") == 0){
+					ams_chan[0] = 8;
+					rc = xlnx_ams_read_temp(ams_chan,1,val_read);
+				}
+				else if(strcmp(cmd[0],"LPDCPU") == 0){
+					ams_chan[0] = 7;
+					rc = xlnx_ams_read_temp(ams_chan,1,val_read);
+				}
+				else if(strcmp(cmd[0],"FPGA") == 0){
+					ams_chan[0] = 20;
+					rc = xlnx_ams_read_temp(ams_chan,1,val_read);
+				}
+				else{
+					rc = mcp9844_read_temperature(data,val_read);
+				}
+			}
+			else{
+				if(strcmp(cmd[0],"FPDCPU") == 0){
+					rc = xlnx_ams_set_limits(8,"temp","rising",atof(cmd[4]));
+				}
+				else if(strcmp(cmd[0],"LPDCPU") == 0){
+					rc = xlnx_ams_set_limits(7,"temp","rising",atof(cmd[4]));
+				}
+				else if(strcmp(cmd[0],"FPGA") == 0){
+					rc = xlnx_ams_set_limits(20,"temp","rising",atof(cmd[4]));
+				}
+				else{
+					rc = mcp9844_set_limits(data,0,atof(cmd[4]));
+				}
+			}
+		}
+	}
+
+	return;
 }
 /************************** Threads declaration ******************************/
-
-/**
+/*
  * Periodic thread that every x seconds reads every magnitude of every sensor available and stores it.
  *
  * @param void *arg: must contain a struct with every I2C device that wants to be monitored
@@ -2844,6 +3044,10 @@ static void *monitoring_thread(void *arg)
 		json_object_object_add(jobj,"device", jdevice);
 		json_object_object_add(jobj,"data",jdata);
 
+		const char *serialized_json = json_object_to_json_string(jobj);
+		zmq_send (mon_publisher, strdup(serialized_json), strlen(serialized_json), 0);
+		//zstr_send_compress(mon_publisher,serialized_json);
+
 		/*FILE* fptr;
 		const char *serialized_json = json_object_to_json_string(jobj);
 		fptr =  fopen("/run/media/mmcblk0p1/sample.json", "a");
@@ -3083,8 +3287,10 @@ static void *ams_alarms_thread(void *arg){
  * @return  NULL (if exits is because of an error).
  */
 static void *command_thread(void *arg){
+
 	struct periodic_info info;
 	int rc ;
+	struct DPB_I2cSensors *data = arg;
 
 	printf("Command thread period: %dms\n",COMMAND_THREAD_PERIOD);
 	rc = make_periodic(COMMAND_THREAD_PERIOD, &info);
@@ -3093,6 +3299,84 @@ static void *command_thread(void *arg){
 		return NULL;
 	}
 	while(1){
+		char *cmd[6];
+		char buffer [256];
+
+
+		int size = zmq_recv(cmd_router, buffer, 255, 0);
+		if (size == -1)
+		  return NULL;
+		if (size > 255)
+		  size = 255;
+		buffer [size] = '\0';
+		strdup(buffer);
+
+		cmd[0] = strtok(buffer," ");
+		int i = 0;
+		while( cmd[i] != NULL ) {
+		   i++;
+		   cmd[i] = strtok(NULL, " ");
+		}
+
+		json_object *jobj = json_object_new_object();
+		json_object *jstr4;
+		json_object *jstr5;
+		char buff[8];
+
+		switch(i){
+		case 5:
+			if(!strcmp(cmd[4],"ON") | !strcmp(cmd[4],"OFF")){
+				jstr5 = json_object_new_string(cmd[4]);
+			}
+			else{
+				float val = atof(cmd[4]);
+				sprintf(buff, "%3.4f", val);
+				jstr5 = json_object_new_double_s((double) val,buff);
+			}
+		case 4:
+			jstr4 = json_object_new_string(cmd[3]);
+		default:
+			json_object *jstr3 = json_object_new_string(cmd[2]);
+			json_object *jstr2 = json_object_new_string(cmd[1]);
+			json_object *jstr1 = json_object_new_string(cmd[0]);
+			json_object *jempty = json_object_new_string("");
+			json_object_object_add(jobj,"opcode", jstr1);
+			json_object_object_add(jobj,"board", jstr2);
+			json_object_object_add(jobj,"magnitude", jstr3);
+			if(i>=4){
+				json_object_object_add(jobj,"optparam", jstr4);
+			}
+			else{
+				json_object_object_add(jobj,"optparam", jempty);
+			}
+			if(i == 5){
+				json_object_object_add(jobj,"value", jstr5);
+			}
+			else{
+				json_object_object_add(jobj,"value", jempty);
+			}
+			break;
+		}
+		//Check JSON schema valid
+		if(!strcmp(cmd[1],"HV")){
+			//Command conversion
+			//RS485 communication
+		}
+		else if(!strcmp(cmd[1],"LV")){
+			//Command conversion
+			//RS485 communication
+		}
+		else if(!strcmp(cmd[1],"Dig0")){
+			//Command conversion
+			//Serial Port Communication
+		}
+		else if(!strcmp(cmd[1],"Dig1")){
+			//Command conversion
+			//Serial Port Communication
+		}
+		else{ //DPB
+
+		}
 
 		wait_period(&info);
 	}
@@ -3152,6 +3436,11 @@ int main(){
 		printf("Error\r\n");
 		return rc;
 	}
+	rc = zmq_socket_init(); //Initialize ZMQ Sockets
+		if (rc) {
+			printf("Error\r\n");
+			return rc;
+	}
 
 	sem_init(&i2c_sync,0,1);
 	/* Block all real time signals so they can be used for the timers.
@@ -3166,8 +3455,8 @@ int main(){
 
 	pthread_create(&t_1, NULL, ams_alarms_thread,NULL); //Create thread 1 - reads AMS alarms
 	pthread_create(&t_2, NULL, i2c_alarms_thread,(void *)&data); //Create thread 2 - reads I2C alarms every x miliseconds
-	pthread_create(&t_3, NULL, monitoring_thread,(void *)&data );//Create thread 3 - monitors magnitudes every x seconds
-	//pthread_create(&t_4, NULL, command_thread,NULL);//Create thread 4 - waits and attends commands
+	pthread_create(&t_3, NULL, monitoring_thread,(void *)&data);//Create thread 3 - monitors magnitudes every x seconds
+	//pthread_create(&t_4, NULL, command_thread,(void *)&data);//Create thread 4 - waits and attends commands
 
 
 	while(1){

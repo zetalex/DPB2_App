@@ -47,15 +47,15 @@
                             							
                             <tool id="xilinx.gnu.arm.a53.linux.c.toolchain.compiler.debug.2084506255" name="ARM v8 Linux gcc compiler" superClass="xilinx.gnu.arm.a53.linux.c.toolchain.compiler.debug">
                                 								
-                                <option defaultValue="gnu.c.optimization.level.none" id="xilinx.gnu.compiler.option.optimization.level.892230950" name="Optimization Level" superClass="xilinx.gnu.compiler.option.optimization.level" valueType="enumerated"/>
+                                <option defaultValue="gnu.c.optimization.level.none" id="xilinx.gnu.compiler.option.optimization.level.892230950" name="Optimization Level" superClass="xilinx.gnu.compiler.option.optimization.level" useByScannerDiscovery="false" valueType="enumerated"/>
                                 								
                                 <option id="xilinx.gnu.compiler.option.debugging.level.1381941168" name="Debug Level" superClass="xilinx.gnu.compiler.option.debugging.level" useByScannerDiscovery="false" value="gnu.c.debugging.level.max" valueType="enumerated"/>
                                 								
-                                <option id="xilinx.gnu.compiler.inferred.swplatform.flags.1277236940" name="Software Platform Inferred Flags" superClass="xilinx.gnu.compiler.inferred.swplatform.flags" value="${resolvePlatformFile:project=DBP2_App,fileType=sysrootFlag}" valueType="string"/>
+                                <option id="xilinx.gnu.compiler.inferred.swplatform.flags.1277236940" name="Software Platform Inferred Flags" superClass="xilinx.gnu.compiler.inferred.swplatform.flags" useByScannerDiscovery="false" value="${resolvePlatformFile:project=DBP2_App,fileType=sysrootFlag}" valueType="string"/>
                                 								
-                                <option id="xilinx.gnu.compiler.inferred.swplatform.includes.1334270910" name="Software Platform Include Path" superClass="xilinx.gnu.compiler.inferred.swplatform.includes"/>
+                                <option id="xilinx.gnu.compiler.inferred.swplatform.includes.1334270910" name="Software Platform Include Path" superClass="xilinx.gnu.compiler.inferred.swplatform.includes" useByScannerDiscovery="false"/>
                                 								
-                                <option id="xilinx.gnu.compiler.dircategory.includes.643410739" name="Include Paths" superClass="xilinx.gnu.compiler.dircategory.includes" valueType="includePath">
+                                <option id="xilinx.gnu.compiler.dircategory.includes.643410739" name="Include Paths" superClass="xilinx.gnu.compiler.dircategory.includes" useByScannerDiscovery="false" valueType="includePath">
                                     									
                                     <listOptionValue builtIn="false" value="${resolvePlatformFile:project=DBP2_App,fileType=sysrootPath,append=/usr/include}"/>
                                     									
@@ -87,17 +87,9 @@
                             							
                             <tool id="xilinx.gnu.arm.a53.linux.c.toolchain.linker.debug.588601170" name="ARM v8 Linux gcc linker" superClass="xilinx.gnu.arm.a53.linux.c.toolchain.linker.debug">
                                 								
-                                <option id="xilinx.gnu.linker.inferred.swplatform.flags.1559149550" name="Software Platform Inferred Flags" superClass="xilinx.gnu.linker.inferred.swplatform.flags" valueType="libs">
-                                    									
-                                    <listOptionValue builtIn="false" value="${resolvePlatformFile:project=DBP2_App,fileType=sysrootFlag}"/>
-                                    									
-                                    <listOptionValue builtIn="false" value="${resolvePlatformFile:project=DBP2_App,fileType=sysrootRlinkPath,append=/lib}"/>
-                                    									
-                                    <listOptionValue builtIn="false" value="${resolvePlatformFile:project=DBP2_App,fileType=sysrootRlinkPath,append=/usr/lib}"/>
-                                    								
-                                </option>
+                                <option id="xilinx.gnu.linker.inferred.swplatform.flags.1559149550" name="Software Platform Inferred Flags" superClass="xilinx.gnu.linker.inferred.swplatform.flags" useByScannerDiscovery="false"/>
                                 								
-                                <option id="xilinx.gnu.linker.inferred.swplatform.lpath.1268536653" name="Software Platform Library Path" superClass="xilinx.gnu.linker.inferred.swplatform.lpath" valueType="libPaths">
+                                <option id="xilinx.gnu.linker.inferred.swplatform.lpath.1268536653" name="Software Platform Library Path" superClass="xilinx.gnu.linker.inferred.swplatform.lpath" useByScannerDiscovery="false" valueType="libPaths">
                                     									
                                     <listOptionValue builtIn="false" value="${resolvePlatformFile:project=DBP2_App,fileType=sysrootPath,append=/lib}"/>
                                     									
@@ -109,9 +101,31 @@
                                     									
                                     <listOptionValue builtIn="false" value="json-c"/>
                                     									
+                                    <listOptionValue builtIn="false" value="sodium"/>
+                                    									
+                                    <listOptionValue builtIn="false" value="zmq"/>
+                                    									
                                     <listOptionValue builtIn="false" value="m"/>
                                     								
                                 </option>
+                                								
+                                <option id="xilinx.gnu.c.link.option.paths.26918608" name="Library search path (-L)" superClass="xilinx.gnu.c.link.option.paths" useByScannerDiscovery="false" valueType="libPaths">
+                                    									
+                                    <listOptionValue builtIn="false" value="&quot;${workspace_loc:/DBP2_Platform/export/DBP2_Platform/sw/DBP2_Platform/linux_domain/sysroot/cortexa72-cortexa53-xilinx-linux}&quot;"/>
+                                    									
+                                    <listOptionValue builtIn="false" value="/home/hyperk0/Xilinx/Vitis/2022.2/gnu/aarch64/lin/aarch64-linux/aarch64-xilinx-linux/lib"/>
+                                    									
+                                    <listOptionValue builtIn="false" value="/home/hyperk0/Xilinx/Vitis/2022.2/gnu/aarch64/lin/aarch64-linux/aarch64-xilinx-linux/usr/lib"/>
+                                    									
+                                    <listOptionValue builtIn="false" value="&quot;${workspace_loc:/DBP2_Platform/export/DBP2_Platform/sw/DBP2_Platform/linux_domain/sysroot/cortexa72-cortexa53-xilinx-linux/lib}&quot;"/>
+                                    									
+                                    <listOptionValue builtIn="false" value="&quot;${workspace_loc:/DBP2_Platform/export/DBP2_Platform/sw/DBP2_Platform/linux_domain/sysroot/cortexa72-cortexa53-xilinx-linux/usr/lib}&quot;"/>
+                                    								
+                                </option>
+                                								
+                                <option id="xilinx.gnu.c.link.option.ldflags.1755980739" name="Linker Flags" superClass="xilinx.gnu.c.link.option.ldflags" useByScannerDiscovery="false" value="" valueType="string"/>
+                                								
+                                <option id="xilinx.gnu.c.link.option.other.560014804" name="Other options (-XLinker [option])" superClass="xilinx.gnu.c.link.option.other" useByScannerDiscovery="false"/>
                                 								
                                 <inputType id="xilinx.gnu.linker.input.1981231640" superClass="xilinx.gnu.linker.input">
                                     									
@@ -247,15 +261,7 @@
                             							
                             <tool id="xilinx.gnu.arm.a53.linux.c.toolchain.linker.release.771797339" name="ARM v8 Linux gcc linker" superClass="xilinx.gnu.arm.a53.linux.c.toolchain.linker.release">
                                 								
-                                <option id="xilinx.gnu.linker.inferred.swplatform.flags.676575840" name="Software Platform Inferred Flags" superClass="xilinx.gnu.linker.inferred.swplatform.flags" useByScannerDiscovery="false" valueType="libs">
-                                    									
-                                    <listOptionValue builtIn="false" value="${resolvePlatformFile:project=DBP2_App,fileType=sysrootFlag}"/>
-                                    									
-                                    <listOptionValue builtIn="false" value="${resolvePlatformFile:project=DBP2_App,fileType=sysrootRlinkPath,append=/lib}"/>
-                                    									
-                                    <listOptionValue builtIn="false" value="${resolvePlatformFile:project=DBP2_App,fileType=sysrootRlinkPath,append=/usr/lib}"/>
-                                    								
-                                </option>
+                                <option id="xilinx.gnu.linker.inferred.swplatform.flags.676575840" name="Software Platform Inferred Flags" superClass="xilinx.gnu.linker.inferred.swplatform.flags" useByScannerDiscovery="false"/>
                                 								
                                 <option id="xilinx.gnu.linker.inferred.swplatform.lpath.1659712473" name="Software Platform Library Path" superClass="xilinx.gnu.linker.inferred.swplatform.lpath" useByScannerDiscovery="false" valueType="libPaths">
                                     									
@@ -269,7 +275,17 @@
                                     									
                                     <listOptionValue builtIn="false" value="json-c"/>
                                     									
+                                    <listOptionValue builtIn="false" value="sodium"/>
+                                    									
                                     <listOptionValue builtIn="false" value="m"/>
+                                    									
+                                    <listOptionValue builtIn="false" value="zmq"/>
+                                    								
+                                </option>
+                                								
+                                <option id="xilinx.gnu.c.link.option.paths.474905007" superClass="xilinx.gnu.c.link.option.paths" useByScannerDiscovery="false" valueType="libPaths">
+                                    									
+                                    <listOptionValue builtIn="false" value="/home/hyperk0/Xilinx/Vitis/2022.2/gnu/aarch64/lin/aarch64-linux/aarch64-xilinx-linux/usr/lib"/>
                                     								
                                 </option>
                                 								
