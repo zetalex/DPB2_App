@@ -102,13 +102,21 @@ int parsing_mon_sensor_data_into_array (json_object *,float , char *, int );
 int parsing_mon_status_data_into_array(json_object *, int , char *,int );
 int alarm_json (json_object *,char *,char *, int , float ,int32_t ,char *);
 int status_alarm_json (json_object *,char *,char *, int ,int32_t ,char *);
+int command_response_json (char *,int32_t ,float );
+int command_status_response_json (char *,int32_t ,int );
+int json_schema_validate (char *,const char *, char *);
 int get_GPIO_base_address(int *);
 int write_GPIO(int , int );
 int read_GPIO(int ,int *);
 int eth_link_status (char *,int *);
+int eth_link_status_config (char *, int );
 int eth_down_alarm(char *,int *);
 int aurora_down_alarm(int ,int *);
 int zmq_socket_init ();
+int dpb_command_handling(struct DPB_I2cSensors *, char **);
+void dig_command_handling(char **);
+void hv_command_handling(char **);
+void lv_command_handling(char **);
 static void *monitoring_thread(void *);
 static void *i2c_alarms_thread(void *);
 static void *ams_alarms_thread(void *);
@@ -138,7 +146,6 @@ int iio_event_monitor_up() {
         }
     } else if (pid > 0) {
         // Parent process
-        // You can perform other tasks here while the child process executes the .elf file
     } else {
         // Error creating the child process
         perror("Error creating the child process");
@@ -804,7 +811,7 @@ int mcp9844_interruptions(struct DPB_I2cSensors *data, uint8_t flag_buf){
 		timestamp = time(NULL);
 		rc = alarm_json(jobj,"PCB Temperature","falling", 99, res[0],timestamp,"warning");
 	}
-	return 0;
+	return rc;
 }
 /**
  * Reads MCP9844 Temperature Sensor alarms flags
@@ -1300,7 +1307,7 @@ int sfp_avago_status_interruptions(uint8_t status, int n){
 		timestamp = time(NULL);
 		rc = status_alarm_json(jobj,"DPB","SFP TX_FAULT Status", n,timestamp,"critical");
 	}
-	return 0;
+	return rc;
 }
 /**
  * Handles SFP alarm interruptions
@@ -1376,7 +1383,7 @@ int sfp_avago_alarms_interruptions(struct DPB_I2cSensors *data,uint16_t flags, i
 		rc = alarm_json(jobj,"SFP Temperature","falling", n, res[0],timestamp,"warning");
 	}
 
-	return 0;
+	return rc;
 }
 /**
  * Reads SFP status and alarms flags
@@ -1640,7 +1647,7 @@ int ina3221_critical_interruptions(struct DPB_I2cSensors *data,uint16_t mask, in
 			rc = alarm_json(jobj,"Current Monitor (+1.8V)","rising", 99, res[2],timestamp,"critical");
 		else
 			rc = alarm_json(jobj,"SFP Current Monitor","rising", k+2, res[2],timestamp,"critical");	}
-	return 0;
+	return rc;
 }
 /**
  * Handles INA3221 Voltage and Current Sensor warning alarm interruptions
@@ -1683,7 +1690,7 @@ int ina3221_warning_interruptions(struct DPB_I2cSensors *data,uint16_t mask, int
 			rc = alarm_json(jobj,"Current Monitor (+1.8V)","rising", 99, res[2],timestamp,"warning");
 		else
 			rc = alarm_json(jobj,"SFP Current Monitor","rising", k+2, res[2],timestamp,"warning");	}
-	return 0;
+	return rc;
 }
 /**
  * Reads INA3221 Voltage and Current Sensor warning and critical alarms flags
@@ -1929,7 +1936,7 @@ int parsing_mon_status_data_into_array(json_object *jarray, int status, char *ma
 	return 0;
 }
 /**
- * Parses alarms data into a JSON object
+ * Parses alarms data into a JSON string and send it to socket
  *
  * @param json_object *jobj: JSON object where data will be parsed
  * @param int chan: Number of measured channel, if chan is 99 means channel will not be parsed
@@ -1940,7 +1947,7 @@ int parsing_mon_status_data_into_array(json_object *jarray, int status, char *ma
  * @param char *info_type: Determines the reported event type (inof,warning or critical)
  *
  *
- * @return: 0
+ * @return: 0 or negative integer if validation fails
  */
 int alarm_json (json_object *jobj,char *chip,char *ev_type, int chan, float val,int32_t timestamp,char *info_type)
 {
@@ -1978,13 +1985,18 @@ int alarm_json (json_object *jobj,char *chip,char *ev_type, int chan, float val,
 	json_object_object_add(jobj,"data", jalarm_data);
 
 	const char *serialized_json = json_object_to_json_string(jobj);
+	int rc = json_schema_validate("JSONSchemaLogging.json",serialized_json, "log_temp.json");
+	if (rc) {
+		printf("Error\r\n");
+		return rc;
+	}
 	zmq_send (log_publisher, strdup(serialized_json), strlen(serialized_json), 0);
 
 	return 0;
 }
 
 /**
- * Parses alarms data into a JSON object
+ * Parses alarms data into a JSON string and send it to socket
  *
  * @param json_object *jobj: JSON object where data will be parsed
  * @param int chan: Number of measured channel, if chan is 99 means channel will not be parsed (also indicates it is not SFP related)
@@ -1994,7 +2006,7 @@ int alarm_json (json_object *jobj,char *chip,char *ev_type, int chan, float val,
  * @param char *info_type: Determines the reported event type (inof,warning or critical)
  *
  *
- * @return: 0
+ * @return: 0 or negative integer if validation fails
  */
 int status_alarm_json (json_object *jobj,char *board,char *chip, int chan,int32_t timestamp,char *info_type)
 {
@@ -2033,10 +2045,156 @@ int status_alarm_json (json_object *jobj,char *board,char *chip, int chan,int32_
 	json_object_object_add(jobj,"data", jalarm_data);
 
 	const char *serialized_json = json_object_to_json_string(jobj);
+	int rc = json_schema_validate("JSONSchemaLogging.json",serialized_json, "log_temp.json");
+	if (rc) {
+		printf("Error\r\n");
+		return rc;
+	}
 	zmq_send(log_publisher, strdup(serialized_json), strlen(serialized_json), 0);
 
 	return 0;
 }
+/**
+ * Parses command response into a JSON string and send it to socket
+ *
+ * @param char *board: Name of the board where the alarm is asserted
+ * @param int32_t timestamp: Time when the event occurred
+ * @param float val: read value
+ *
+ * @return: 0 or negative integer if validation fails
+ */
+int command_response_json (char *board,int32_t timestamp,float val)
+{
+	json_object *jcmd_data = json_object_new_object();
+
+	char buffer[8];
+	sprintf(buffer, "%3.4f", val);
+
+	json_object *jdevice = json_object_new_string("ID DPB");
+	json_object *jboard = json_object_new_string(board);
+	json_object *jval = json_object_new_double_s((double) val,buffer);
+	json_object *jtimestamp = json_object_new_int(timestamp);
+
+
+	json_object_object_add(jcmd_data,"timestamp", jtimestamp);
+	json_object_object_add(jcmd_data,"device", jdevice);
+	json_object_object_add(jcmd_data,"board", jboard);
+	json_object_object_add(jcmd_data,"value", jval);
+
+	const char *serialized_json = json_object_to_json_string(jcmd_data);
+	int rc = json_schema_validate("JSONSchemaCommand.json",serialized_json, "cmd_temp.json");
+	if (rc) {
+		printf("Error\r\n");
+		return rc;
+	}
+	zmq_send(cmd_router, strdup(serialized_json), strlen(serialized_json), 0);
+
+	return 0;
+}
+
+/**
+ * Parses command response into a JSON string and send it to socket
+ *
+ * @param char *board: Name of the board where the alarm is asserted
+ * @param int32_t timestamp: Time when the event occurred
+ * @param int val: read value (1 is ON and 0 is OFF), if operation is set val = 99, JSON value field = OK , else is error, JSON value = ERROR
+ *
+ * @return: 0 or negative integer if validation fails
+ */
+int command_status_response_json (char *board,int32_t timestamp,int val)
+{
+	json_object *jcmd_data = json_object_new_object();
+
+
+	json_object *jdevice = json_object_new_string("ID DPB");
+	json_object *jboard = json_object_new_string(board);
+	json_object *jval;
+	json_object *jtimestamp = json_object_new_int(timestamp);
+
+	if(val == 99)
+		jval = json_object_new_string("OK");
+	else if(val == 0)
+		jval = json_object_new_string("ON");
+	else if(val == 1)
+		jval = json_object_new_string("OFF");
+	else
+		jval = json_object_new_string("ERROR: Command not valid");
+
+
+	json_object_object_add(jcmd_data,"timestamp", jtimestamp);
+	json_object_object_add(jcmd_data,"device", jdevice);
+	json_object_object_add(jcmd_data,"board", jboard);
+	json_object_object_add(jcmd_data,"value", jval);
+
+	const char *serialized_json = json_object_to_json_string(jcmd_data);
+	int rc = json_schema_validate("JSONSchemaCommand.json",serialized_json, "cmd_temp.json");
+	if (rc) {
+		printf("Error\r\n");
+		return rc;
+	}
+	zmq_send(cmd_router, strdup(serialized_json), strlen(serialized_json), 0);
+
+	return 0;
+}
+/**
+ * Validates generated JSON string with a validation schema
+ *
+ * @param char *schema: Name of validation schema file
+ * @param const char *json_string: JSON string to be validated
+ * @param char *temp_file: Name of Temporal File
+ *
+ * @return: 0 if correct, negative integer if validation failed
+ */
+int json_schema_validate (char *schema,const char *json_string, char *temp_file)
+{
+	FILE* fptr;
+	char file_path[64];
+	char schema_path[64];
+	strcpy(file_path,"/home/");
+	strcpy(schema_path,"/home/dpb2_json_schemas/");
+
+	strcat(file_path,temp_file);
+	strcat(schema_path,schema);
+	fptr =  fopen("/home/sample.json", "a");
+	fwrite(json_string,sizeof(char),strlen(json_string),fptr);
+	fclose(fptr);
+
+	FILE *fp;
+	char *command = malloc(128);
+	char path[64];
+	strcpy(command,"/usr/bin/json-schema-validate ");
+	strcat(command,schema_path);
+	strcat(command," < ");
+	strcat(command,file_path);
+
+	int  stderr_bk; //is fd for stdout backup
+	stderr_bk = dup(fileno(stderr));
+
+	int pipefd[2];
+	pipe2(pipefd, 0); // O_NONBLOCK);
+
+	// What used to be stdout will now go to the pipe.
+	dup2(pipefd[1], fileno(stderr));
+	fflush(stderr);//flushall();
+	/* Open the command for reading. */
+	fp = popen(command, "r");
+	if (fp == NULL) {
+		printf("Failed to run command\n" );
+		return -1;
+	}
+	close(pipefd[1]);
+	dup2(stderr_bk, fileno(stderr));//restore
+
+	read(pipefd[0], path, 64);
+	remove(file_path);
+	pclose(fp);
+	if(strcmp(path,"document is valid\n")){
+		printf("Error: JSON schema not valid" );
+		return -EINVAL;
+	}
+	return 0;
+}
+
 /************************** GPIO functions ******************************/
 /**
  * Gets GPIO base address
@@ -2429,18 +2587,18 @@ int zmq_socket_init (){
 *
 * @return  0 if parameters OK and reports the event, if not returns negative integer.
 */
-void dpb_command_handling(struct DPB_I2cSensors *data, char **cmd){
+int dpb_command_handling(struct DPB_I2cSensors *data, char **cmd){
 
 	regex_t r1;
 	int reg_exp;
-	int rc;
+	int rc = 0;
 	int bool_set;
 	int bool_read[1];
 	int ams_chan[1];
 	int chan ;
 	float val_read[1];
 	float ina3221_read[3];
-
+	int32_t timestamp = time(NULL);
 
 	reg_exp = regcomp(&r1, "SFP.*", 0);
 	reg_exp = regexec(&r1, cmd[3], 0, NULL, 0);
@@ -2451,39 +2609,47 @@ void dpb_command_handling(struct DPB_I2cSensors *data, char **cmd){
 		if(strcmp(cmd[2],"STATUS") == 0){
 			if(strcmp(cmd[0],"READ") == 0){
 				rc = read_GPIO(SFP0_TX_ENA+(sfp_num*4),bool_read);
+				rc = command_status_response_json ("DPB",timestamp,bool_read[0]);
 			}
 			else{
 				bool_set=((strcmp(cmd[4],"ON") == 0)?(1):(0));
 				rc = write_GPIO(SFP0_TX_ENA+sfp_num,bool_set);
+				rc = command_status_response_json ("DPB",timestamp,99);
 			}
 		}
 		if(strcmp(cmd[2],"VOLT") == 0){
 			if(strcmp(cmd[0],"READ") == 0){
 				rc = sfp_avago_read_voltage(data,sfp_num,val_read);
+				rc = command_response_json ("DPB",timestamp,val_read[0]);
 			}
 		}
 		if(strcmp(cmd[2],"CURR") == 0){
 			if(strcmp(cmd[0],"READ") == 0){
 				rc = ina3221_get_current(data,(sfp_num/3),ina3221_read);
 				val_read[0] = ina3221_read[sfp_num%3];
+				rc = command_response_json ("DPB",timestamp,val_read[0]);
 			}
 			else{
 				rc = ina3221_set_limits(data,(sfp_num/3),sfp_num%3,1,atof(cmd[4]));
+				rc = command_status_response_json ("DPB",timestamp,99);
 			}
 		}
 		if(strcmp(cmd[2],"TEMP") == 0){
 			if(strcmp(cmd[0],"READ") == 0){
 				rc = sfp_avago_read_temperature(data,sfp_num,val_read);
+				rc = command_response_json ("DPB",timestamp,val_read[0]);
 			}
 		}
 		if(strcmp(cmd[2],"RXPWR") == 0){
 			if(strcmp(cmd[0],"READ") == 0){
 				rc = sfp_avago_read_rx_av_optical_pwr(data,sfp_num,val_read);
+				rc = command_response_json ("DPB",timestamp,val_read[0]);
 			}
 		}
 		if(strcmp(cmd[2],"TXPWR") == 0){
 			if(strcmp(cmd[0],"READ") == 0){
 				rc = sfp_avago_read_tx_av_optical_pwr(data,sfp_num,val_read);
+				rc = command_response_json ("DPB",timestamp,val_read[0]);
 			}
 		}
 	}
@@ -2492,14 +2658,17 @@ void dpb_command_handling(struct DPB_I2cSensors *data, char **cmd){
 			if(strcmp(cmd[0],"READ") == 0){
 				if(strcmp(cmd[3],"ETH0") == 0){
 					rc = eth_link_status("eth0",bool_read);
+					rc = command_status_response_json ("DPB",timestamp,bool_read[0]);
 				}
 				else{
 					rc = eth_link_status("eth1",bool_read);
+					rc = command_status_response_json ("DPB",timestamp,bool_read[0]);
 				}
 			}
 			else{
 				bool_set=((strcmp(cmd[4],"ON") == 0)?(1):(0));
 				rc = eth_link_status_config(cmd[3], bool_set);
+				rc = command_status_response_json ("DPB",timestamp,99);
 			}
 		}
 		if(strcmp(cmd[2],"VOLT") == 0){
@@ -2507,23 +2676,28 @@ void dpb_command_handling(struct DPB_I2cSensors *data, char **cmd){
 				if(strcmp(cmd[0],"FPDCPU") == 0){
 					ams_chan[0] = 10;
 					rc = xlnx_ams_read_volt(ams_chan,1,val_read);
+					rc = command_response_json ("DPB",timestamp,val_read[0]);
 				}
 				else if(strcmp(cmd[0],"LPDCPU") == 0){
 					ams_chan[0] = 9;
 					rc = xlnx_ams_read_volt(ams_chan,1,val_read);
+					rc = command_response_json ("DPB",timestamp,val_read[0]);
 				}
 				else{
 					chan = ((strcmp(cmd[3],"12V") == 0)) ? 0 : ((strcmp(cmd[3],"3V3") == 0)) ? 1 : 2;
 					rc = ina3221_get_voltage(data,2,ina3221_read);
 					val_read[0] = ((strcmp(cmd[3],"12V") == 0))? ina3221_read[0] :((strcmp(cmd[3],"3V3") == 0))? ina3221_read[1] :ina3221_read[2];
+					rc = command_response_json ("DPB",timestamp,val_read[0]);
 				}
 			}
 			else{
 				if(strcmp(cmd[0],"FPDCPU") == 0){
 					rc = xlnx_ams_set_limits(8,"voltage","rising",atof(cmd[4]));
+					rc = command_status_response_json ("DPB",timestamp,99);
 				}
 				else if(strcmp(cmd[0],"LPDCPU") == 0){
 					rc = xlnx_ams_set_limits(7,"voltage","rising",atof(cmd[4]));
+					rc = command_status_response_json ("DPB",timestamp,99);
 				}
 			}
 		}
@@ -2531,10 +2705,12 @@ void dpb_command_handling(struct DPB_I2cSensors *data, char **cmd){
 			if(strcmp(cmd[0],"READ") == 0){
 				rc = ina3221_get_current(data,2,ina3221_read);
 				val_read[0] = ((strcmp(cmd[3],"12V") == 0))? ina3221_read[0] :((strcmp(cmd[3],"3V3") == 0))? ina3221_read[1] :ina3221_read[2];
+				rc = command_response_json ("DPB",timestamp,val_read[0]);
 			}
 			else{
 				chan = ((strcmp(cmd[3],"12V") == 0)) ? 0 : ((strcmp(cmd[3],"3V3") == 0)) ? 1 : 2;
 				rc = ina3221_set_limits(data,2,chan,1,atof(cmd[4]));
+				rc = command_status_response_json ("DPB",timestamp,99);
 			}
 		}
 		if(strcmp(cmd[2],"TEMP") == 0){
@@ -2542,36 +2718,56 @@ void dpb_command_handling(struct DPB_I2cSensors *data, char **cmd){
 				if(strcmp(cmd[0],"FPDCPU") == 0){
 					ams_chan[0] = 8;
 					rc = xlnx_ams_read_temp(ams_chan,1,val_read);
+					rc = command_response_json ("DPB",timestamp,val_read[0]);
 				}
 				else if(strcmp(cmd[0],"LPDCPU") == 0){
 					ams_chan[0] = 7;
 					rc = xlnx_ams_read_temp(ams_chan,1,val_read);
+					rc = command_response_json ("DPB",timestamp,val_read[0]);
 				}
 				else if(strcmp(cmd[0],"FPGA") == 0){
 					ams_chan[0] = 20;
 					rc = xlnx_ams_read_temp(ams_chan,1,val_read);
+					rc = command_response_json ("DPB",timestamp,val_read[0]);
 				}
 				else{
 					rc = mcp9844_read_temperature(data,val_read);
+					rc = command_response_json ("DPB",timestamp,val_read[0]);
 				}
 			}
 			else{
 				if(strcmp(cmd[0],"FPDCPU") == 0){
 					rc = xlnx_ams_set_limits(8,"temp","rising",atof(cmd[4]));
+					rc = command_status_response_json ("DPB",timestamp,99);
 				}
 				else if(strcmp(cmd[0],"LPDCPU") == 0){
 					rc = xlnx_ams_set_limits(7,"temp","rising",atof(cmd[4]));
+					rc = command_status_response_json ("DPB",timestamp,99);
 				}
 				else if(strcmp(cmd[0],"FPGA") == 0){
 					rc = xlnx_ams_set_limits(20,"temp","rising",atof(cmd[4]));
+					rc = command_status_response_json ("DPB",timestamp,99);
 				}
 				else{
 					rc = mcp9844_set_limits(data,0,atof(cmd[4]));
+					rc = command_status_response_json ("DPB",timestamp,99);
 				}
 			}
 		}
 	}
 
+	return rc;
+}
+
+void dig_command_handling(char **cmd){
+	return;
+}
+
+void hv_command_handling(char **cmd){
+	return;
+}
+
+void lv_command_handling(char **cmd){
 	return;
 }
 /************************** Threads declaration ******************************/
@@ -2651,8 +2847,6 @@ static void *monitoring_thread(void *arg)
 	float sfp_vcc_5[1];
 	float sfp_txbias_5[1];
 	uint8_t sfp_status_5[2];*/
-
-	//struct DPB_I2cSensors data;
 
 	usleep(100);
 	printf("Monitoring thread period: %ds\n",MONIT_THREAD_PERIOD/1000000);
@@ -2890,7 +3084,7 @@ static void *monitoring_thread(void *arg)
 			printf("Error\r\n");
 			return NULL;
 		}
-		rc = eth_link_status("eth0",&eth_status[0]);
+		/*rc = eth_link_status("eth0",&eth_status[0]);
 		if (rc) {
 			printf("Error\r\n");
 			return NULL;
@@ -2919,7 +3113,7 @@ static void *monitoring_thread(void *arg)
 		if (rc) {
 			printf("Error\r\n");
 			return NULL;
-		}
+		}*/
 
 		json_object * jobj = json_object_new_object();
 		json_object *jdata = json_object_new_object();
@@ -2929,14 +3123,14 @@ static void *monitoring_thread(void *arg)
 		json_object *jdig1 = json_object_new_array();
 		json_object *jdpb = json_object_new_array();
 
-		parsing_mon_status_data_into_array(jdpb,eth_status[0],"Main Ethernet Link Status",99);
+		/*parsing_mon_status_data_into_array(jdpb,eth_status[0],"Main Ethernet Link Status",99);
 		parsing_mon_status_data_into_array(jdpb,eth_status[1],"Backup Ethernet Link Status",99);
 
 		parsing_mon_status_data_into_array(jdig0,aurora_status[0],"Aurora Main Link Status",99);
 		parsing_mon_status_data_into_array(jdig0,aurora_status[1],"Aurora Backup Link Status",99);
 
 		parsing_mon_status_data_into_array(jdig1,aurora_status[2],"Aurora Main Link Status",99);
-		parsing_mon_status_data_into_array(jdig1,aurora_status[3],"Aurora Backup Link Status",99);
+		parsing_mon_status_data_into_array(jdig1,aurora_status[3],"Aurora Backup Link Status",99);*/
 
 		parsing_mon_sensor_data_into_array(jdpb,temp[0],"PCB Temperature",99);
 
@@ -3043,10 +3237,15 @@ static void *monitoring_thread(void *arg)
 		json_object_object_add(jobj,"timestamp", jtimestamp);
 		json_object_object_add(jobj,"device", jdevice);
 		json_object_object_add(jobj,"data",jdata);
-
 		const char *serialized_json = json_object_to_json_string(jobj);
+
+		rc = json_schema_validate("JSONSchemaMonitoring.json",serialized_json, "mon_temp.json");
+		if (rc) {
+			printf("Error\r\n");
+			return NULL;
+		}
+
 		zmq_send (mon_publisher, strdup(serialized_json), strlen(serialized_json), 0);
-		//zstr_send_compress(mon_publisher,serialized_json);
 
 		/*FILE* fptr;
 		const char *serialized_json = json_object_to_json_string(jobj);
@@ -3300,16 +3499,18 @@ static void *command_thread(void *arg){
 	}
 	while(1){
 		char *cmd[6];
-		char buffer [256];
+		char aux_buff[256];
+		char buffer[256];
+		int32_t timestamp = time(NULL);
 
 
-		int size = zmq_recv(cmd_router, buffer, 255, 0);
+		int size = zmq_recv(cmd_router, aux_buff, 255, 0);
 		if (size == -1)
 		  return NULL;
 		if (size > 255)
 		  size = 255;
-		buffer [size] = '\0';
-		strdup(buffer);
+		aux_buff[size] = '\0';
+		strcpy(buffer,strdup(aux_buff));
 
 		cmd[0] = strtok(buffer," ");
 		int i = 0;
@@ -3340,24 +3541,31 @@ static void *command_thread(void *arg){
 			json_object *jstr2 = json_object_new_string(cmd[1]);
 			json_object *jstr1 = json_object_new_string(cmd[0]);
 			json_object *jempty = json_object_new_string("");
-			json_object_object_add(jobj,"opcode", jstr1);
+			json_object_object_add(jobj,"operation", jstr1);
 			json_object_object_add(jobj,"board", jstr2);
 			json_object_object_add(jobj,"magnitude", jstr3);
 			if(i>=4){
-				json_object_object_add(jobj,"optparam", jstr4);
+				json_object_object_add(jobj,"channel", jstr4);
 			}
 			else{
-				json_object_object_add(jobj,"optparam", jempty);
+				json_object_object_add(jobj,"channel", jempty);
 			}
 			if(i == 5){
-				json_object_object_add(jobj,"value", jstr5);
+				json_object_object_add(jobj,"write_value", jstr5);
 			}
 			else{
-				json_object_object_add(jobj,"value", jempty);
+				json_object_object_add(jobj,"write_value", jempty);
 			}
 			break;
 		}
 		//Check JSON schema valid
+		if(1){
+
+		}
+		else{
+			rc = command_status_response_json ("DPB",timestamp,-1);
+		}
+
 		if(!strcmp(cmd[1],"HV")){
 			//Command conversion
 			//RS485 communication
@@ -3375,7 +3583,11 @@ static void *command_thread(void *arg){
 			//Serial Port Communication
 		}
 		else{ //DPB
-
+			rc = dpb_command_handling(data,cmd);
+			if (rc) {
+				printf("Error\r\n");
+				return NULL;
+			}
 		}
 
 		wait_period(&info);
@@ -3453,8 +3665,8 @@ int main(){
 		sigaddset(&alarm_sig, i);
 	sigprocmask(SIG_BLOCK, &alarm_sig, NULL);
 
-	pthread_create(&t_1, NULL, ams_alarms_thread,NULL); //Create thread 1 - reads AMS alarms
-	pthread_create(&t_2, NULL, i2c_alarms_thread,(void *)&data); //Create thread 2 - reads I2C alarms every x miliseconds
+	//pthread_create(&t_1, NULL, ams_alarms_thread,NULL); //Create thread 1 - reads AMS alarms
+	//pthread_create(&t_2, NULL, i2c_alarms_thread,(void *)&data); //Create thread 2 - reads I2C alarms every x miliseconds
 	pthread_create(&t_3, NULL, monitoring_thread,(void *)&data);//Create thread 3 - monitors magnitudes every x seconds
 	//pthread_create(&t_4, NULL, command_thread,(void *)&data);//Create thread 4 - waits and attends commands
 

@@ -214,7 +214,7 @@ To finish with the establishment of the working environment, we only have to cre
 # I<sup>2</sup>C protocol and how it is implemented on our board
 To achieve communication between the different components on the board and the terminal, the I<sup>2</sup>C protocol is used, a communication protocol based on a Master-Slave system where the communication bus is divided into 2 lines, SCL for the clock and SDA for the data, which are connected to a pull-up resistor each, so the default level is high level.
 
-The operation of this protocol consists of the start of the transmission by the Master which jointly indicates the address of the slave to which it is directed with an address of 7 bits (we have sensors that have an address of 6 bits plus a reserved bit, which can be configurated to differentiate each slave in a physical way), in addition, it is indicated with a bit if the operation to be carried out is reading or writing. The data transmission is guided by the clock line and the data is transmitted in byte size, transmitting from MSB to LSB.
+The operation of this protocol consists of the start of the transmission by the Master which jointly indicates the address of the slave to which it is directed with an address of 7 bits, even though we have sensors that have an address of 6 bits plus a reserved bit, which can be configured to differentiate each slave in a physical way, in addition, it is indicated with a bit if the operation to be carried out is reading or writing. The data transmission is guided by the clock line and the data is transmitted in byte size, transmitting from MSB to LSB.
 
 ![I<sup>2</sup>C Address and Data Frames](/DBP2_App/doc/figures/I2C_ADD_DAT_FRAME.png)
 <figcaption>Addressing and data frames I<sup>2</sup>C</figcaption>.
