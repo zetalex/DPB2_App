@@ -1,0 +1,23 @@
+var searchData=
+[
+  ['ina3221_5fbus_5fvoltage_5f1_5freg_0',['INA3221_BUS_VOLTAGE_1_REG',['../constants_8h.html#aeda3ce44e1d0a312b3a3778d8c4b1056',1,'constants.h']]],
+  ['ina3221_5fbus_5fvoltage_5f2_5freg_1',['INA3221_BUS_VOLTAGE_2_REG',['../constants_8h.html#acac37359780bc24c6f8c8e773dce94cd',1,'constants.h']]],
+  ['ina3221_5fbus_5fvoltage_5f3_5freg_2',['INA3221_BUS_VOLTAGE_3_REG',['../constants_8h.html#af6375915bef18efc56a7dba1c00362c4',1,'constants.h']]],
+  ['ina3221_5fch1_3',['INA3221_CH1',['../constants_8h.html#acd1459196e2f82f8491ff92dc17090e0',1,'constants.h']]],
+  ['ina3221_5fch2_4',['INA3221_CH2',['../constants_8h.html#a8251c2523a9fe0d0cd5565d6c1321a72',1,'constants.h']]],
+  ['ina3221_5fch3_5',['INA3221_CH3',['../constants_8h.html#a39d840b7487d341c785cea532630ce4f',1,'constants.h']]],
+  ['ina3221_5fconfig_5freg_6',['INA3221_CONFIG_REG',['../constants_8h.html#a45308beafe2e2572d0f735a1652436b2',1,'constants.h']]],
+  ['ina3221_5fdie_5fid_5freg_7',['INA3221_DIE_ID_REG',['../constants_8h.html#a9dda52b38c7f82a1a2873af0df92f6f4',1,'constants.h']]],
+  ['ina3221_5fmanuf_5fid_5freg_8',['INA3221_MANUF_ID_REG',['../constants_8h.html#ae29ff48355e999092ea6718a0c3e127b',1,'constants.h']]],
+  ['ina3221_5fmask_5fena_5freg_9',['INA3221_MASK_ENA_REG',['../constants_8h.html#ab8e2003f22c30c4a941ba1513cf8c3f3',1,'constants.h']]],
+  ['ina3221_5fnum_5fchan_10',['INA3221_NUM_CHAN',['../constants_8h.html#ad5cae4e085bc973ea7df8b44acaa0d21',1,'constants.h']]],
+  ['ina3221_5fshunt_5fvoltage_5f1_5freg_11',['INA3221_SHUNT_VOLTAGE_1_REG',['../constants_8h.html#a0068bcac3aec82d69c053cafb392a72e',1,'constants.h']]],
+  ['ina3221_5fshunt_5fvoltage_5f2_5freg_12',['INA3221_SHUNT_VOLTAGE_2_REG',['../constants_8h.html#a6038657cf7fba7c54d44991115bffa0c',1,'constants.h']]],
+  ['ina3221_5fshunt_5fvoltage_5f3_5freg_13',['INA3221_SHUNT_VOLTAGE_3_REG',['../constants_8h.html#a0962548fbb3e51f6f954bc9dddca459b',1,'constants.h']]],
+  ['ina3221_5fshunt_5fvoltage_5fcrit1_5freg_14',['INA3221_SHUNT_VOLTAGE_CRIT1_REG',['../constants_8h.html#a668e246225ebbfb02aedee9a254cba70',1,'constants.h']]],
+  ['ina3221_5fshunt_5fvoltage_5fcrit2_5freg_15',['INA3221_SHUNT_VOLTAGE_CRIT2_REG',['../constants_8h.html#af86948da19cea1ed4477e28fa53fdc0c',1,'constants.h']]],
+  ['ina3221_5fshunt_5fvoltage_5fcrit3_5freg_16',['INA3221_SHUNT_VOLTAGE_CRIT3_REG',['../constants_8h.html#a84cc76133695ebe8e9b9581269c12881',1,'constants.h']]],
+  ['ina3221_5fshunt_5fvoltage_5fwarn1_5freg_17',['INA3221_SHUNT_VOLTAGE_WARN1_REG',['../constants_8h.html#a82f44d73c1a97dbc6a956b11fd0241c4',1,'constants.h']]],
+  ['ina3221_5fshunt_5fvoltage_5fwarn2_5freg_18',['INA3221_SHUNT_VOLTAGE_WARN2_REG',['../constants_8h.html#a71ffd950aec5764746b1f51eff645ad2',1,'constants.h']]],
+  ['ina3221_5fshunt_5fvoltage_5fwarn3_5freg_19',['INA3221_SHUNT_VOLTAGE_WARN3_REG',['../constants_8h.html#a1e34b38c65eab0b6b30c08b795c87824',1,'constants.h']]]
+];

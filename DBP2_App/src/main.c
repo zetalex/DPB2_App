@@ -863,7 +863,7 @@ int init_SFP_A0(struct I2cDevice *dev) {
 		if (rc) {
 			return rc;
 		}
-	//Read SFP Physcial device register
+	//Read SFP Physical device register
 	rc = i2c_readn_reg(dev,SFPphys_reg,SFPphys_buf,1);
 		if(rc < 0)
 			return rc;
@@ -2565,7 +2565,7 @@ int zmq_socket_init (){
 	int rc = 0;
     mon_context = zmq_ctx_new();
     mon_publisher = zmq_socket(mon_context, ZMQ_PUB);
-    rc = zmq_bind(mon_publisher, "tcp://127.0.0.1:5555");
+    rc = zmq_bind(mon_publisher, "tcp://*:5555");
 	if (rc) {
 		return rc;
 	}
@@ -3125,14 +3125,14 @@ static void *monitoring_thread(void *arg)
 		json_object *jdig1 = json_object_new_array();
 		json_object *jdpb = json_object_new_array();
 
-		/*parsing_mon_status_data_into_array(jdpb,eth_status[0],"Main Ethernet Link Status",99);
+		parsing_mon_status_data_into_array(jdpb,eth_status[0],"Main Ethernet Link Status",99);
 		parsing_mon_status_data_into_array(jdpb,eth_status[1],"Backup Ethernet Link Status",99);
 
 		parsing_mon_status_data_into_array(jdig0,aurora_status[0],"Aurora Main Link Status",99);
 		parsing_mon_status_data_into_array(jdig0,aurora_status[1],"Aurora Backup Link Status",99);
 
 		parsing_mon_status_data_into_array(jdig1,aurora_status[2],"Aurora Main Link Status",99);
-		parsing_mon_status_data_into_array(jdig1,aurora_status[3],"Aurora Backup Link Status",99);*/
+		parsing_mon_status_data_into_array(jdig1,aurora_status[3],"Aurora Backup Link Status",99);
 
 		parsing_mon_sensor_data_into_array(jdpb,temp[0],"PCB Temperature",99);
 
@@ -3241,13 +3241,13 @@ static void *monitoring_thread(void *arg)
 		json_object_object_add(jobj,"data",jdata);
 		const char *serialized_json = json_object_to_json_string(jobj);
 
-		rc = json_schema_validate("JSONSchemaMonitoring.json",serialized_json, "mon_temp.json");
+		/*rc = json_schema_validate("JSONSchemaMonitoring.json",serialized_json, "mon_temp.json");
 		if (rc) {
 			printf("Error\r\n");
 			return NULL;
-		}
+		}*/
 
-		zmq_send (mon_publisher, strdup(serialized_json), strlen(serialized_json), 0);
+		int rc2 = zmq_send(mon_publisher, strdup(serialized_json), strlen(serialized_json), 0);
 
 		/*FILE* fptr;
 		const char *serialized_json = json_object_to_json_string(jobj);
