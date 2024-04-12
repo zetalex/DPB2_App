@@ -1,7 +1,6 @@
 /*
- * main.c
  *
- * @date
+ * @date   12-04-2024
  * @author Borja Martínez Sánchez
  */
 
@@ -19,7 +18,7 @@
 #include <zmq.h>
 #include "json-c/json.h"
 #include <math.h>
- #include <dirent.h>
+#include <dirent.h>
 #include <regex.h>
 
 #include "i2c.h"
@@ -2206,11 +2205,12 @@ int json_schema_validate (char *schema,const char *json_string, char *temp_file)
 int get_GPIO_base_address(int *address){
 
 	char GPIO_dir[64] = "/sys/class/gpio/";
-	regex_t r1;
+	regex_t r1,r2;
 	DIR *dp;
 	FILE *GPIO;
 
 	int data = 0;
+	int data2 = 0;
 	int i = 0;
 	char *arr[8];
 	long bytes = 0;
@@ -2219,6 +2219,7 @@ int get_GPIO_base_address(int *address){
 	dp = opendir (GPIO_dir);
 
 	data = regcomp(&r1, "gpiochip.*", 0);
+	data2 = regcomp(&r2, "zynqmp_gpio.*", 0);
 
 
 	while ((entry = readdir (dp)) != NULL){
@@ -2235,9 +2236,10 @@ int get_GPIO_base_address(int *address){
 		GPIO = fopen(GPIO_dir,"r");
 
 		strcpy(GPIO_dir,"/sys/class/gpio/");
-		fread(label_str, sizeof(label_str), 1, GPIO);
-		fwrite(label_str, bytes, 1, stdout);
-		if(!(strcmp(label_str,"zynqmp_gpio\n"))){
+		fread(label_str, sizeof("zynqmp_gpio\n"), 1, GPIO);
+		data2 = regexec(&r2, label_str, 0, NULL, 0);
+		//fwrite(label_str, bytes, 1, stdout);
+		if(data2 == 0){
 		    	fclose(GPIO);
 		    	strcat(GPIO_dir,arr[j]);
 		    	strcat(GPIO_dir,"/base");
@@ -3084,7 +3086,7 @@ static void *monitoring_thread(void *arg)
 			printf("Error\r\n");
 			return NULL;
 		}
-		/*rc = eth_link_status("eth0",&eth_status[0]);
+		rc = eth_link_status("eth0",&eth_status[0]);
 		if (rc) {
 			printf("Error\r\n");
 			return NULL;
@@ -3113,7 +3115,7 @@ static void *monitoring_thread(void *arg)
 		if (rc) {
 			printf("Error\r\n");
 			return NULL;
-		}*/
+		}
 
 		json_object * jobj = json_object_new_object();
 		json_object *jdata = json_object_new_object();
