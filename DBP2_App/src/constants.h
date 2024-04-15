@@ -9,6 +9,7 @@ int dig0_main_flag = 0;
 int dig1_main_flag = 0;
 int dig0_backup_flag = 0;
 int dig1_backup_flag = 0;
+int break_flag = 0;
 /************************** GPIO Pins Definitions *****************************/
 #define DIG0_MAIN_AURORA_LINK 40
 #define DIG0_BACKUP_AURORA_LINK 41
@@ -166,7 +167,7 @@ int dig1_backup_flag = 0;
 /******************************************************************************
 *Threads timers (ms).
 ****************************************************************************/
-#define MONIT_THREAD_PERIOD 10000000
+#define MONIT_THREAD_PERIOD 5000000
 #define ALARMS_THREAD_PERIOD 100
 #define AMS_ALARMS_THREAD_PERIOD 20
 #define COMMAND_THREAD_PERIOD 20

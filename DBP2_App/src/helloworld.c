@@ -23,12 +23,7 @@
 
 /*int main()
 {
-	short i = -200;
-	short z = 200;
-	i = i << 2;
-	short e = i & 0x1FFF;
-
-
+	printf("Hello World");
 
     return 0;
 }*/

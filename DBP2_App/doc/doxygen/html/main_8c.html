@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.10.0"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>DPB2_App: DBP2_App/src/main.c File Reference</title>
+<title>DBP2_App: /home/hyperk0/git/DBP2_App/src/main.c File Reference</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -27,7 +27,7 @@
  <tbody>
  <tr id="projectrow">
   <td id="projectalign">
-   <div id="projectname">DPB2_App
+   <div id="projectname">DBP2_App
    </div>
   </td>
  </tr>
@@ -119,7 +119,7 @@ $(function(){initNavTree('main_8c.html',''); initResizable(); });
 </div><div class="textblock"><div class="dynheader">
 Include dependency graph for main.c:</div>
 <div class="dyncontent">
-<div class="center"><img src="main_8c__incl.png" border="0" usemap="#a_d_b_p2___app_2src_2main_8c" alt=""/></div>
+<div class="center"><img src="main_8c__incl.png" border="0" usemap="#a_2home_2hyperk0_2git_2_d_b_p2___app_2src_2main_8c" alt=""/></div>
 </div>
 </div><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="nested-classes" name="nested-classes"></a>
@@ -231,6 +231,8 @@ Functions</h2></td></tr>
 <tr class="separator:a241ce24ee6cbb73e2a358170f01a981b"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:afff7f0c0b582bdd894329ac2f324caee" id="r_afff7f0c0b582bdd894329ac2f324caee"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#afff7f0c0b582bdd894329ac2f324caee">lv_command_handling</a> (char **)</td></tr>
 <tr class="separator:afff7f0c0b582bdd894329ac2f324caee"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a00dd035255224ec7702727251ca54552" id="r_a00dd035255224ec7702727251ca54552"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a00dd035255224ec7702727251ca54552">atexit_function</a> ()</td></tr>
+<tr class="separator:a00dd035255224ec7702727251ca54552"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ae66f6b31b5ad750f1fe042a706a4e3d4" id="r_ae66f6b31b5ad750f1fe042a706a4e3d4"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ae66f6b31b5ad750f1fe042a706a4e3d4">main</a> ()</td></tr>
 <tr class="separator:ae66f6b31b5ad750f1fe042a706a4e3d4"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
@@ -308,7 +310,25 @@ Variables</h2></td></tr>
   </table>
   </dd>
 </dl>
-<dl class="section return"><dt>Returns</dt><dd>: 0 or negative integer if validation fails </dd></dl>
+<dl class="section return"><dt>Returns</dt><dd>0 or negative integer if validation fails </dd></dl>
+
+</div>
+</div>
+<a id="a00dd035255224ec7702727251ca54552" name="a00dd035255224ec7702727251ca54552"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a00dd035255224ec7702727251ca54552">&#9670;&#160;</a></span>atexit_function()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void atexit_function </td>
+          <td>(</td>
+          <td class="paramname"><span class="paramname"></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Closes ZMQ sockets and destroy context when exiting. </p>
 
 </div>
 </div>
@@ -416,7 +436,7 @@ Variables</h2></td></tr>
   </table>
   </dd>
 </dl>
-<dl class="section return"><dt>Returns</dt><dd>: 0 or negative integer if validation fails </dd></dl>
+<dl class="section return"><dt>Returns</dt><dd>0 or negative integer if validation fails </dd></dl>
 
 </div>
 </div>
@@ -452,7 +472,7 @@ Variables</h2></td></tr>
   </table>
   </dd>
 </dl>
-<dl class="section return"><dt>Returns</dt><dd>: 0 or negative integer if validation fails </dd></dl>
+<dl class="section return"><dt>Returns</dt><dd>0 or negative integer if validation fails </dd></dl>
 
 </div>
 </div>
@@ -491,6 +511,15 @@ Variables</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+<p>Handles received DPB command</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname"><a class="el" href="struct_d_p_b___i2c_sensors.html">DPB_I2cSensors</a></td><td>*data: Struct that contains I2C devices </td></tr>
+    <tr><td class="paramname">char</td><td>**cmd: Segmented command</td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>0 if parameters OK and reports the event, if not returns negative integer. </dd></dl>
 
 </div>
 </div>
@@ -512,6 +541,15 @@ Variables</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+<p>Checks from GPIO if Ethernet Links status has changed from up to down and reports it if necessary</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">char</td><td>*str: Name of the Ethernet interface </td></tr>
+    <tr><td class="paramname">int</td><td>flag: value of the Ethernet interface flag, determines if the link was previously up</td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>0 if parameters OK and reports the event, if not returns negative integer. </dd></dl>
 
 </div>
 </div>
@@ -596,7 +634,7 @@ Variables</h2></td></tr>
   </table>
   </dd>
 </dl>
-<dl class="section return"><dt>Returns</dt><dd>: 0 </dd></dl>
+<dl class="section return"><dt>Returns</dt><dd>0 </dd></dl>
 
 </div>
 </div>
@@ -632,12 +670,6 @@ Variables</h2></td></tr>
       </table>
 </div><div class="memdoc">
 <p>Start IIO EVENT MONITOR to enable Xilinx-AMS events</p>
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramname">FILE</td><td>*proc: file which contains the opened process</td></tr>
-  </table>
-  </dd>
-</dl>
 <dl class="section return"><dt>Returns</dt><dd>Negative integer if start fails.If not, returns 0 and enables Xilinx-AMS events. </dd></dl>
 
 </div>
@@ -1073,7 +1105,7 @@ Variables</h2></td></tr>
   </table>
   </dd>
 </dl>
-<dl class="section return"><dt>Returns</dt><dd>: 0 if correct, negative integer if validation failed </dd></dl>
+<dl class="section return"><dt>Returns</dt><dd>0 if correct, negative integer if validation failed </dd></dl>
 
 </div>
 </div>
@@ -1311,7 +1343,7 @@ Variables</h2></td></tr>
   </table>
   </dd>
 </dl>
-<dl class="section return"><dt>Returns</dt><dd>: 0 </dd></dl>
+<dl class="section return"><dt>Returns</dt><dd>0 </dd></dl>
 
 </div>
 </div>
@@ -1353,7 +1385,7 @@ Variables</h2></td></tr>
   </table>
   </dd>
 </dl>
-<dl class="section return"><dt>Returns</dt><dd>: 0 </dd></dl>
+<dl class="section return"><dt>Returns</dt><dd>0 </dd></dl>
 
 </div>
 </div>
@@ -1383,7 +1415,7 @@ Variables</h2></td></tr>
   </table>
   </dd>
 </dl>
-<dl class="section return"><dt>Returns</dt><dd>: 0 if worked correctly, if not returns a negative integer. </dd></dl>
+<dl class="section return"><dt>Returns</dt><dd>0 if worked correctly, if not returns a negative integer. </dd></dl>
 
 </div>
 </div>
@@ -1753,7 +1785,7 @@ Variables</h2></td></tr>
   </table>
   </dd>
 </dl>
-<dl class="section return"><dt>Returns</dt><dd>: 0 or negative integer if validation fails </dd></dl>
+<dl class="section return"><dt>Returns</dt><dd>0 or negative integer if validation fails </dd></dl>
 
 </div>
 </div>
@@ -1808,7 +1840,7 @@ Variables</h2></td></tr>
   </table>
   </dd>
 </dl>
-<dl class="section return"><dt>Returns</dt><dd>: 0 if worked correctly, if not returns a negative integer. </dd></dl>
+<dl class="section return"><dt>Returns</dt><dd>0 if worked correctly, if not returns a negative integer. </dd></dl>
 
 </div>
 </div>
@@ -1919,7 +1951,8 @@ Variables</h2></td></tr>
   <table class="params">
     <tr><td class="paramname">int</td><td>chan: channel whose alarm limit will be changed </td></tr>
     <tr><td class="paramname">char</td><td>*ev_type: string that determines the type of the event </td></tr>
-    <tr><td class="paramname">char</td><td>*ch_type: string that determines the type of the channel @float val: value of the new limit</td></tr>
+    <tr><td class="paramname">char</td><td>*ch_type: string that determines the type of the channel </td></tr>
+    <tr><td class="paramname">float</td><td>val: value of the new limit</td></tr>
   </table>
   </dd>
 </dl>
@@ -1941,6 +1974,8 @@ Variables</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+<p>Initializes ZMQ monitoring, command and logging sockets</p>
+<dl class="section return"><dt>Returns</dt><dd>0 if parameters OK and reports the event. If not returns negative integer. </dd></dl>
 
 </div>
 </div>
@@ -2048,7 +2083,7 @@ Variables</h2></td></tr>
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="navelem"><a class="el" href="dir_3c9f53aecc9ee1e3a8bbce2f0db0f513.html">DBP2_App</a></li><li class="navelem"><a class="el" href="dir_4ca8ae8a7116cefe0602bfa7ac1a3973.html">src</a></li><li class="navelem"><a class="el" href="main_8c.html">main.c</a></li>
+    <li class="navelem"><a class="el" href="dir_68267d1309a1af8e8297ef4c3efbcdba.html">src</a></li><li class="navelem"><a class="el" href="main_8c.html">main.c</a></li>
     <li class="footer">Generated by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.10.0 </li>
   </ul>
 </div>

@@ -2,6 +2,7 @@ var main_8c =
 [
     [ "DPB_I2cSensors", "struct_d_p_b___i2c_sensors.html", "struct_d_p_b___i2c_sensors" ],
     [ "alarm_json", "main_8c.html#a523253a810a029ab0008a47d7f29d2d8", null ],
+    [ "atexit_function", "main_8c.html#a00dd035255224ec7702727251ca54552", null ],
     [ "aurora_down_alarm", "main_8c.html#a3ab8810c7a9f27237b8da1f43d1d1039", null ],
     [ "checksum_check", "main_8c.html#a1b6cc6c6e49ba8ea33c2968d8cf9ed90", null ],
     [ "command_response_json", "main_8c.html#a0737aad3bafd67e4a3f899b271d89563", null ],

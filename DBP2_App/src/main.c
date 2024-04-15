@@ -19,6 +19,7 @@
 #include "json-c/json.h"
 #include <math.h>
 #include <dirent.h>
+#include <signal.h>
 #include <regex.h>
 
 #include "i2c.h"
@@ -54,6 +55,12 @@ struct DPB_I2cSensors{
 *Local Semaphores.
 ****************************************************************************/
 sem_t i2c_sync;
+sem_t thread_sync;
+/******************************************************************************
+*Child process and threads.
+****************************************************************************/
+pid_t child_pid;
+pthread_t t_1, t_2, t_3, t_4;
 /******************************************************************************
 *ZMQ Socket Initializer
 ****************************************************************************/
@@ -124,16 +131,15 @@ static void *ams_alarms_thread(void *);
 /**
  * Start IIO EVENT MONITOR to enable Xilinx-AMS events
  *
- * @param FILE *proc: file which contains the opened process
  *
  * @return Negative integer if start fails.If not, returns 0 and enables Xilinx-AMS events.
  */
 int iio_event_monitor_up() {
 
 
-    pid_t pid = fork(); // Create a child process
+    child_pid = fork(); // Create a child process
 
-    if (pid == 0) {
+    if (child_pid == 0) {
         // Child process
         // Path of the .elf file and arguments
         char *args[] = {"/run/media/mmcblk0p1/IIO_MONITOR.elf", "-a", "/dev/iio:device0", NULL};
@@ -143,7 +149,7 @@ int iio_event_monitor_up() {
             perror("Error executing the .elf file");
             return -1;
         }
-    } else if (pid > 0) {
+    } else if (child_pid > 0) {
         // Parent process
     } else {
         // Error creating the child process
@@ -303,7 +309,7 @@ int xlnx_ams_read_volt(int *chan, int n, float *res){
  * @param int chan: channel whose alarm limit will be changed
  * @param char *ev_type: string that determines the type of the event
  * @param char *ch_type: string that determines the type of the channel
- * @float val: value of the new limit
+ * @param float val: value of the new limit
  *
  * @return Negative integer if setting fails, any file could not be opened or invalid argument.If not, returns 0 and the modifies the specified limit
  *
@@ -1882,7 +1888,7 @@ int ina3221_set_config(struct DPB_I2cSensors *data,uint8_t *bit_ena,uint8_t *bit
  * @param float val: Measured magnitude value
  * @param char *magnitude: Name of the measured magnitude
  *
- * @return: 0
+ * @return 0
  */
 int parsing_mon_sensor_data_into_array (json_object *jarray,float val, char *magnitude, int chan)
 {
@@ -1911,7 +1917,7 @@ int parsing_mon_sensor_data_into_array (json_object *jarray,float val, char *mag
  * @param char *magnitude: Name of the measured magnitude/interface
  * @param int chan: Number of measured channel, if chan is 99 means channel will not be parsed
  *
- * @return: 0
+ * @return 0
  */
 int parsing_mon_status_data_into_array(json_object *jarray, int status, char *magnitude, int chan)
 {
@@ -1946,7 +1952,7 @@ int parsing_mon_status_data_into_array(json_object *jarray, int status, char *ma
  * @param char *info_type: Determines the reported event type (inof,warning or critical)
  *
  *
- * @return: 0 or negative integer if validation fails
+ * @return 0 or negative integer if validation fails
  */
 int alarm_json (json_object *jobj,char *chip,char *ev_type, int chan, float val,int32_t timestamp,char *info_type)
 {
@@ -2005,7 +2011,7 @@ int alarm_json (json_object *jobj,char *chip,char *ev_type, int chan, float val,
  * @param char *info_type: Determines the reported event type (inof,warning or critical)
  *
  *
- * @return: 0 or negative integer if validation fails
+ * @return 0 or negative integer if validation fails
  */
 int status_alarm_json (json_object *jobj,char *board,char *chip, int chan,int32_t timestamp,char *info_type)
 {
@@ -2060,7 +2066,7 @@ int status_alarm_json (json_object *jobj,char *board,char *chip, int chan,int32_
  * @param int32_t timestamp: Time when the event occurred
  * @param float val: read value
  *
- * @return: 0 or negative integer if validation fails
+ * @return 0 or negative integer if validation fails
  */
 int command_response_json (char *board,int32_t timestamp,float val)
 {
@@ -2098,7 +2104,7 @@ int command_response_json (char *board,int32_t timestamp,float val)
  * @param int32_t timestamp: Time when the event occurred
  * @param int val: read value (1 is ON and 0 is OFF), if operation is set val = 99, JSON value field = OK , else is error, JSON value = ERROR
  *
- * @return: 0 or negative integer if validation fails
+ * @return 0 or negative integer if validation fails
  */
 int command_status_response_json (char *board,int32_t timestamp,int val)
 {
@@ -2142,7 +2148,7 @@ int command_status_response_json (char *board,int32_t timestamp,int val)
  * @param const char *json_string: JSON string to be validated
  * @param char *temp_file: Name of Temporal File
  *
- * @return: 0 if correct, negative integer if validation failed
+ * @return 0 if correct, negative integer if validation failed
  */
 int json_schema_validate (char *schema,const char *json_string, char *temp_file)
 {
@@ -2200,7 +2206,7 @@ int json_schema_validate (char *schema,const char *json_string, char *temp_file)
  *
  * @param int *address: pointer where the read GPIO base address plus corresponding offset will be stored
  *
- * @return: 0
+ * @return 0
  */
 int get_GPIO_base_address(int *address){
 
@@ -2213,7 +2219,6 @@ int get_GPIO_base_address(int *address){
 	int data2 = 0;
 	int i = 0;
 	char *arr[8];
-	long bytes = 0;
 	char label_str[64];
 	struct dirent *entry;
 	dp = opendir (GPIO_dir);
@@ -2265,7 +2270,7 @@ int get_GPIO_base_address(int *address){
  * @param int address: GPIO address where the value is going to be written
  * @param int value: value which will be written (0 o 1)
  *
- * @return: 0 if worked correctly, if not returns a negative integer.
+ * @return 0 if worked correctly, if not returns a negative integer.
  */
 int write_GPIO(int address, int value){
 
@@ -2318,7 +2323,7 @@ int write_GPIO(int address, int value){
  * @param int address: GPIO address where the desired value is stored
  * @param int *value: pointer where the read value will be stored
  *
- * @return: 0 if worked correctly, if not returns a negative integer.
+ * @return 0 if worked correctly, if not returns a negative integer.
  */
 int read_GPIO(int address,int *value){
 
@@ -2441,11 +2446,12 @@ int eth_link_status_config (char *eth_interface, int val)
 
 }
 /************************** External alarms (via GPIO) functions ******************************/
-/*
+
+/**
 * Checks from GPIO if Ethernet Links status has changed from up to down and reports it if necessary
 *
-* @param char *eth_interface: Name of the Ethernet interface
-* @param int status: value of the Ethernet interface flag, determines if the link was previously up
+* @param char *str: Name of the Ethernet interface
+* @param int flag: value of the Ethernet interface flag, determines if the link was previously up
 *
 * @return  0 if parameters OK and reports the event, if not returns negative integer.
 */
@@ -2555,11 +2561,13 @@ int aurora_down_alarm(int aurora_link,int *flag){
 }
 
 /************************** ZMQ Functions******************************/
-/*
-* Initializes ZMQ monitoring, command and logging sockets
-*
-* @return  0 if parameters OK and reports the event, if not returns negative integer.
-*/
+
+/**
+ * Initializes ZMQ monitoring, command and logging sockets
+ *
+ *
+ * @return 0 if parameters OK and reports the event. If not returns negative integer.
+ */
 int zmq_socket_init (){
 
 	int rc = 0;
@@ -2576,18 +2584,23 @@ int zmq_socket_init (){
 		return rc;
 	}
     cmd_context = zmq_ctx_new();
-    cmd_router = zmq_socket(cmd_context, ZMQ_ROUTER);
+    cmd_router = zmq_socket(cmd_context, ZMQ_DEALER);
     rc = zmq_bind(cmd_router, "tcp://127.0.0.1:5557");
 	if (rc) {
 		return rc;
 	}
 	return 0;
 }
+
 /************************** Command handling Functions******************************/
-/*
+
+/**
 * Handles received DPB command
 *
-* @return  0 if parameters OK and reports the event, if not returns negative integer.
+* @param DPB_I2cSensors *data: Struct that contains I2C devices
+* @param char **cmd: Segmented command
+*
+* @return 0 if parameters OK and reports the event, if not returns negative integer.
 */
 int dpb_command_handling(struct DPB_I2cSensors *data, char **cmd){
 
@@ -2772,13 +2785,47 @@ void hv_command_handling(char **cmd){
 void lv_command_handling(char **cmd){
 	return;
 }
+/************************** Exit function declaration ******************************/
+/**
+ * Closes ZMQ sockets and destroy context when exiting.
+ */
+void atexit_function() {
+    zmq_close(mon_publisher);
+    zmq_ctx_destroy (mon_context);
+    zmq_close(log_publisher);
+    zmq_ctx_destroy (log_context);
+    zmq_close(cmd_router);
+    zmq_ctx_destroy (cmd_context);
+}
+/************************** Signal Handling function declaration ******************************/
+/**
+ * Handles termination signals
+ *
+ * @param int signum: Signal ID
+ *
+ * @return NULL
+ */
+void sighandler(int signum) {
+
+   kill(child_pid,SIGKILL);
+   /*pthread_cancel(t_1); //End threads
+   pthread_cancel(t_2); //End threads
+
+   pthread_cancel(t_4); //End threads*/
+   pthread_cancel(t_3); //End threads
+   printf("Handle correct \n");
+
+   break_flag = 1;
+
+   return ;
+}
 /************************** Threads declaration ******************************/
-/*
+/**
  * Periodic thread that every x seconds reads every magnitude of every sensor available and stores it.
  *
  * @param void *arg: must contain a struct with every I2C device that wants to be monitored
  *
- * @return  NULL (if exits is because of an error).
+ * @return NULL (if exits is because of an error).
  */
 static void *monitoring_thread(void *arg)
 {
@@ -2857,6 +2904,7 @@ static void *monitoring_thread(void *arg)
 		printf("Error\r\n");
 		return NULL;
 	}
+	sem_post(&thread_sync);
 	while (1) {
 		sem_wait(&i2c_sync); //Semaphore to sync I2C usage
 		rc = mcp9844_read_temperature(data,temp);
@@ -3505,7 +3553,6 @@ static void *command_thread(void *arg){
 		char buffer[256];
 		int32_t timestamp = time(NULL);
 
-
 		int size = zmq_recv(cmd_router, aux_buff, 255, 0);
 		if (size == -1)
 		  return NULL;
@@ -3513,6 +3560,8 @@ static void *command_thread(void *arg){
 		  size = 255;
 		aux_buff[size] = '\0';
 		strcpy(buffer,strdup(aux_buff));
+		printf("%s \n",buffer);
+		zmq_send(cmd_router, "ACK", 3, 0);
 
 		cmd[0] = strtok(buffer," ");
 		int i = 0;
@@ -3601,8 +3650,8 @@ static void *command_thread(void *arg){
 /************************** Main function ******************************/
 int main(){
 
-	//Threads elements
-	pthread_t t_1, t_2, t_3, t_4;
+	atexit(atexit_function);
+
 	sigset_t alarm_sig;
 	int i;
 
@@ -3656,7 +3705,10 @@ int main(){
 			return rc;
 	}
 
+	signal(SIGTERM, sighandler);
+	signal(SIGINT, sighandler);
 	sem_init(&i2c_sync,0,1);
+	sem_init(&thread_sync,0,0);
 	/* Block all real time signals so they can be used for the timers.
 	   Note: this has to be done in main() before any threads are created
 	   so they all inherit the same mask. Doing it later is subject to
@@ -3670,12 +3722,17 @@ int main(){
 	//pthread_create(&t_1, NULL, ams_alarms_thread,NULL); //Create thread 1 - reads AMS alarms
 	//pthread_create(&t_2, NULL, i2c_alarms_thread,(void *)&data); //Create thread 2 - reads I2C alarms every x miliseconds
 	pthread_create(&t_3, NULL, monitoring_thread,(void *)&data);//Create thread 3 - monitors magnitudes every x seconds
-	//pthread_create(&t_4, NULL, command_thread,(void *)&data);//Create thread 4 - waits and attends commands
+	sem_wait(&thread_sync);
+	pthread_create(&t_4, NULL, command_thread,(void *)&data);//Create thread 4 - waits and attends commands
 
 
 	while(1){
-		sleep(1000000);
+		sleep(10);
+		if(break_flag == 1){
+			break;
 		}
-	//stop_I2cSensors(&data);
+	}
+	stop_I2cSensors(&data);
+
 	return 0;
 }
