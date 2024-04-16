@@ -169,8 +169,8 @@ int break_flag = 0;
 ****************************************************************************/
 #define MONIT_THREAD_PERIOD 5000000
 #define ALARMS_THREAD_PERIOD 100
-#define AMS_ALARMS_THREAD_PERIOD 20
-#define COMMAND_THREAD_PERIOD 20
+#define AMS_ALARMS_THREAD_PERIOD 100
+#define COMMAND_THREAD_PERIOD 50
 /******************************************************************************
 *GPIO base address
 ****************************************************************************/

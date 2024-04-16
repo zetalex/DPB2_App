@@ -56,6 +56,7 @@ struct DPB_I2cSensors{
 ****************************************************************************/
 sem_t i2c_sync;
 sem_t thread_sync;
+sem_t file_sync;
 /******************************************************************************
 *Child process and threads.
 ****************************************************************************/
@@ -2342,10 +2343,12 @@ int read_GPIO(int address,int *value){
     // Building first command
     snprintf(cmd1, sizeof(cmd1), "echo %d > /sys/class/gpio/export", add);
 
+
     // Building GPIO sysfs file
     if (system(cmd1) == -1) {
         return -EINVAL;
     }
+    printf("Leyendo %d \n", add);
     snprintf(dir_add, sizeof(dir_add), "/sys/class/gpio/gpio%d/direction", add);
     snprintf(val_add, sizeof(val_add), "/sys/class/gpio/gpio%d/value", add);
 
@@ -2371,7 +2374,7 @@ int read_GPIO(int address,int *value){
     if (system(cmd2) == -1) {
         return -EINVAL;
     }
-
+    printf("Cerrando %d \n", add);
 	return 0;
 }
 
@@ -2811,7 +2814,7 @@ void atexit_function() {
 void sighandler(int signum) {
 
    kill(child_pid,SIGKILL);
-   /*pthread_cancel(t_1); //End threads
+   pthread_cancel(t_1); //End threads
    pthread_cancel(t_2); //End threads
 
    pthread_cancel(t_4); //End threads*/
@@ -3137,6 +3140,7 @@ static void *monitoring_thread(void *arg)
 			printf("Error\r\n");
 			return NULL;
 		}
+		sem_wait(&file_sync);
 		rc = eth_link_status("eth0",&eth_status[0]);
 		if (rc) {
 			printf("Error\r\n");
@@ -3167,7 +3171,7 @@ static void *monitoring_thread(void *arg)
 			printf("Error\r\n");
 			return NULL;
 		}
-
+		sem_post(&file_sync);
 		json_object * jobj = json_object_new_object();
 		json_object *jdata = json_object_new_object();
 		json_object *jlv = json_object_new_array();
@@ -3315,7 +3319,7 @@ static void *monitoring_thread(void *arg)
 }
 /**
  * Periodic thread that every x seconds reads every alarm of every I2C sensor available and handles the interruption.
- * It also deals with Ethernet Alarms.
+ * It also deals with Ethernet and GPIO Alarms.
  *
  * @param void *arg: must contain a struct with every I2C device that wants to be monitored
  *
@@ -3332,7 +3336,9 @@ static void *i2c_alarms_thread(void *arg){
 		printf("Error\r\n");
 		return NULL;
 	}
+	sem_post(&thread_sync);
 	while(1){
+		sem_wait(&file_sync);
 		rc = eth_down_alarm("eth0",&eth0_flag);
 		if (rc) {
 			printf("Error\r\n");
@@ -3363,7 +3369,7 @@ static void *i2c_alarms_thread(void *arg){
 			printf("Error\r\n");
 			return NULL;
 		}
-
+		sem_post(&file_sync);
 		sem_wait(&i2c_sync); //Semaphore to sync I2C usage
 
 		rc = mcp9844_read_alarms(data);
@@ -3458,7 +3464,7 @@ static void *ams_alarms_thread(void *arg){
 		printf("Error\r\n");
 		return NULL;
 	}
-
+	sem_post(&thread_sync);
 	while(1){
         sem_wait(&memory->full);  //Semaphore to wait until any event happens
 
@@ -3713,7 +3719,9 @@ int main(){
 	signal(SIGTERM, sighandler);
 	signal(SIGINT, sighandler);
 	sem_init(&i2c_sync,0,1);
+	sem_init(&file_sync,1,1);
 	sem_init(&thread_sync,0,0);
+
 	/* Block all real time signals so they can be used for the timers.
 	   Note: this has to be done in main() before any threads are created
 	   so they all inherit the same mask. Doing it later is subject to
@@ -3724,12 +3732,13 @@ int main(){
 		sigaddset(&alarm_sig, i);
 	sigprocmask(SIG_BLOCK, &alarm_sig, NULL);
 
-	//pthread_create(&t_1, NULL, ams_alarms_thread,NULL); //Create thread 1 - reads AMS alarms
-	//pthread_create(&t_2, NULL, i2c_alarms_thread,(void *)&data); //Create thread 2 - reads I2C alarms every x miliseconds
+	pthread_create(&t_1, NULL, ams_alarms_thread,NULL); //Create thread 1 - reads AMS alarms
+	sem_wait(&thread_sync);
+	pthread_create(&t_2, NULL, i2c_alarms_thread,(void *)&data); //Create thread 2 - reads I2C alarms every x miliseconds
+	sem_wait(&thread_sync);
 	pthread_create(&t_3, NULL, monitoring_thread,(void *)&data);//Create thread 3 - monitors magnitudes every x seconds
-	sem_wait(&thread_sync); //Avoids stalling on zmq_recv
+	sem_wait(&thread_sync); //Avoids race conditions
 	pthread_create(&t_4, NULL, command_thread,(void *)&data);//Create thread 4 - waits and attends commands
-
 
 	while(1){
 		sleep(10);
