@@ -324,7 +324,8 @@ int xlnx_ams_set_limits(int chan, char *ev_type, char *ch_type, float val){
 		char adc_buff [8];
 		long fsize;
 		int thres;
-		uint16_t adc_code;
+		int adc_code;
+		float aux;
 
 		if(val<0) //Cannot be negative
 			return -EINVAL;
@@ -382,8 +383,9 @@ int xlnx_ams_set_limits(int chan, char *ev_type, char *ch_type, float val){
 
 				fclose(scale);
 				fclose(offset);
+				aux = (1024*val)/atof(scale_string);
 
-			    adc_code = (uint16_t) (1024*val)/atof(scale_string) - atof(offset_string);
+			    adc_code =  (int) aux - atof(offset_string);
 
 			}
 			else if(!strcmp("voltage",ch_type)){
@@ -396,8 +398,9 @@ int xlnx_ams_set_limits(int chan, char *ev_type, char *ch_type, float val){
 
 				char *scale_string = malloc(fsize + 1);
 				fread(scale_string, fsize, 1, scale);
+				aux = (1024*val)/atof(scale_string);
 
-				adc_code = (uint16_t)(1024*val)/atof(scale_string);
+				adc_code = (int) aux;
 
 				fclose(scale);
 
@@ -2087,11 +2090,11 @@ int command_response_json (char *board,int32_t timestamp,float val)
 	json_object_object_add(jcmd_data,"value", jval);
 
 	const char *serialized_json = json_object_to_json_string(jcmd_data);
-	int rc = json_schema_validate("JSONSchemaCommand.json",serialized_json, "cmd_temp.json");
+	/*int rc = json_schema_validate("JSONSchemaCommand.json",serialized_json, "cmd_temp.json");
 	if (rc) {
 		printf("Error\r\n");
 		return rc;
-	}
+	}*/
 	zmq_send(cmd_router, strdup(serialized_json), strlen(serialized_json), 0);
 
 	return 0;
@@ -2132,11 +2135,11 @@ int command_status_response_json (char *board,int32_t timestamp,int val)
 	json_object_object_add(jcmd_data,"value", jval);
 
 	const char *serialized_json = json_object_to_json_string(jcmd_data);
-	int rc = json_schema_validate("JSONSchemaCommand.json",serialized_json, "cmd_temp.json");
+	/*int rc = json_schema_validate("JSONSchemaCommand.json",serialized_json, "cmd_temp.json");
 	if (rc) {
 		printf("Error\r\n");
 		return rc;
-	}
+	}*/
 	zmq_send(cmd_router, strdup(serialized_json), strlen(serialized_json), 0);
 
 	return 0;
@@ -2155,12 +2158,12 @@ int json_schema_validate (char *schema,const char *json_string, char *temp_file)
 	FILE* fptr;
 	char file_path[64];
 	char schema_path[64];
-	strcpy(file_path,"/home/");
+	strcpy(file_path,"/home/petalinux/");
 	strcpy(schema_path,"/home/dpb2_json_schemas/");
 
 	strcat(file_path,temp_file);
 	strcat(schema_path,schema);
-	fptr =  fopen("/home/sample.json", "a");
+	fptr =  fopen(file_path, "a");
 	fwrite(json_string,sizeof(char),strlen(json_string),fptr);
 	fclose(fptr);
 
@@ -2579,13 +2582,13 @@ int zmq_socket_init (){
 	}
     log_context = zmq_ctx_new();
     log_publisher = zmq_socket(log_context, ZMQ_PUB);
-    rc = zmq_bind(log_publisher, "tcp://127.0.0.1:5556");
+    rc = zmq_bind(log_publisher, "tcp://*:5556");
 	if (rc) {
 		return rc;
 	}
     cmd_context = zmq_ctx_new();
-    cmd_router = zmq_socket(cmd_context, ZMQ_DEALER);
-    rc = zmq_bind(cmd_router, "tcp://127.0.0.1:5557");
+    cmd_router = zmq_socket(cmd_context, ZMQ_REP);
+    rc = zmq_bind(cmd_router, "tcp://*:5557");
 	if (rc) {
 		return rc;
 	}
@@ -2688,12 +2691,12 @@ int dpb_command_handling(struct DPB_I2cSensors *data, char **cmd){
 		}
 		if(strcmp(cmd[2],"VOLT") == 0){
 			if(strcmp(cmd[0],"READ") == 0){
-				if(strcmp(cmd[0],"FPDCPU") == 0){
+				if(strcmp(cmd[3],"FPDCPU") == 0){
 					ams_chan[0] = 10;
 					rc = xlnx_ams_read_volt(ams_chan,1,val_read);
 					rc = command_response_json ("DPB",timestamp,val_read[0]);
 				}
-				else if(strcmp(cmd[0],"LPDCPU") == 0){
+				else if(strcmp(cmd[3],"LPDCPU") == 0){
 					ams_chan[0] = 9;
 					rc = xlnx_ams_read_volt(ams_chan,1,val_read);
 					rc = command_response_json ("DPB",timestamp,val_read[0]);
@@ -2706,12 +2709,12 @@ int dpb_command_handling(struct DPB_I2cSensors *data, char **cmd){
 				}
 			}
 			else{
-				if(strcmp(cmd[0],"FPDCPU") == 0){
-					rc = xlnx_ams_set_limits(8,"voltage","rising",atof(cmd[4]));
+				if(strcmp(cmd[3],"FPDCPU") == 0){
+					rc = xlnx_ams_set_limits(10,"rising","voltage",atof(cmd[4]));
 					rc = command_status_response_json ("DPB",timestamp,99);
 				}
-				else if(strcmp(cmd[0],"LPDCPU") == 0){
-					rc = xlnx_ams_set_limits(7,"voltage","rising",atof(cmd[4]));
+				else if(strcmp(cmd[3],"LPDCPU") == 0){
+					rc = xlnx_ams_set_limits(9,"rising","voltage",atof(cmd[4]));
 					rc = command_status_response_json ("DPB",timestamp,99);
 				}
 			}
@@ -2730,17 +2733,17 @@ int dpb_command_handling(struct DPB_I2cSensors *data, char **cmd){
 		}
 		if(strcmp(cmd[2],"TEMP") == 0){
 			if(strcmp(cmd[0],"READ") == 0){
-				if(strcmp(cmd[0],"FPDCPU") == 0){
+				if(strcmp(cmd[3],"FPDCPU") == 0){
 					ams_chan[0] = 8;
 					rc = xlnx_ams_read_temp(ams_chan,1,val_read);
 					rc = command_response_json ("DPB",timestamp,val_read[0]);
 				}
-				else if(strcmp(cmd[0],"LPDCPU") == 0){
+				else if(strcmp(cmd[3],"LPDCPU") == 0){
 					ams_chan[0] = 7;
 					rc = xlnx_ams_read_temp(ams_chan,1,val_read);
 					rc = command_response_json ("DPB",timestamp,val_read[0]);
 				}
-				else if(strcmp(cmd[0],"FPGA") == 0){
+				else if(strcmp(cmd[3],"FPGA") == 0){
 					ams_chan[0] = 20;
 					rc = xlnx_ams_read_temp(ams_chan,1,val_read);
 					rc = command_response_json ("DPB",timestamp,val_read[0]);
@@ -2751,16 +2754,16 @@ int dpb_command_handling(struct DPB_I2cSensors *data, char **cmd){
 				}
 			}
 			else{
-				if(strcmp(cmd[0],"FPDCPU") == 0){
-					rc = xlnx_ams_set_limits(8,"temp","rising",atof(cmd[4]));
+				if(strcmp(cmd[3],"FPDCPU") == 0){
+					rc = xlnx_ams_set_limits(8,"rising","temp",atof(cmd[4]));
 					rc = command_status_response_json ("DPB",timestamp,99);
 				}
-				else if(strcmp(cmd[0],"LPDCPU") == 0){
-					rc = xlnx_ams_set_limits(7,"temp","rising",atof(cmd[4]));
+				else if(strcmp(cmd[3],"LPDCPU") == 0){
+					rc = xlnx_ams_set_limits(7,"rising","temp",atof(cmd[4]));
 					rc = command_status_response_json ("DPB",timestamp,99);
 				}
-				else if(strcmp(cmd[0],"FPGA") == 0){
-					rc = xlnx_ams_set_limits(20,"temp","rising",atof(cmd[4]));
+				else if(strcmp(cmd[3],"FPGA") == 0){
+					rc = xlnx_ams_set_limits(20,"rising","temp",atof(cmd[4]));
 					rc = command_status_response_json ("DPB",timestamp,99);
 				}
 				else{
@@ -3540,6 +3543,7 @@ static void *command_thread(void *arg){
 	struct periodic_info info;
 	int rc ;
 	struct DPB_I2cSensors *data = arg;
+	int valid;
 
 	printf("Command thread period: %dms\n",COMMAND_THREAD_PERIOD);
 	rc = make_periodic(COMMAND_THREAD_PERIOD, &info);
@@ -3559,9 +3563,8 @@ static void *command_thread(void *arg){
 		if (size > 255)
 		  size = 255;
 		aux_buff[size] = '\0';
+
 		strcpy(buffer,strdup(aux_buff));
-		printf("%s \n",buffer);
-		zmq_send(cmd_router, "ACK", 3, 0);
 
 		cmd[0] = strtok(buffer," ");
 		int i = 0;
@@ -3573,6 +3576,7 @@ static void *command_thread(void *arg){
 		json_object *jobj = json_object_new_object();
 		json_object *jstr4;
 		json_object *jstr5;
+		json_object *jempty = json_object_new_string("");
 		char buff[8];
 
 		switch(i){
@@ -3587,14 +3591,15 @@ static void *command_thread(void *arg){
 			}
 		case 4:
 			jstr4 = json_object_new_string(cmd[3]);
-		default:
+		case 3:
 			json_object *jstr3 = json_object_new_string(cmd[2]);
 			json_object *jstr2 = json_object_new_string(cmd[1]);
 			json_object *jstr1 = json_object_new_string(cmd[0]);
-			json_object *jempty = json_object_new_string("");
+
 			json_object_object_add(jobj,"operation", jstr1);
 			json_object_object_add(jobj,"board", jstr2);
 			json_object_object_add(jobj,"magnitude", jstr3);
+
 			if(i>=4){
 				json_object_object_add(jobj,"channel", jstr4);
 			}
@@ -3608,39 +3613,39 @@ static void *command_thread(void *arg){
 				json_object_object_add(jobj,"write_value", jempty);
 			}
 			break;
+		default:
+			break;
 		}
 		//Check JSON schema valid
-		if(1){
-
+		valid = (1)?1:0;
+		if(valid){
+			if(!strcmp(cmd[1],"HV")){
+				//Command conversion
+				//RS485 communication
+			}
+			else if(!strcmp(cmd[1],"LV")){
+				//Command conversion
+				//RS485 communication
+			}
+			else if(!strcmp(cmd[1],"Dig0")){
+				//Command conversion
+				//Serial Port Communication
+			}
+			else if(!strcmp(cmd[1],"Dig1")){
+				//Command conversion
+				//Serial Port Communication
+			}
+			else{ //DPB
+				rc = dpb_command_handling(data,cmd);
+				if (rc) {
+					printf("Error\r\n");
+					return NULL;
+				}
+			}
 		}
 		else{
 			rc = command_status_response_json ("DPB",timestamp,-1);
 		}
-
-		if(!strcmp(cmd[1],"HV")){
-			//Command conversion
-			//RS485 communication
-		}
-		else if(!strcmp(cmd[1],"LV")){
-			//Command conversion
-			//RS485 communication
-		}
-		else if(!strcmp(cmd[1],"Dig0")){
-			//Command conversion
-			//Serial Port Communication
-		}
-		else if(!strcmp(cmd[1],"Dig1")){
-			//Command conversion
-			//Serial Port Communication
-		}
-		else{ //DPB
-			rc = dpb_command_handling(data,cmd);
-			if (rc) {
-				printf("Error\r\n");
-				return NULL;
-			}
-		}
-
 		wait_period(&info);
 	}
 
@@ -3722,7 +3727,7 @@ int main(){
 	//pthread_create(&t_1, NULL, ams_alarms_thread,NULL); //Create thread 1 - reads AMS alarms
 	//pthread_create(&t_2, NULL, i2c_alarms_thread,(void *)&data); //Create thread 2 - reads I2C alarms every x miliseconds
 	pthread_create(&t_3, NULL, monitoring_thread,(void *)&data);//Create thread 3 - monitors magnitudes every x seconds
-	sem_wait(&thread_sync);
+	sem_wait(&thread_sync); //Avoids stalling on zmq_recv
 	pthread_create(&t_4, NULL, command_thread,(void *)&data);//Create thread 4 - waits and attends commands
 
 
