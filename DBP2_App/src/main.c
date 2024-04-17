@@ -115,6 +115,7 @@ int json_schema_validate (char *,const char *, char *);
 int get_GPIO_base_address(int *);
 int write_GPIO(int , int );
 int read_GPIO(int ,int *);
+void unexport_GPIO();
 int eth_link_status (char *,int *);
 int eth_link_status_config (char *, int );
 int eth_down_alarm(char *,int *);
@@ -2348,7 +2349,6 @@ int read_GPIO(int address,int *value){
     if (system(cmd1) == -1) {
         return -EINVAL;
     }
-    printf("Leyendo %d \n", add);
     snprintf(dir_add, sizeof(dir_add), "/sys/class/gpio/gpio%d/direction", add);
     snprintf(val_add, sizeof(val_add), "/sys/class/gpio/gpio%d/value", add);
 
@@ -2374,10 +2374,48 @@ int read_GPIO(int address,int *value){
     if (system(cmd2) == -1) {
         return -EINVAL;
     }
-    printf("Cerrando %d \n", add);
 	return 0;
 }
 
+/**
+ * Unexport possible remaining GPIO files when terminating app
+ *
+ * @return
+ */
+void unexport_GPIO(){
+
+	char GPIO_dir[64] = "/sys/class/gpio/";
+	regex_t r1;
+	DIR *dp;
+
+	int data = 0;
+	int i = 0;
+	char *arr[32];
+	char *num_str;
+	char cmd[64];
+	int num;
+	struct dirent *entry;
+	dp = opendir (GPIO_dir);
+
+	data = regcomp(&r1, "gpio4.*", 0);
+
+	while ((entry = readdir (dp)) != NULL){
+		data = regexec(&r1, entry->d_name, 0, NULL, 0);
+		if(data == 0){
+			arr[i] = entry->d_name;
+			i++;
+		}
+	}
+	for(int j=0; j<i; j++){
+		num_str = strtok(arr[j],"gpio");
+		num = atoi(num_str);
+		if(num>419){
+			snprintf(cmd, sizeof(cmd), "echo %d > /sys/class/gpio/unexport", num);
+			system(cmd);
+		}
+	}
+	return;
+}
 /************************** External monitoring (via GPIO) functions ******************************/
 /**
  * Checks from GPIO if Ethernet Links status and reports it
@@ -2796,30 +2834,26 @@ void lv_command_handling(char **cmd){
  * Closes ZMQ sockets and destroy context when exiting.
  */
 void atexit_function() {
+	unexport_GPIO();
     zmq_close(mon_publisher);
-    zmq_ctx_destroy (mon_context);
     zmq_close(log_publisher);
-    zmq_ctx_destroy (log_context);
     zmq_close(cmd_router);
-    zmq_ctx_destroy (cmd_context);
 }
 /************************** Signal Handling function declaration ******************************/
 /**
- * Handles termination signals
+ * Handles termination signals, kills every subprocess
  *
  * @param int signum: Signal ID
  *
  * @return NULL
  */
 void sighandler(int signum) {
-
    kill(child_pid,SIGKILL);
    pthread_cancel(t_1); //End threads
    pthread_cancel(t_2); //End threads
 
-   pthread_cancel(t_4); //End threads*/
+   pthread_cancel(t_4); //End threads
    pthread_cancel(t_3); //End threads
-   printf("Handle correct \n");
 
    break_flag = 1;
 
@@ -3303,7 +3337,10 @@ static void *monitoring_thread(void *arg)
 		}*/
 
 		int rc2 = zmq_send(mon_publisher, strdup(serialized_json), strlen(serialized_json), 0);
-
+		if (rc2 < 0) {
+			printf("Error\r\n");
+			return NULL;
+		}
 		/*FILE* fptr;
 		const char *serialized_json = json_object_to_json_string(jobj);
 		fptr =  fopen("/run/media/mmcblk0p1/sample.json", "a");
@@ -3532,6 +3569,10 @@ static void *ams_alarms_thread(void *arg){
         	rc = alarm_json(jobj,ams_channels[chan-7],ev_type, 99, res[0],timestamp,"warning");
             //printf("Chip: AMS. Event type: %s. Timestamp: %lld. Channel type: %s. Channel: %d. Value: %f ºC\n",ev_type,timestamp,ch_type,chan,res[0]);
         }
+		if (rc) {
+			printf("Error\r\n");
+			return NULL;
+		}
 		wait_period(&info);
 	}
 	return NULL;
@@ -3676,7 +3717,7 @@ int main(){
 	if (memoryID == -1) {
 	     perror("shmget():");
 	     exit(1);
-	 }
+	}
 
 	memory = shmat(memoryID, NULL, 0);
 	if (memory == (void *) -1) {
@@ -3718,6 +3759,7 @@ int main(){
 
 	signal(SIGTERM, sighandler);
 	signal(SIGINT, sighandler);
+
 	sem_init(&i2c_sync,0,1);
 	sem_init(&file_sync,1,1);
 	sem_init(&thread_sync,0,0);
