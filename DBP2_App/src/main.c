@@ -134,8 +134,8 @@ int ina3221_set_limits(struct DPB_I2cSensors *,int ,int ,int  ,float );
 int ina3221_set_config(struct DPB_I2cSensors *,uint8_t *,uint8_t *, int );
 int parsing_mon_sensor_data_into_array (json_object *,float , char *, int );
 int parsing_mon_status_data_into_array(json_object *, int , char *,int );
-int alarm_json (json_object *,char *,char *, int , float ,int32_t ,char *);
-int status_alarm_json (json_object *,char *,char *, int ,int32_t ,char *);
+int alarm_json (char *,char *, int , float ,int32_t ,char *);
+int status_alarm_json (char *,char *, int ,int32_t ,char *);
 int command_response_json (char *,int32_t ,float );
 int command_status_response_json (char *,int32_t ,int );
 int json_schema_validate (char *,const char *, char *);
@@ -831,22 +831,18 @@ int mcp9844_interruptions(struct DPB_I2cSensors *data, uint8_t flag_buf){
 	float res [1];
 	int rc = 0;
 	mcp9844_read_temperature(data,res);
-	json_object *jobj = json_object_new_object();
 
 	if((flag_buf & 0x80) == 0x80){
-		jobj = json_object_new_object();
 		timestamp = time(NULL);
-		rc = alarm_json(jobj,"PCB Temperature","critical", 99, res[0],timestamp,"critical");
+		rc = alarm_json("PCB Temperature","critical", 99, res[0],timestamp,"critical");
 	}
 	if((flag_buf & 0x40) == 0x40){
-		jobj = json_object_new_object();
 		timestamp = time(NULL);
-		rc = alarm_json(jobj,"PCB Temperature","rising", 99, res[0],timestamp,"warning");
+		rc = alarm_json("PCB Temperature","rising", 99, res[0],timestamp,"warning");
 	}
 	if((flag_buf & 0x20) == 0x20){
-		jobj = json_object_new_object();
 		timestamp = time(NULL);
-		rc = alarm_json(jobj,"PCB Temperature","falling", 99, res[0],timestamp,"warning");
+		rc = alarm_json("PCB Temperature","falling", 99, res[0],timestamp,"warning");
 	}
 	return rc;
 }
@@ -1331,18 +1327,15 @@ int sfp_avago_read_status(struct DPB_I2cSensors *data,int n,uint8_t *res) {
  */
 int sfp_avago_status_interruptions(uint8_t status, int n){
 	int32_t timestamp;
-	json_object *jobj = json_object_new_object();
 	int rc = 0;
 
 	if((status & 0x02) != 0){
-		jobj = json_object_new_object();
 		timestamp = time(NULL);
-		rc = status_alarm_json(jobj,"DPB","SFP RX_LOS Status",n,timestamp,"critical");
+		rc = status_alarm_json("DPB","SFP RX_LOS Status",n,timestamp,"critical");
 	}
 	if((status & 0x04) != 0){
-		jobj = json_object_new_object();
 		timestamp = time(NULL);
-		rc = status_alarm_json(jobj,"DPB","SFP TX_FAULT Status", n,timestamp,"critical");
+		rc = status_alarm_json("DPB","SFP TX_FAULT Status", n,timestamp,"critical");
 	}
 	return rc;
 }
@@ -1357,67 +1350,57 @@ int sfp_avago_status_interruptions(uint8_t status, int n){
 int sfp_avago_alarms_interruptions(struct DPB_I2cSensors *data,uint16_t flags, int n){
 	int32_t timestamp;
 	float res [1];
-	json_object *jobj = json_object_new_object();
 	int rc = 0;
 
 	if((flags & 0x0080) == 0x0080){
-		jobj = json_object_new_object();
 		timestamp = time(NULL);
 		sfp_avago_read_rx_av_optical_pwr(data,n,res);
-		rc = alarm_json(jobj,"SFP RX Power","rising", n, res[0],timestamp,"warning");
+		rc = alarm_json("SFP RX Power","rising", n, res[0],timestamp,"warning");
 	}
 	if((flags & 0x0040) == 0x0040){
-		jobj = json_object_new_object();
 		timestamp = time(NULL);
 		sfp_avago_read_rx_av_optical_pwr(data,n,res);
-		rc = alarm_json(jobj,"SFP RX Power","falling", n, res[0],timestamp,"warning");
+		rc = alarm_json("SFP RX Power","falling", n, res[0],timestamp,"warning");
 	}
 	if((flags & 0x0200) == 0x0200){
-		jobj = json_object_new_object();
 		timestamp = time(NULL);
 		sfp_avago_read_tx_av_optical_pwr(data,n,res);
-		rc = alarm_json(jobj,"SFP TX Power","rising", n, res[0],timestamp,"warning");
+		rc = alarm_json("SFP TX Power","rising", n, res[0],timestamp,"warning");
 	}
 	if((flags & 0x0100) == 0x0100){
-		jobj = json_object_new_object();
 		timestamp = time(NULL);
 		sfp_avago_read_tx_av_optical_pwr(data,n,res);
-		rc = alarm_json(jobj,"SFP TX Power","falling", n, res[0],timestamp,"warning");
+		rc = alarm_json("SFP TX Power","falling", n, res[0],timestamp,"warning");
 	}
 	if((flags & 0x0800) == 0x0800){
-		jobj = json_object_new_object();
 		timestamp = time(NULL);
 		sfp_avago_read_lbias_current(data,n,res);
-		rc = alarm_json(jobj,"SFP Laser Bias Current","rising", n, res[0],timestamp,"warning");
+		rc = alarm_json("SFP Laser Bias Current","rising", n, res[0],timestamp,"warning");
 	}
 	if((flags & 0x0400) == 0x0400){
 		timestamp = time(NULL);
 		sfp_avago_read_lbias_current(data,n,res);
-		rc = alarm_json(jobj,"SFP Laser Bias Current","falling", n, res[0],timestamp,"warning");
+		rc = alarm_json("SFP Laser Bias Current","falling", n, res[0],timestamp,"warning");
 	}
 	if((flags & 0x2000) == 0x2000){
-		jobj = json_object_new_object();
 		timestamp = time(NULL);
 		sfp_avago_read_voltage(data,n,res);
-		rc = alarm_json(jobj,"SFP Voltage Monitor","rising", n, res[0],timestamp,"warning");
+		rc = alarm_json("SFP Voltage Monitor","rising", n, res[0],timestamp,"warning");
 	}
 	if((flags & 0x1000) == 0x1000){
-		jobj = json_object_new_object();
 		timestamp = time(NULL);
 		sfp_avago_read_voltage(data,n,res);
-		rc = alarm_json(jobj,"SFP Voltage Monitor","falling", n, res[0],timestamp,"warning");
+		rc = alarm_json("SFP Voltage Monitor","falling", n, res[0],timestamp,"warning");
 	}
 	if((flags & 0x8000) == 0x8000){
-		jobj = json_object_new_object();
 		timestamp = time(NULL);
 		sfp_avago_read_temperature(data,n,res);
-		rc = alarm_json(jobj,"SFP Temperature","rising", n, res[0],timestamp,"warning");
+		rc = alarm_json("SFP Temperature","rising", n, res[0],timestamp,"warning");
 	}
 	if((flags & 0x4000) == 0x4000){
-		jobj = json_object_new_object();
 		timestamp = time(NULL);
 		sfp_avago_read_temperature(data,n,res);
-		rc = alarm_json(jobj,"SFP Temperature","falling", n, res[0],timestamp,"warning");
+		rc = alarm_json("SFP Temperature","falling", n, res[0],timestamp,"warning");
 	}
 
 	return rc;
@@ -1659,31 +1642,27 @@ int ina3221_critical_interruptions(struct DPB_I2cSensors *data,uint16_t mask, in
 	ina3221_get_current(data,n,res);
 	int k = 0;
 	int rc = 0;
-	json_object *jobj = json_object_new_object();
 	if (n == 1)
 		k = 3;
 
 	if((mask & 0x0080) == 0x0080){
-		jobj = json_object_new_object();
 		timestamp = time(NULL);
 		if(n == 2)
-			rc = alarm_json(jobj,"Current Monitor (+12V)","rising", 99, res[2],timestamp,"critical");
+			rc = alarm_json("Current Monitor (+12V)","rising", 99, res[2],timestamp,"critical");
 		else
-			rc = alarm_json(jobj,"SFP Current Monitor","rising", k+2, res[2],timestamp,"critical");		}
+			rc = alarm_json("SFP Current Monitor","rising", k+2, res[2],timestamp,"critical");		}
 	if((mask & 0x0100) == 0x0100){
-		jobj = json_object_new_object();
 		timestamp = time(NULL);
 		if(n == 2)
-			rc = alarm_json(jobj,"Current Monitor (+3.3V)","rising", 99, res[2],timestamp,"critical");
+			rc = alarm_json("Current Monitor (+3.3V)","rising", 99, res[2],timestamp,"critical");
 		else
-			rc = alarm_json(jobj,"SFP Current Monitor","rising", k+2, res[2],timestamp,"critical");	}
+			rc = alarm_json("SFP Current Monitor","rising", k+2, res[2],timestamp,"critical");	}
 	if((mask & 0x0200) == 0x0200){
-		jobj = json_object_new_object();
 		timestamp = time(NULL);
 		if(n == 2)
-			rc = alarm_json(jobj,"Current Monitor (+1.8V)","rising", 99, res[2],timestamp,"critical");
+			rc = alarm_json("Current Monitor (+1.8V)","rising", 99, res[2],timestamp,"critical");
 		else
-			rc = alarm_json(jobj,"SFP Current Monitor","rising", k+2, res[2],timestamp,"critical");	}
+			rc = alarm_json("SFP Current Monitor","rising", k+2, res[2],timestamp,"critical");	}
 	return rc;
 }
 /**
@@ -1700,33 +1679,29 @@ int ina3221_warning_interruptions(struct DPB_I2cSensors *data,uint16_t mask, int
 	int32_t timestamp;
 	float res[3];
 	ina3221_get_current(data,n,res);
-	json_object *jobj = json_object_new_object();
 	int k = 0;
 	int rc = 0;
 	if (n == 1) //Number of INA3221
 		k = 3;
 
 	if((mask & 0x0008) == 0x0008){
-		jobj = json_object_new_object();
 		timestamp = time(NULL);
 		if(n == 2)
-			rc = alarm_json(jobj,"Current Monitor (+12V)","rising", 99, res[0],timestamp,"warning");
+			rc = alarm_json("Current Monitor (+12V)","rising", 99, res[0],timestamp,"warning");
 		else
-			rc = alarm_json(jobj,"SFP Current Monitor","rising", k, res[0],timestamp,"warning");	}
+			rc = alarm_json("SFP Current Monitor","rising", k, res[0],timestamp,"warning");	}
 	if((mask & 0x0010) == 0x0010){
-		jobj = json_object_new_object();
 		timestamp = time(NULL);
 		if(n == 2)
-			rc = alarm_json(jobj,"Current Monitor (+3.3V)","rising", 99, res[1],timestamp,"warning");
+			rc = alarm_json("Current Monitor (+3.3V)","rising", 99, res[1],timestamp,"warning");
 		else
-			rc = alarm_json(jobj,"SFP Current Monitor","rising", k+1, res[1],timestamp,"warning");	}
+			rc = alarm_json("SFP Current Monitor","rising", k+1, res[1],timestamp,"warning");	}
 	if((mask & 0x0020) == 0x0020){
-		jobj = json_object_new_object();
 		timestamp = time(NULL);
 		if(n == 2)
-			rc = alarm_json(jobj,"Current Monitor (+1.8V)","rising", 99, res[2],timestamp,"warning");
+			rc = alarm_json("Current Monitor (+1.8V)","rising", 99, res[2],timestamp,"warning");
 		else
-			rc = alarm_json(jobj,"SFP Current Monitor","rising", k+2, res[2],timestamp,"warning");	}
+			rc = alarm_json("SFP Current Monitor","rising", k+2, res[2],timestamp,"warning");	}
 	return rc;
 }
 /**
@@ -1975,7 +1950,7 @@ int parsing_mon_status_data_into_array(json_object *jarray, int status, char *ma
 /**
  * Parses alarms data into a JSON string and send it to socket
  *
- * @param json_object *jobj: JSON object where data will be parsed
+
  * @param int chan: Number of measured channel, if chan is 99 means channel will not be parsed
  * @param float val: Measured magnitude value
  * @param char *chip: Name of the chip that triggered the alarm
@@ -1986,30 +1961,35 @@ int parsing_mon_status_data_into_array(json_object *jarray, int status, char *ma
  *
  * @return 0 or negative integer if validation fails
  */
-int alarm_json (json_object *jobj,char *chip,char *ev_type, int chan, float val,int32_t timestamp,char *info_type)
+int alarm_json (char *chip,char *ev_type, int chan, float val,int32_t timestamp,char *info_type)
 {
 	json_object *jalarm_data = json_object_new_object();
 	char buffer[8];
+	uint8_t level = 1;
 
-	int32_t timestamp_msg = time(NULL);
+	int32_t timestamp_msg = time(NULL)*1000;
 
 	sprintf(buffer, "%3.4f", val);
 
-	json_object *jdevice = json_object_new_string("ID DPB");
+	char *device = "ID DPB";
 	json_object *jboard = json_object_new_string("DPB");
-	json_object *jinfo_type = json_object_new_string(info_type);
-	json_object *jtimestamp_msg = json_object_new_int(timestamp_msg);
+	if(!strcmp(info_type,"critical")){
+		level = 0;
+	}
+	else if(!strcmp(info_type,"warning")){
+		level = 1;
+	}
+	else{
+		return -EINVAL;
+	}
 
-	json_object_object_add(jobj,"timestamp", jtimestamp_msg);
-	json_object_object_add(jobj,"device", jdevice);
-	json_object_object_add(jobj,"board", jboard);
-	json_object_object_add(jobj,"info", jinfo_type);
+	json_object_object_add(jalarm_data,"board", jboard);
 
 	json_object *jdouble = json_object_new_double_s((double) val,buffer);
 	json_object *jchip = json_object_new_string(chip);
 	json_object *jev_type = json_object_new_string(ev_type);
 	json_object *jchan = json_object_new_int(chan);
-	json_object *jtimestamp = json_object_new_int(timestamp);
+	json_object *jtimestamp = json_object_new_int(timestamp*1000);
 
 	json_object_object_add(jalarm_data,"magnitudename", jchip);
 	json_object_object_add(jalarm_data,"eventtype", jev_type);
@@ -2019,9 +1999,8 @@ int alarm_json (json_object *jobj,char *chip,char *ev_type, int chan, float val,
 
 	json_object_object_add(jalarm_data,"value", jdouble);
 
-	json_object_object_add(jobj,"data", jalarm_data);
 
-	const char *serialized_json = json_object_to_json_string(jobj);
+	const char *serialized_json = json_object_to_json_string(jalarm_data);
 	int rc = json_schema_validate("JSONSchemaLogging.json",serialized_json, "log_temp.json");
 	if (rc) {
 		printf("Error\r\n");
@@ -2035,7 +2014,6 @@ int alarm_json (json_object *jobj,char *chip,char *ev_type, int chan, float val,
 /**
  * Parses alarms data into a JSON string and send it to socket
  *
- * @param json_object *jobj: JSON object where data will be parsed
  * @param int chan: Number of measured channel, if chan is 99 means channel will not be parsed (also indicates it is not SFP related)
  * @param char *chip: Name of the chip that triggered the alarm
  * @param char *board: Name of the board where the alarm is asserted
@@ -2045,26 +2023,29 @@ int alarm_json (json_object *jobj,char *chip,char *ev_type, int chan, float val,
  *
  * @return 0 or negative integer if validation fails
  */
-int status_alarm_json (json_object *jobj,char *board,char *chip, int chan,int32_t timestamp,char *info_type)
+int status_alarm_json (char *board,char *chip, int chan,int32_t timestamp,char *info_type)
 {
 	json_object *jalarm_data = json_object_new_object();
 
-	int32_t timestamp_msg = time(NULL);
+	int32_t timestamp_msg = (time(NULL))*1000;
+	uint8_t level = 1;
 
-	json_object *jdevice = json_object_new_string("ID DPB");
+	char *device = "ID DPB";
+
 	json_object *jboard = json_object_new_string(board);
-	json_object *jinfo_type = json_object_new_string(info_type);
-	json_object *jtimestamp_msg = json_object_new_int(timestamp_msg);
 
-	json_object_object_add(jobj,"timestamp", jtimestamp_msg);
-	json_object_object_add(jobj,"device", jdevice);
-	json_object_object_add(jobj,"board", jboard);
-	json_object_object_add(jobj,"info", jinfo_type);
+	json_object_object_add(jalarm_data,"board", jboard);
+	if(!strcmp(info_type,"critical")){
+		level = 0;
+	}
+	else{
+		return -EINVAL;
+	}
 
 
 	json_object *jchip = json_object_new_string(chip);
 	json_object *jchan = json_object_new_int(chan);
-	json_object *jtimestamp = json_object_new_int(timestamp);
+	json_object *jtimestamp = json_object_new_int(timestamp*1000);
 	json_object *jstatus ;
 
 	json_object_object_add(jalarm_data,"magnitudename", jchip);
@@ -2079,9 +2060,7 @@ int status_alarm_json (json_object *jobj,char *board,char *chip, int chan,int32_
 
 	json_object_object_add(jalarm_data,"value", jstatus);
 
-	json_object_object_add(jobj,"data", jalarm_data);
-
-	const char *serialized_json = json_object_to_json_string(jobj);
+	const char *serialized_json = json_object_to_json_string(jalarm_data);
 	int rc = json_schema_validate("JSONSchemaLogging.json",serialized_json, "log_temp.json");
 	if (rc) {
 		printf("Error\r\n");
@@ -2534,7 +2513,6 @@ int eth_down_alarm(char *str,int *flag){
 	int eth_status[1];
 	int rc = 0;
 	int32_t timestamp ;
-	json_object *jobj = json_object_new_object();
 
     if((flag[0] != 0) && (flag[0] != 1)){
     	return -EINVAL;
@@ -2552,15 +2530,13 @@ int eth_down_alarm(char *str,int *flag){
 	if((flag[0] == 1) & (eth_status[0] == 0)){
 		flag[0] = eth_status[0];
 		if(!(strcmp(str,"eth0"))){
-			jobj = json_object_new_object();
 			timestamp = time(NULL);
-			rc = status_alarm_json(jobj,"DPB","Main Ethernet Link Status",99,timestamp,"critical");
+			rc = status_alarm_json("DPB","Main Ethernet Link Status",99,timestamp,"critical");
 			return rc;
 		}
 		else if(!(strcmp(str,"eth1"))){
-			jobj = json_object_new_object();
 			timestamp = time(NULL);
-			rc = status_alarm_json(jobj,"DPB","Backup Ethernet Link Status",99,timestamp,"critical");
+			rc = status_alarm_json("DPB","Backup Ethernet Link Status",99,timestamp,"critical");
 			return rc;
 		}
 	}
@@ -2581,7 +2557,6 @@ int aurora_down_alarm(int aurora_link,int *flag){
 	int address = 0;
 	int32_t timestamp ;
 	char *link_id;
-	json_object *jobj = json_object_new_object();
 
     if((flag[0] != 0) && (flag[0] != 1)){
     	return -EINVAL;
@@ -2619,15 +2594,13 @@ int aurora_down_alarm(int aurora_link,int *flag){
 	if((flag[0] == 1) & (aurora_status[0] == 0)){
 		flag[0] = aurora_status[0];
 		if(aurora_link<2){
-			jobj = json_object_new_object();
 			timestamp = time(NULL);
-			rc = status_alarm_json(jobj,"Dig0",link_id,99,timestamp,"critical");
+			rc = status_alarm_json("Dig0",link_id,99,timestamp,"critical");
 			return rc;
 		}
 		else{
-			jobj = json_object_new_object();
 			timestamp = time(NULL);
-			rc = status_alarm_json(jobj,"Dig1",link_id,99,timestamp,"critical");
+			rc = status_alarm_json("Dig1",link_id,99,timestamp,"critical");
 			return rc;
 		}
 	}
@@ -3535,7 +3508,6 @@ static void *ams_alarms_thread(void *arg){
 	while(1){
         sem_wait(&memory->full);  //Semaphore to wait until any event happens
 
-        json_object *jobj = json_object_new_object();
         res[0] = 0;
         int rc = 0;
 
@@ -3587,7 +3559,7 @@ static void *ams_alarms_thread(void *arg){
     				strcpy(ev_type,"rising");
 
 
-    			rc = alarm_json(jobj,ams_channels[chan-7],ev_type, 99, res[0],timestamp,"warning");
+    			rc = alarm_json(ams_channels[chan-7],ev_type, 99, res[0],timestamp,"warning");
     			//printf("Chip: AMS. Event type: %s. Timestamp: %lld. Channel type: %s. Channel: %d. Value: %f V\n",ev_type,timestamp,ch_type,chan,res[0]);
     			fclose(raw);
     			fclose(rising);
@@ -3596,7 +3568,7 @@ static void *ams_alarms_thread(void *arg){
         }
         else if(!strcmp(ch_type,"temp") && chan >= 7){
         	xlnx_ams_read_temp(&chan,1,res);
-        	rc = alarm_json(jobj,ams_channels[chan-7],ev_type, 99, res[0],timestamp,"warning");
+        	rc = alarm_json(ams_channels[chan-7],ev_type, 99, res[0],timestamp,"warning");
             //printf("Chip: AMS. Event type: %s. Timestamp: %lld. Channel type: %s. Channel: %d. Value: %f ºC\n",ev_type,timestamp,ch_type,chan,res[0]);
         }
 		if (rc) {
