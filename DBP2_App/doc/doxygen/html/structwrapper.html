@@ -93,30 +93,42 @@ $(function(){initNavTree('structwrapper.html',''); initResizable(); });
 <div class="header">
   <div class="summary">
 <a href="#pub-attribs">Data Fields</a>  </div>
-  <div class="headertitle"><div class="title">wrapper Struct Reference</div></div>
+  <div class="headertitle"><div class="title">wrapper Struct Reference<div class="ingroups"><a class="el" href="group__shm.html">Shared Memory</a></div></div></div>
 </div><!--header-->
 <div class="contents">
+
+<p>Shared Memory content.  
+ <a href="#details">More...</a></p>
 
 <p><code>#include &lt;<a class="el" href="constants_8h_source.html">constants.h</a>&gt;</code></p>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pub-attribs" name="pub-attribs"></a>
 Data Fields</h2></td></tr>
 <tr class="memitem:aa9d80fe477937f04be6dffb99152e581" id="r_aa9d80fe477937f04be6dffb99152e581"><td class="memItemLeft" align="right" valign="top">char&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#aa9d80fe477937f04be6dffb99152e581">ev_type</a> [8]</td></tr>
+<tr class="memdesc:aa9d80fe477937f04be6dffb99152e581"><td class="mdescLeft">&#160;</td><td class="mdescRight">Catched event type.  <br /></td></tr>
 <tr class="separator:aa9d80fe477937f04be6dffb99152e581"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a29abc8acc94605c7983339dc56f5acd5" id="r_a29abc8acc94605c7983339dc56f5acd5"><td class="memItemLeft" align="right" valign="top">char&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a29abc8acc94605c7983339dc56f5acd5">ch_type</a> [16]</td></tr>
+<tr class="memdesc:a29abc8acc94605c7983339dc56f5acd5"><td class="mdescLeft">&#160;</td><td class="mdescRight">Catched channel type.  <br /></td></tr>
 <tr class="separator:a29abc8acc94605c7983339dc56f5acd5"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a834cb2f99c772a9508188ea1a5cf3469" id="r_a834cb2f99c772a9508188ea1a5cf3469"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a834cb2f99c772a9508188ea1a5cf3469">chn</a></td></tr>
+<tr class="memdesc:a834cb2f99c772a9508188ea1a5cf3469"><td class="mdescLeft">&#160;</td><td class="mdescRight">Catched channel.  <br /></td></tr>
 <tr class="separator:a834cb2f99c772a9508188ea1a5cf3469"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a67f7ed65d472f9ad0528f0dea8fbd63e" id="r_a67f7ed65d472f9ad0528f0dea8fbd63e"><td class="memItemLeft" align="right" valign="top">__s64&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a67f7ed65d472f9ad0528f0dea8fbd63e">tmpstmp</a></td></tr>
+<tr class="memdesc:a67f7ed65d472f9ad0528f0dea8fbd63e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Catched event timestamp.  <br /></td></tr>
 <tr class="separator:a67f7ed65d472f9ad0528f0dea8fbd63e"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a0096ed68692b83dac0d5cf7cf780ad49" id="r_a0096ed68692b83dac0d5cf7cf780ad49"><td class="memItemLeft" align="right" valign="top">sem_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a0096ed68692b83dac0d5cf7cf780ad49">empty</a></td></tr>
+<tr class="memdesc:a0096ed68692b83dac0d5cf7cf780ad49"><td class="mdescLeft">&#160;</td><td class="mdescRight">Semaphore that indicates there is no event catched.  <br /></td></tr>
 <tr class="separator:a0096ed68692b83dac0d5cf7cf780ad49"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a25875c11ed23317723b25d45f3f4a293" id="r_a25875c11ed23317723b25d45f3f4a293"><td class="memItemLeft" align="right" valign="top">sem_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a25875c11ed23317723b25d45f3f4a293">full</a></td></tr>
+<tr class="memdesc:a25875c11ed23317723b25d45f3f4a293"><td class="mdescLeft">&#160;</td><td class="mdescRight">Semaphore that indicates event has been catched.  <br /></td></tr>
 <tr class="separator:a25875c11ed23317723b25d45f3f4a293"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a05f631f56238f27397efe06a385b8d85" id="r_a05f631f56238f27397efe06a385b8d85"><td class="memItemLeft" align="right" valign="top">sem_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a05f631f56238f27397efe06a385b8d85">ams_sync</a></td></tr>
+<tr class="memdesc:a05f631f56238f27397efe06a385b8d85"><td class="mdescLeft">&#160;</td><td class="mdescRight">Semaphore to synchronize IIO Event monitor with main application.  <br /></td></tr>
 <tr class="separator:a05f631f56238f27397efe06a385b8d85"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
-<h2 class="groupheader">Field Documentation</h2>
+<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
+<div class="textblock"><p>Shared Memory content. </p>
+</div><h2 class="groupheader">Field Documentation</h2>
 <a id="a05f631f56238f27397efe06a385b8d85" name="a05f631f56238f27397efe06a385b8d85"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a05f631f56238f27397efe06a385b8d85">&#9670;&#160;</a></span>ams_sync</h2>
 
@@ -128,6 +140,8 @@ Data Fields</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+
+<p>Semaphore to synchronize IIO Event monitor with main application. </p>
 
 </div>
 </div>
@@ -143,6 +157,8 @@ Data Fields</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
+<p>Catched channel type. </p>
+
 </div>
 </div>
 <a id="a834cb2f99c772a9508188ea1a5cf3469" name="a834cb2f99c772a9508188ea1a5cf3469"></a>
@@ -156,6 +172,8 @@ Data Fields</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+
+<p>Catched channel. </p>
 
 </div>
 </div>
@@ -171,6 +189,8 @@ Data Fields</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
+<p>Semaphore that indicates there is no event catched. </p>
+
 </div>
 </div>
 <a id="aa9d80fe477937f04be6dffb99152e581" name="aa9d80fe477937f04be6dffb99152e581"></a>
@@ -184,6 +204,8 @@ Data Fields</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+
+<p>Catched event type. </p>
 
 </div>
 </div>
@@ -199,6 +221,8 @@ Data Fields</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
+<p>Semaphore that indicates event has been catched. </p>
+
 </div>
 </div>
 <a id="a67f7ed65d472f9ad0528f0dea8fbd63e" name="a67f7ed65d472f9ad0528f0dea8fbd63e"></a>
@@ -212,6 +236,8 @@ Data Fields</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+
+<p>Catched event timestamp. </p>
 
 </div>
 </div>

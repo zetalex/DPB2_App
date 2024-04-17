@@ -25,6 +25,7 @@
 var NAVTREE =
 [
   [ "DBP2_App", "index.html", [
+    [ "Topics", "topics.html", "topics" ],
     [ "Data Structures", "annotated.html", [
       [ "Data Structures", "annotated.html", "annotated_dup" ],
       [ "Data Structure Index", "classes.html", null ],
@@ -48,7 +49,7 @@ var NAVTREE =
 var NAVTREEINDEX =
 [
 "annotated.html",
-"struct_d_p_b___i2c_sensors.html#a50bcc49bed9bb747749a1aa0f07a79d6"
+"main_8c.html#aad7587cb9df527504cfe5c2c5915c48b"
 ];
 
 var SYNCONMSG = 'click to disable panel synchronisation';

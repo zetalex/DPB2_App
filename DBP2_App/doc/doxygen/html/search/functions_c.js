@@ -9,6 +9,7 @@ var searchData=
   ['sfp_5favago_5fread_5ftx_5fav_5foptical_5fpwr_6',['sfp_avago_read_tx_av_optical_pwr',['../main_8c.html#a94afc2c9f566620a835abaf28942e52c',1,'main.c']]],
   ['sfp_5favago_5fread_5fvoltage_7',['sfp_avago_read_voltage',['../main_8c.html#a725d370deea591119e1065b2dbba85ac',1,'main.c']]],
   ['sfp_5favago_5fstatus_5finterruptions_8',['sfp_avago_status_interruptions',['../main_8c.html#ac81984ab4340ad9edbf80519c2e3dafb',1,'main.c']]],
-  ['status_5falarm_5fjson_9',['status_alarm_json',['../main_8c.html#a9306add65e4838f381eb3e37e3a74cd7',1,'main.c']]],
-  ['stop_5fi2csensors_10',['stop_I2cSensors',['../main_8c.html#ab97cd22e7d6b6fea09b746b3c2bc45b6',1,'main.c']]]
+  ['sighandler_9',['sighandler',['../main_8c.html#ae9fa379677100866fa335a0b8adf3ea2',1,'main.c']]],
+  ['status_5falarm_5fjson_10',['status_alarm_json',['../main_8c.html#a9306add65e4838f381eb3e37e3a74cd7',1,'main.c']]],
+  ['stop_5fi2csensors_11',['stop_I2cSensors',['../main_8c.html#ab97cd22e7d6b6fea09b746b3c2bc45b6',1,'main.c']]]
 ];

@@ -1,6 +1,7 @@
 var searchData=
 [
-  ['fd_0',['fd',['../struct_i2c_device.html#a6f8059414f0228f0256115e024eeed4b',1,'I2cDevice']]],
-  ['filename_1',['filename',['../struct_i2c_device.html#aeac90097f29f7529968697163cea5c18',1,'I2cDevice']]],
-  ['full_2',['full',['../structwrapper.html#a25875c11ed23317723b25d45f3f4a293',1,'wrapper']]]
+  ['empty_0',['empty',['../structwrapper.html#a0096ed68692b83dac0d5cf7cf780ad49',1,'wrapper']]],
+  ['eth0_5fflag_1',['eth0_flag',['../constants_8h.html#a6dbb682affd0d4de41d7edda09ca608c',1,'constants.h']]],
+  ['eth1_5fflag_2',['eth1_flag',['../constants_8h.html#ab3d9df8a1e9290a02919a1c455c3449e',1,'constants.h']]],
+  ['ev_5ftype_3',['ev_type',['../structwrapper.html#aa9d80fe477937f04be6dffb99152e581',1,'wrapper']]]
 ];

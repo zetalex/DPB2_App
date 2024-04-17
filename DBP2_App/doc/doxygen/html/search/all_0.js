@@ -9,6 +9,7 @@ var searchData=
   ['ams_5fsync_6',['ams_sync',['../structwrapper.html#a05f631f56238f27397efe06a385b8d85',1,'wrapper']]],
   ['ams_5ftemp_5fnum_5fchan_7',['AMS_TEMP_NUM_CHAN',['../constants_8h.html#a3c3d481e3cc0b0b45bcad55a91efbc8f',1,'constants.h']]],
   ['ams_5fvolt_5fnum_5fchan_8',['AMS_VOLT_NUM_CHAN',['../constants_8h.html#ad63e2856b548cfaf2f805d69cda66a70',1,'constants.h']]],
-  ['atexit_5ffunction_9',['atexit_function',['../main_8c.html#a00dd035255224ec7702727251ca54552',1,'main.c']]],
-  ['aurora_5fdown_5falarm_10',['aurora_down_alarm',['../main_8c.html#a3ab8810c7a9f27237b8da1f43d1d1039',1,'main.c']]]
+  ['and_20threads_9',['Child process and threads',['../group__pth.html',1,'']]],
+  ['atexit_5ffunction_10',['atexit_function',['../main_8c.html#a00dd035255224ec7702727251ca54552',1,'main.c']]],
+  ['aurora_5fdown_5falarm_11',['aurora_down_alarm',['../main_8c.html#a3ab8810c7a9f27237b8da1f43d1d1039',1,'main.c']]]
 ];

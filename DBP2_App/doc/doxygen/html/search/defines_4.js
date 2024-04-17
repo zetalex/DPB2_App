@@ -11,6 +11,5 @@ var searchData=
   ['mcp9844_5ftemp_5freg_8',['MCP9844_TEMP_REG',['../constants_8h.html#a5837d28d52c268074c5b5d8342e464a7',1,'constants.h']]],
   ['mcp9844_5ftemp_5fupper_5flim_9',['MCP9844_TEMP_UPPER_LIM',['../constants_8h.html#a0e5d388c410b9ce25ba6a071397b4965',1,'constants.h']]],
   ['mcp9844_5ftemp_5fupper_5flim_5freg_10',['MCP9844_TEMP_UPPER_LIM_REG',['../constants_8h.html#a4221f4fd7f624fc3dbbfc75adca5d045',1,'constants.h']]],
-  ['memory_5fkey_11',['MEMORY_KEY',['../constants_8h.html#a05702c74e98cd203f59ce1dc89ab8dc5',1,'constants.h']]],
-  ['monit_5fthread_5fperiod_12',['MONIT_THREAD_PERIOD',['../constants_8h.html#ab0f3a36b2db5661a60346a996eedbb4a',1,'constants.h']]]
+  ['monit_5fthread_5fperiod_11',['MONIT_THREAD_PERIOD',['../constants_8h.html#ab0f3a36b2db5661a60346a996eedbb4a',1,'constants.h']]]
 ];

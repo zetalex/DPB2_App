@@ -1,0 +1,27 @@
+var group___g_p_i_o =
+[
+    [ "DIG0_BACKUP_AURORA_LINK", "group___g_p_i_o.html#gab8a31d67446a838d960f996c82bb3956", null ],
+    [ "DIG0_MAIN_AURORA_LINK", "group___g_p_i_o.html#gae057e32a5ea07b6a0e0ee322a57f01fb", null ],
+    [ "DIG1_BACKUP_AURORA_LINK", "group___g_p_i_o.html#ga578b68c4b9e2033ba5b2dfd4bd5c8a1e", null ],
+    [ "DIG1_MAIN_AURORA_LINK", "group___g_p_i_o.html#gaceaa0edf66b6e96e923c41acc07b75ed", null ],
+    [ "GPIO_PINS_SIZE", "group___g_p_i_o.html#ga730d3a13ebea433d4ac7004d125362d8", null ],
+    [ "SFP0_PWR_ENA", "group___g_p_i_o.html#ga01f1a71d5ccedf4814d683ac5db895c1", null ],
+    [ "SFP0_RX_LOS", "group___g_p_i_o.html#gacc515b0e06f5f88964355b1e3b73c3a0", null ],
+    [ "SFP0_TX_DIS", "group___g_p_i_o.html#ga30db09f382da44e09d70bb2b412a93d9", null ],
+    [ "SFP1_PWR_ENA", "group___g_p_i_o.html#ga38b208aad1e57b4e31d186edc6572b02", null ],
+    [ "SFP1_RX_LOS", "group___g_p_i_o.html#gae9e5a83e57971311dbee038869a2022e", null ],
+    [ "SFP1_TX_DIS", "group___g_p_i_o.html#ga149ccffbe6baa76527281a97af77863a", null ],
+    [ "SFP2_PWR_ENA", "group___g_p_i_o.html#gae543790a57472c739de90a61d58cd45e", null ],
+    [ "SFP2_RX_LOS", "group___g_p_i_o.html#ga00d6fef952cfe2c6104192c94c98a723", null ],
+    [ "SFP2_TX_DIS", "group___g_p_i_o.html#ga556f3e93d7fd1b5668103f79890bffc2", null ],
+    [ "SFP3_PWR_ENA", "group___g_p_i_o.html#gabde30529880c75b281307e1ef6375ec5", null ],
+    [ "SFP3_RX_LOS", "group___g_p_i_o.html#ga44041c4bc09b0906842f850c4bd15bd4", null ],
+    [ "SFP3_TX_DIS", "group___g_p_i_o.html#ga6f01bc0358ef32e972f632eedd436291", null ],
+    [ "SFP4_PWR_ENA", "group___g_p_i_o.html#ga09aedcbf31b56241e2af367a2037406a", null ],
+    [ "SFP4_RX_LOS", "group___g_p_i_o.html#gae125b0247c1623e913613db05afc453e", null ],
+    [ "SFP4_TX_DIS", "group___g_p_i_o.html#ga1b675d826ea27c169e53a4c3cc6cdc1f", null ],
+    [ "SFP5_PWR_ENA", "group___g_p_i_o.html#ga021609e962071f51676dcb09b2a1a7e6", null ],
+    [ "SFP5_RX_LOS", "group___g_p_i_o.html#ga1aa3e7f09208c1a4452c0ebd839c41c8", null ],
+    [ "SFP5_TX_DIS", "group___g_p_i_o.html#gab87d6cd144fed3813afa1c1e2181ea9e", null ],
+    [ "GPIO_PINS", "group___g_p_i_o.html#gacfe9d6039c7fb650da2399441be1a582", null ]
+];

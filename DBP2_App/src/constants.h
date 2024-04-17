@@ -11,6 +11,14 @@ int dig0_backup_flag = 0;
 int dig1_backup_flag = 0;
 int break_flag = 0;
 /************************** GPIO Pins Definitions *****************************/
+/** @defgroup GPIO GPIO pins
+ *  GPIO pins definition
+ *  @{
+ */
+/** @brief Number of GPIO pins used */
+#define GPIO_PINS_SIZE 22
+
+/** @brief GPIO pins definition */
 #define DIG0_MAIN_AURORA_LINK 40
 #define DIG0_BACKUP_AURORA_LINK 41
 #define DIG1_MAIN_AURORA_LINK 42
@@ -21,13 +29,46 @@ int break_flag = 0;
 #define SFP3_PWR_ENA 3
 #define SFP4_PWR_ENA 4
 #define SFP5_PWR_ENA 5
-#define SFP0_TX_ENA 6
-#define SFP1_TX_ENA 7
-#define SFP2_TX_ENA 8
-#define SFP3_TX_ENA 9
-#define SFP4_TX_ENA 10
-#define SFP5_TX_ENA 11
+#define SFP0_TX_DIS 6
+#define SFP1_TX_DIS 7
+#define SFP2_TX_DIS 8
+#define SFP3_TX_DIS 9
+#define SFP4_TX_DIS 10
+#define SFP5_TX_DIS 11
 #define SFP0_RX_LOS 14
+#define SFP1_RX_LOS 18
+#define SFP2_RX_LOS 22
+#define SFP3_RX_LOS 26
+#define SFP4_RX_LOS 30
+#define SFP5_RX_LOS 34
+
+/** @brief GPIO pins list */
+const int GPIO_PINS[GPIO_PINS_SIZE] = {
+    DIG0_MAIN_AURORA_LINK,
+    DIG0_BACKUP_AURORA_LINK,
+    DIG1_MAIN_AURORA_LINK,
+    DIG1_BACKUP_AURORA_LINK,
+    SFP0_PWR_ENA,
+    SFP1_PWR_ENA,
+    SFP2_PWR_ENA,
+    SFP3_PWR_ENA,
+    SFP4_PWR_ENA,
+    SFP5_PWR_ENA,
+    SFP0_TX_DIS, 
+    SFP1_TX_DIS, 
+    SFP2_TX_DIS, 
+    SFP3_TX_DIS, 
+    SFP4_TX_DIS, 
+    SFP5_TX_DIS, 
+    SFP0_RX_LOS, 
+    SFP1_RX_LOS, 
+    SFP2_RX_LOS, 
+    SFP3_RX_LOS, 
+    SFP4_RX_LOS, 
+    SFP5_RX_LOS
+};
+/** @} */
+
 /******************************************************************************
 * Temperature Sensor Register Set - Temperature value, alarm value and alarm flags.
 ****************************************************************************/
@@ -178,25 +219,39 @@ int GPIO_BASE_ADDRESS = 0;
 /******************************************************************************
 *Shared Memory.
 ****************************************************************************/
+/** @defgroup shm Shared Memory
+ *  Shared Memory content
+ *  @{
+ */
+/** @brief Shared Memory key */
 #define MEMORY_KEY 7890
 
+/** @brief Shared Memory content */
 struct wrapper
 {
+	/** @brief Catched event type */
     char ev_type[8];
+	/** @brief Catched channel type */
     char ch_type[16];
+	/** @brief Catched channel */
     int chn;
+	/** @brief Catched event timestamp */
     __s64 tmpstmp;
+	/** @brief Semaphore that indicates there is no event catched */
     sem_t empty;
+	/** @brief Semaphore that indicates event has been catched */
     sem_t full;
+	/** @brief Semaphore to synchronize IIO Event monitor with main application */
     sem_t ams_sync;
 };
+/** @brief Shared Memory ID */
 int memoryID;
+/** @brief Shared Memory segment */
 struct wrapper *memory;
-
-//static int monitoring_thread_count;
+/** @} */
 
 /******************************************************************************
-*AMS channel descrpitor.
+*AMS channel descriptor.
 ****************************************************************************/
 char *ams_channels[] = {
         "PS LPD Temperature",

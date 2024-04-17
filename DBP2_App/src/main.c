@@ -54,14 +54,41 @@ struct DPB_I2cSensors{
 /******************************************************************************
 *Local Semaphores.
 ****************************************************************************/
+/** @defgroup semaph Local Semaphores
+ *  Semaphores needed to synchronize the application execution and avoid race conditions
+ *  @{
+ */
+
+/** @brief Semaphore to synchronize I2C Bus usage */
 sem_t i2c_sync;
+
+/** @brief Semaphore to synchronize thread creation */
 sem_t thread_sync;
+
+/** @brief Semaphore to synchronize GPIO file accesses */
 sem_t file_sync;
+
+/** @} */
+
 /******************************************************************************
 *Child process and threads.
 ****************************************************************************/
+/** @defgroup pth Child process and threads
+ *  Threads and subprocesses declaration
+ *  @{
+ */
+/** @brief IIO Event Monitor Process ID */
 pid_t child_pid;
-pthread_t t_1, t_2, t_3, t_4;
+/** @brief AMS alarm Thread */
+pthread_t t_1;
+/** @brief I2C alarm Thread */
+pthread_t t_2;
+/** @brief Monitoring Thread */
+pthread_t t_3;
+/** @brief Command Handling Thread */
+pthread_t t_4;
+/** @} */
+
 /******************************************************************************
 *ZMQ Socket Initializer
 ****************************************************************************/
@@ -2393,7 +2420,7 @@ void unexport_GPIO(){
 	char *arr[32];
 	char *num_str;
 	char cmd[64];
-	int num;
+	int GPIO_num;
 	struct dirent *entry;
 	dp = opendir (GPIO_dir);
 
@@ -2408,10 +2435,13 @@ void unexport_GPIO(){
 	}
 	for(int j=0; j<i; j++){
 		num_str = strtok(arr[j],"gpio");
-		num = atoi(num_str);
-		if(num>419){
-			snprintf(cmd, sizeof(cmd), "echo %d > /sys/class/gpio/unexport", num);
-			system(cmd);
+		GPIO_num = atoi(num_str);
+		for(int l=0; l<GPIO_PINS_SIZE; l++){
+			if(GPIO_num == (GPIO_PINS[l]+ GPIO_BASE_ADDRESS)){
+				snprintf(cmd, sizeof(cmd), "echo %d > /sys/class/gpio/unexport", GPIO_num);
+				system(cmd);
+				break;
+			}
 		}
 	}
 	return;
@@ -2667,12 +2697,12 @@ int dpb_command_handling(struct DPB_I2cSensors *data, char **cmd){
 
 		if(strcmp(cmd[2],"STATUS") == 0){
 			if(strcmp(cmd[0],"READ") == 0){
-				rc = read_GPIO(SFP0_TX_ENA+(sfp_num*4),bool_read);
+				rc = read_GPIO(SFP0_RX_LOS+(sfp_num*4),bool_read);
 				rc = command_status_response_json ("DPB",timestamp,bool_read[0]);
 			}
 			else{
-				bool_set=((strcmp(cmd[4],"ON") == 0)?(1):(0));
-				rc = write_GPIO(SFP0_TX_ENA+sfp_num,bool_set);
+				bool_set=((strcmp(cmd[4],"ON") == 0)?(0):(1));
+				rc = write_GPIO(SFP0_TX_DIS+sfp_num,bool_set);
 				rc = command_status_response_json ("DPB",timestamp,99);
 			}
 		}
