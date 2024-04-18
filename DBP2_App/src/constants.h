@@ -2,6 +2,18 @@
 #define INA3221_NUM_CHAN 3
 #define AMS_TEMP_NUM_CHAN 3
 #define AMS_VOLT_NUM_CHAN 21
+/************************** Custom Errors Definitions *****************************/
+/** @defgroup err Custom Error Flags
+ *  Shared Memory content
+ *  @{
+ */
+/** @brief Error command not valid */
+#define EINCMD 1
+/** @brief Error SET commnad not successful */
+#define ERRSET 2
+/** @brief Error READ command not successful */
+#define ERRREAD 3
+/** @} */
 /************************** Global Flags Definitions *****************************/
 int eth0_flag = 0;
 int eth1_flag = 0;
