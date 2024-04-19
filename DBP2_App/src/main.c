@@ -457,6 +457,7 @@ int xlnx_ams_set_limits(int chan, char *ev_type, char *ch_type, float val){
 int init_I2cSensors(struct DPB_I2cSensors *data){
 
 	int rc;
+	int32_t timestamp;
 	data->dev_pcb_temp.filename = "/dev/i2c-2";
 	data->dev_pcb_temp.addr = 0x18;
 
@@ -496,90 +497,118 @@ int init_I2cSensors(struct DPB_I2cSensors *data){
 
 	rc = init_tempSensor(&data->dev_pcb_temp);
 	if (rc) {
-		printf("Failed to start i2c device: Temp. Sensor\r\n");
-		return rc;
+		timestamp = time(NULL);
+		rc = status_alarm_json("DPB","PCB Temperature Sensor I2C Bus Status",99,timestamp,"critical");
 	}
 
 	rc = init_voltSensor(&data->dev_sfp0_2_volt);
 	if (rc) {
-		printf("Failed to start i2c device: SFP 0-2 Voltage Sensor\r\n");
-		return rc;
+		timestamp = time(NULL);
+		rc = status_alarm_json("DPB","Voltage-Current Sensor I2C Bus Status",0,timestamp,"critical");
 	}
 
 	rc = init_voltSensor(&data->dev_sfp3_5_volt);
 	if (rc) {
-		printf("Failed to start i2c device: SFP 3-5 Voltage Sensor\r\n");
-		return rc;
+		timestamp = time(NULL);
+		rc = status_alarm_json("DPB","Voltage-Current Sensor I2C Bus Status",1,timestamp,"critical");
 	}
 
 	rc = init_voltSensor(&data->dev_som_volt);
 	if (rc) {
-		printf("Failed to start i2c device: SoM Voltage Sensor\r\n");
-		return rc;
+		timestamp = time(NULL);
+		rc = status_alarm_json("DPB","Voltage-Current Sensor I2C Bus Status",2,timestamp,"critical");
 	}
 
 	rc = init_SFP_A0(&data->dev_sfp0_A0);
+	if (rc) {
+		timestamp = time(NULL);
+		rc = status_alarm_json("DPB","SFP I2C Bus Status",0,timestamp,"critical");
+	}
+	else{
+		rc = init_SFP_A2(&data->dev_sfp0_A2);
 		if (rc) {
-			printf("Failed to start i2c device: SFP 0 - EEPROM page A0h\r\n");
-			return rc;
+			timestamp = time(NULL);
+			rc = status_alarm_json("DPB","SFP I2C Bus Status",0,timestamp,"critical");
 		}
-	rc = init_SFP_A2(&data->dev_sfp0_A2);
+		else{
+			sfp0_connected = 1;
+		}
+	}
+	rc = init_SFP_A0(&data->dev_sfp1_A0);
+	if (rc) {
+		timestamp = time(NULL);
+		rc = status_alarm_json("DPB","SFP I2C Bus Status",1,timestamp,"critical");
+	}
+	else{
+		rc = init_SFP_A2(&data->dev_sfp1_A2);
 		if (rc) {
-			printf("Failed to start i2c device: SFP 0 - EEPROM page A2h\r\n");
-			return rc;
+			timestamp = time(NULL);
+			rc = status_alarm_json("DPB","SFP I2C Bus Status",1,timestamp,"critical");
 		}
-	/*rc = init_SFP_A0(&data->dev_sfp1_A0);
-		if (rc) {
-			printf("Failed to start i2c device: SFP 1 - EEPROM page A0h\r\n");
-			return rc;
+		else{
+			sfp1_connected = 1;
 		}
-	rc = init_SFP_A2(&data->dev_sfp1_A2);
-		if (rc) {
-			printf("Failed to start i2c device: SFP 1 - EEPROM page A2h\r\n");
-			return rc;
-		}
+	}
 	rc = init_SFP_A0(&data->dev_sfp0_A2);
+	if (rc) {
+		timestamp = time(NULL);
+		rc = status_alarm_json("DPB","SFP I2C Bus Status",2,timestamp,"critical");
+	}
+	else{
+		rc = init_SFP_A2(&data->dev_sfp2_A2);
 		if (rc) {
-			printf("Failed to start i2c device: SFP 2 - EEPROM page A0h\r\n");
-			return rc;
+			timestamp = time(NULL);
+			rc = status_alarm_json("DPB","SFP I2C Bus Status",2,timestamp,"critical");
 		}
-	rc = init_SFP_A2(&data->dev_sfp2_A2);
-		if (rc) {
-			printf("Failed to start i2c device: SFP 2 - EEPROM page A2h\r\n");
-			return rc;
+		else{
+			sfp2_connected = 1;
 		}
+	}
 	rc = init_SFP_A0(&data->dev_sfp3_A0);
+	if (rc) {
+		timestamp = time(NULL);
+		rc = status_alarm_json("DPB","SFP I2C Bus Status",3,timestamp,"critical");
+	}
+	else{
+		rc = init_SFP_A2(&data->dev_sfp3_A2);
 		if (rc) {
-			printf("Failed to start i2c device: SFP 3 - EEPROM page A0h\r\n");
-			return rc;
+			timestamp = time(NULL);
+			rc = status_alarm_json("DPB","SFP I2C Bus Status",3,timestamp,"critical");
 		}
-	rc = init_SFP_A2(&data->dev_sfp3_A2);
-		if (rc) {
-			printf("Failed to start i2c device: SFP 3 - EEPROM page A2h\r\n");
-			return rc;
+		else{
+			sfp3_connected = 1;
 		}
+	}
 	rc = init_SFP_A0(&data->dev_sfp4_A0);
+	if (rc) {
+		timestamp = time(NULL);
+		rc = status_alarm_json("DPB","SFP I2C Bus Status",4,timestamp,"critical");
+	}
+	else{
+		rc = init_SFP_A2(&data->dev_sfp4_A2);
 		if (rc) {
-			printf("Failed to start i2c device: SFP 4 - EEPROM page A0h\r\n");
-			return rc;
+			timestamp = time(NULL);
+			rc = status_alarm_json("DPB","SFP I2C Bus Status",4,timestamp,"critical");
 		}
-	rc = init_SFP_A2(&data->dev_sfp4_A2);
-		if (rc) {
-			printf("Failed to start i2c device: SFP 4 - EEPROM page A2h\r\n");
-			return rc;
+		else{
+			sfp4_connected = 1;
 		}
+	}
 	rc = init_SFP_A0(&data->dev_sfp5_A0);
+	if (rc) {
+		timestamp = time(NULL);
+		rc = status_alarm_json("DPB","SFP I2C Bus Status",5,timestamp,"critical");
+	}
+	else{
+		rc = init_SFP_A2(&data->dev_sfp5_A2);
 		if (rc) {
-			printf("Failed to start i2c device: SFP 5 - EEPROM page A0h\r\n");
-			return rc;
+			timestamp = time(NULL);
+			rc = status_alarm_json("DPB","SFP I2C Bus Status",5,timestamp,"critical");
 		}
-	rc = init_SFP_A2(&data->dev_sfp5_A2);
-		if (rc) {
-			printf("Failed to start i2c device: SFP 5 - EEPROM page A2h\r\n");
-			return rc;
-		}*/
-
-
+		else{
+			sfp5_connected = 1;
+		}
+	}
 	rc = mcp9844_set_limits(data,0,60);
 	if (rc) {
 		printf("Failed to set MCP9844 Upper Limit\r\n");
@@ -1329,13 +1358,15 @@ int sfp_avago_status_interruptions(uint8_t status, int n){
 	int32_t timestamp;
 	int rc = 0;
 
-	if((status & 0x02) != 0){
+	if(((status & 0x02) != 0) & ((status_mask[n] & 0x02) == 0)){
 		timestamp = time(NULL);
 		rc = status_alarm_json("DPB","SFP RX_LOS Status",n,timestamp,"critical");
+		status_mask[n] |= 0x02;
 	}
-	if((status & 0x04) != 0){
+	if(((status & 0x04) != 0) & ((status_mask[n] & 0x04) == 0)){
 		timestamp = time(NULL);
 		rc = status_alarm_json("DPB","SFP TX_FAULT Status", n,timestamp,"critical");
+		status_mask[n] |= 0x04;
 	}
 	return rc;
 }
@@ -1352,55 +1383,65 @@ int sfp_avago_alarms_interruptions(struct DPB_I2cSensors *data,uint16_t flags, i
 	float res [1];
 	int rc = 0;
 
-	if((flags & 0x0080) == 0x0080){
+	if(((flags & 0x0080) == 0x0080)&((alarms_mask[n]&0x0080)==0)){
 		timestamp = time(NULL);
 		sfp_avago_read_rx_av_optical_pwr(data,n,res);
 		rc = alarm_json("DPB","SFP RX Power","rising", n, res[0],timestamp,"warning");
+		alarms_mask[n] |= 0x0080;
 	}
-	if((flags & 0x0040) == 0x0040){
+	if(((flags & 0x0040) == 0x0040)&((alarms_mask[n]&0x0040)==0)){
 		timestamp = time(NULL);
 		sfp_avago_read_rx_av_optical_pwr(data,n,res);
 		rc = alarm_json("DPB","SFP RX Power","falling", n, res[0],timestamp,"warning");
+		alarms_mask[n] |= 0x0040;
 	}
-	if((flags & 0x0200) == 0x0200){
+	if(((flags & 0x0200) == 0x0200)&((alarms_mask[n]&0x0200)==0)){
 		timestamp = time(NULL);
 		sfp_avago_read_tx_av_optical_pwr(data,n,res);
 		rc = alarm_json("DPB","SFP TX Power","rising", n, res[0],timestamp,"warning");
+		alarms_mask[n] |= 0x0200;
 	}
-	if((flags & 0x0100) == 0x0100){
+	if(((flags & 0x0100) == 0x0100)&((alarms_mask[n]&0x0100)==0)){
 		timestamp = time(NULL);
 		sfp_avago_read_tx_av_optical_pwr(data,n,res);
 		rc = alarm_json("DPB","SFP TX Power","falling", n, res[0],timestamp,"warning");
+		alarms_mask[n] |= 0x0100;
 	}
-	if((flags & 0x0800) == 0x0800){
+	if(((flags & 0x0800) == 0x0800)&((alarms_mask[n]&0x0800)==0)){
 		timestamp = time(NULL);
 		sfp_avago_read_lbias_current(data,n,res);
 		rc = alarm_json("DPB","SFP Laser Bias Current","rising", n, res[0],timestamp,"warning");
+		alarms_mask[n] |= 0x0800;
 	}
-	if((flags & 0x0400) == 0x0400){
+	if(((flags & 0x0400) == 0x0400)&((alarms_mask[n]&0x0400)==0)){
 		timestamp = time(NULL);
 		sfp_avago_read_lbias_current(data,n,res);
 		rc = alarm_json("DPB","SFP Laser Bias Current","falling", n, res[0],timestamp,"warning");
+		alarms_mask[n] |= 0x0400;
 	}
-	if((flags & 0x2000) == 0x2000){
+	if(((flags & 0x2000) == 0x2000)&((alarms_mask[n]&0x2000)==0)){
 		timestamp = time(NULL);
 		sfp_avago_read_voltage(data,n,res);
 		rc = alarm_json("DPB","SFP Voltage Monitor","rising", n, res[0],timestamp,"warning");
+		alarms_mask[n] |= 0x2000;
 	}
-	if((flags & 0x1000) == 0x1000){
+	if(((flags & 0x1000) == 0x1000)&((alarms_mask[n]&0x1000)==0)){
 		timestamp = time(NULL);
 		sfp_avago_read_voltage(data,n,res);
 		rc = alarm_json("DPB","SFP Voltage Monitor","falling", n, res[0],timestamp,"warning");
+		alarms_mask[n] |= 0x1000;
 	}
-	if((flags & 0x8000) == 0x8000){
+	if(((flags & 0x8000) == 0x8000)&((alarms_mask[n]&0x8000)==0)){
 		timestamp = time(NULL);
 		sfp_avago_read_temperature(data,n,res);
 		rc = alarm_json("DPB","SFP Temperature","rising", n, res[0],timestamp,"warning");
+		alarms_mask[n] |= 0x8000;
 	}
-	if((flags & 0x4000) == 0x4000){
+	if(((flags & 0x4000) == 0x4000)&((alarms_mask[n]&0x4000)==0)){
 		timestamp = time(NULL);
 		sfp_avago_read_temperature(data,n,res);
 		rc = alarm_json("DPB","SFP Temperature","falling", n, res[0],timestamp,"warning");
+		alarms_mask[n] |= 0x4000;
 	}
 
 	return rc;
@@ -1468,8 +1509,14 @@ int sfp_avago_read_alarms(struct DPB_I2cSensors *data,int n) {
 	if((status_buf[0] & 0x06) != 0){
 		sfp_avago_status_interruptions(status_buf[0],n);
 	}
+	else{
+		status_mask[n] = 0;
+	}
 	if((flags & 0xFFC0) != 0){
 		sfp_avago_alarms_interruptions(data,flags,n);
+	}
+	else{
+		alarms_mask[n] = 0;
 	}
 	return 0;
 }
@@ -2002,13 +2049,14 @@ int alarm_json (char *board,char *chip,char *ev_type, int chan, float val,int32_
 
 
 	const char *serialized_json = json_object_to_json_string(jalarm_data);
-	/*int rc = json_schema_validate("JSONSchemaAlarms.json",serialized_json, "alarm_temp.json");
+	int rc = json_schema_validate("JSONSchemaAlarms.json",serialized_json, "alarm_temp.json");
 	if (rc) {
-		printf("Error\r\n");
+		printf("Error validating JSON Schema\r\n");
 		return rc;
 	}
-	zmq_send (log_publisher, strdup(serialized_json), strlen(serialized_json), 0);*/
-
+	else{
+		zmq_send(log_publisher, strdup(serialized_json), strlen(serialized_json), 0);
+	}
 	return 0;
 }
 
@@ -2053,7 +2101,12 @@ int status_alarm_json (char *board,char *chip, int chan,int32_t timestamp,char *
 	json_object_object_add(jalarm_data,"eventtimestamp", jtimestamp);
 	if (chan != 99){
 		json_object_object_add(jalarm_data,"channel", jchan);
-		jstatus = json_object_new_string("ON");
+		if((strcmp(chip,"SFP RX_LOS Status")==0)|(strcmp(chip,"SFP TX_FAULT Status")==0)){
+			jstatus = json_object_new_string("ON");
+		}
+		else{
+			jstatus = json_object_new_string("OFF");
+		}
 	}
 	else{
 		jstatus = json_object_new_string("OFF");
@@ -2062,13 +2115,14 @@ int status_alarm_json (char *board,char *chip, int chan,int32_t timestamp,char *
 	json_object_object_add(jalarm_data,"value", jstatus);
 
 	const char *serialized_json = json_object_to_json_string(jalarm_data);
-	/*int rc = json_schema_validate("JSONSchemaAlarms.json",serialized_json, "alarm_temp.json");
+	int rc = json_schema_validate("JSONSchemaAlarms.json",serialized_json, "alarm_temp.json");
 	if (rc) {
-		printf("Error\r\n");
+		printf("Error validating JSON Schema\r\n");
 		return rc;
 	}
-	zmq_send(log_publisher, strdup(serialized_json), strlen(serialized_json), 0);*/
-
+	else{
+		zmq_send(log_publisher, strdup(serialized_json), strlen(serialized_json), 0);
+	}
 	return 0;
 }
 /**
@@ -2188,8 +2242,6 @@ int command_status_response_json (int msg_id,int val)
 		printf("Error\r\n");
 		return rc;
 	}*/
-	printf("%s\n",serialized_json);
-	printf("%d\n",val);
 	zmq_send(cmd_router, strdup(serialized_json), strlen(serialized_json), 0);
 
 	return 0;
@@ -2211,7 +2263,7 @@ int json_schema_validate (char *schema,const char *json_string, char *temp_file)
 	char file_path[64];
 	char schema_path[64];
 	strcpy(file_path,"/home/petalinux/");
-	strcpy(schema_path,"/home/dpb2_json_schemas/");
+	strcpy(schema_path,"/home/petalinux/dpb2_json_schemas/");
 
 	strcat(file_path,temp_file);
 	strcat(schema_path,schema);
@@ -2699,7 +2751,7 @@ int dpb_command_handling(struct DPB_I2cSensors *data, char **cmd, int msg_id){
 
 	regex_t r1;
 	int reg_exp;
-	int rc = 0;
+	int rc = -1;
 	int bool_set;
 	int bool_read[1];
 	int ams_chan[1];
@@ -3085,7 +3137,7 @@ static void *monitoring_thread(void *arg)
 	float sfp_txbias_0[1];
 	uint8_t sfp_status_0[2];
 
-	/*float sfp_temp_1[1];
+	float sfp_temp_1[1];
 	float sfp_txpwr_1[1];
 	float sfp_rxpwr_1[1];
 	float sfp_vcc_1[1];
@@ -3118,9 +3170,8 @@ static void *monitoring_thread(void *arg)
 	float sfp_rxpwr_5[1];
 	float sfp_vcc_5[1];
 	float sfp_txbias_5[1];
-	uint8_t sfp_status_5[2];*/
+	uint8_t sfp_status_5[2];
 
-	usleep(10);
 	printf("Monitoring thread period: %ds\n",MONIT_THREAD_PERIOD/1000000);
 	rc = make_periodic(MONIT_THREAD_PERIOD, &info);
 	if (rc) {
@@ -3134,180 +3185,162 @@ static void *monitoring_thread(void *arg)
 		if (rc) {
 			printf("Reading Error\r\n");
 		}
-		rc = sfp_avago_read_temperature(data,0,sfp_temp_0);
-		if (rc) {
-			printf("Reading Error\r\n");
+		if(sfp0_connected){
+			rc = sfp_avago_read_temperature(data,0,sfp_temp_0);
+			if (rc) {
+				printf("Reading Error\r\n");
+			}
+			rc = sfp_avago_read_voltage(data,0,sfp_vcc_0);
+			if (rc) {
+				printf("Reading Error\r\n");
+			}
+			rc = sfp_avago_read_lbias_current(data,0,sfp_txbias_0);
+			if (rc) {
+				printf("Reading Error\r\n");
+			}
+			rc = sfp_avago_read_tx_av_optical_pwr(data,0,sfp_txpwr_0);
+			if (rc) {
+				printf("Reading Error\r\n");
+			}
+			rc = sfp_avago_read_rx_av_optical_pwr(data,0,sfp_rxpwr_0);
+			if (rc) {
+				printf("Reading Error\r\n");
+			}
+			rc = sfp_avago_read_status(data,0,sfp_status_0);
+			if (rc) {
+				printf("Reading Error\r\n");
+			}
 		}
-		rc = sfp_avago_read_voltage(data,0,sfp_vcc_0);
-		if (rc) {
-			printf("Reading Error\r\n");
+		if(sfp1_connected){
+			rc = sfp_avago_read_temperature(data,1,sfp_temp_1);
+			if (rc) {
+				printf("Reading Error\r\n");
+			}
+			rc = sfp_avago_read_voltage(data,1,sfp_vcc_1);
+			if (rc) {
+				printf("Reading Error\r\n");
+			}
+			rc = sfp_avago_read_lbias_current(data,1,sfp_txbias_1);
+			if (rc) {
+				printf("Reading Error\r\n");
+			}
+			rc = sfp_avago_read_tx_av_optical_pwr(data,1,sfp_txpwr_1);
+			if (rc) {
+				printf("Reading Error\r\n");
+			}
+			rc = sfp_avago_read_rx_av_optical_pwr(data,1,sfp_rxpwr_1);
+			if (rc) {
+				printf("Reading Error\r\n");
+			}
+			rc = sfp_avago_read_status(data,1,sfp_status_1);
+			if (rc) {
+				printf("Reading Error\r\n");
+			}
 		}
-		rc = sfp_avago_read_lbias_current(data,0,sfp_txbias_0);
-		if (rc) {
-			printf("Reading Error\r\n");
+		if(sfp2_connected){
+			rc = sfp_avago_read_temperature(data,2,sfp_temp_2);
+			if (rc) {
+				printf("Reading Error\r\n");
+			}
+			rc = sfp_avago_read_voltage(data,2,sfp_vcc_2);
+			if (rc) {
+				printf("Reading Error\r\n");
+			}
+			rc = sfp_avago_read_lbias_current(data,2,sfp_txbias_2);
+			if (rc) {
+				printf("Reading Error\r\n");
+			}
+			rc = sfp_avago_read_tx_av_optical_pwr(data,2,sfp_txpwr_2);
+			if (rc) {
+				printf("Reading Error\r\n");
+			}
+			rc = sfp_avago_read_rx_av_optical_pwr(data,2,sfp_rxpwr_2);
+			if (rc) {
+				printf("Reading Error\r\n");
+			}
+			rc = sfp_avago_read_status(data,2,sfp_status_2);
+			if (rc) {
+				printf("Reading Error\r\n");
+			}
 		}
-		rc = sfp_avago_read_tx_av_optical_pwr(data,0,sfp_txpwr_0);
-		if (rc) {
-			printf("Reading Error\r\n");
+		if(sfp3_connected){
+			rc = sfp_avago_read_temperature(data,3,sfp_temp_3);
+			if (rc) {
+				printf("Reading Error\r\n");
+			}
+			rc = sfp_avago_read_voltage(data,3,sfp_vcc_3);
+			if (rc) {
+				printf("Reading Error\r\n");
+			}
+			rc = sfp_avago_read_lbias_current(data,3,sfp_txbias_3);
+			if (rc) {
+				printf("Reading Error\r\n");
+			}
+			rc = sfp_avago_read_tx_av_optical_pwr(data,3,sfp_txpwr_3);
+			if (rc) {
+				printf("Reading Error\r\n");
+			}
+			rc = sfp_avago_read_rx_av_optical_pwr(data,3,sfp_rxpwr_3);
+			if (rc) {
+				printf("Reading Error\r\n");
+			}
+			rc = sfp_avago_read_status(data,3,sfp_status_3);
+			if (rc) {
+				printf("Reading Error\r\n");
+			}
 		}
-		rc = sfp_avago_read_rx_av_optical_pwr(data,0,sfp_rxpwr_0);
-		if (rc) {
-			printf("Reading Error\r\n");
+		if(sfp4_connected){
+			rc = sfp_avago_read_temperature(data,4,sfp_temp_4);
+			if (rc) {
+				printf("Reading Error\r\n");
+			}
+			rc = sfp_avago_read_voltage(data,4,sfp_vcc_4);
+			if (rc) {
+				printf("Reading Error\r\n");
+			}
+			rc = sfp_avago_read_lbias_current(data,4,sfp_txbias_4);
+			if (rc) {
+				printf("Reading Error\r\n");
+			}
+			rc = sfp_avago_read_tx_av_optical_pwr(data,4,sfp_txpwr_4);
+			if (rc) {
+				printf("Reading Error\r\n");
+			}
+			rc = sfp_avago_read_rx_av_optical_pwr(data,4,sfp_rxpwr_4);
+			if (rc) {
+				printf("Reading Error\r\n");
+			}
+			rc = sfp_avago_read_status(data,4,sfp_status_4);
+			if (rc) {
+				printf("Reading Error\r\n");
+			}
 		}
-		rc = sfp_avago_read_status(data,0,sfp_status_0);
-		if (rc) {
-			printf("Reading Error\r\n");
+		if(sfp5_connected){
+			rc = sfp_avago_read_temperature(data,5,sfp_temp_5);
+			if (rc) {
+				printf("Reading Error\r\n");
+			}
+			rc = sfp_avago_read_voltage(data,5,sfp_vcc_5);
+			if (rc) {
+				printf("Reading Error\r\n");
+			}
+			rc = sfp_avago_read_lbias_current(data,5,sfp_txbias_5);
+			if (rc) {
+				printf("Reading Error\r\n");
+			}
+			rc = sfp_avago_read_tx_av_optical_pwr(data,5,sfp_txpwr_5);
+			if (rc) {
+				printf("Reading Error\r\n");
+			}
+			rc = sfp_avago_read_rx_av_optical_pwr(data,5,sfp_rxpwr_5);
+			if (rc) {
+				printf("Reading Error\r\n");
+			}
+			rc = sfp_avago_read_status(data,5,sfp_status_5);
+			if (rc) {
+				printf("Reading Error\r\n");
+			}
 		}
-		/*rc = sfp_avago_read_temperature(data,1,sfp_temp_1);
-		if (rc) {
-			printf("Error\r\n");
-			return NULL;
-		}
-		rc = sfp_avago_read_voltage(data,1,sfp_vcc_1);
-		if (rc) {
-			printf("Error\r\n");
-			return NULL;
-		}
-		rc = sfp_avago_read_lbias_current(data,1,sfp_txbias_1);
-		if (rc) {
-			printf("Error\r\n");
-			return NULL;
-		}
-		rc = sfp_avago_read_tx_av_optical_pwr(data,1,sfp_txpwr_1);
-		if (rc) {
-			printf("Error\r\n");
-			return NULL;
-		}
-		rc = sfp_avago_read_rx_av_optical_pwr(data,1,sfp_rxpwr_1);
-		if (rc) {
-			printf("Error\r\n");
-			return NULL;
-		}
-		rc = sfp_avago_read_status(data,,sfp_status_1);
-		if (rc) {
-			printf("Error\r\n");
-			return NULL;
-		}
-		rc = sfp_avago_read_temperature(data,2,sfp_temp_2);
-		if (rc) {
-			printf("Error\r\n");
-			return NULL;
-		}
-		rc = sfp_avago_read_voltage(data,2,sfp_vcc_2);
-		if (rc) {
-			printf("Error\r\n");
-			return NULL;
-		}
-		rc = sfp_avago_read_lbias_current(data,2,sfp_txbias_2);
-		if (rc) {
-			printf("Error\r\n");
-			return NULL;
-		}
-		rc = sfp_avago_read_tx_av_optical_pwr(data,2,sfp_txpwr_2);
-		if (rc) {
-			printf("Error\r\n");
-			return NULL;
-		}
-		rc = sfp_avago_read_rx_av_optical_pwr(data,2,sfp_rxpwr_2);
-		if (rc) {
-			printf("Error\r\n");
-			return NULL;
-		}
-		rc = sfp_avago_read_status(data,2,sfp_status_2);
-		if (rc) {
-			printf("Error\r\n");
-			return NULL;
-		}
-		rc = sfp_avago_read_temperature(data,3,sfp_temp_3);
-		if (rc) {
-			printf("Error\r\n");
-			return NULL;
-		}
-		rc = sfp_avago_read_voltage(data,3,sfp_vcc_3);
-		if (rc) {
-			printf("Error\r\n");
-			return NULL;
-		}
-		rc = sfp_avago_read_lbias_current(data,3,sfp_txbias_3);
-		if (rc) {
-			printf("Error\r\n");
-			return NULL;
-		}
-		rc = sfp_avago_read_tx_av_optical_pwr(data,3,sfp_txpwr_3);
-		if (rc) {
-			printf("Error\r\n");
-			return NULL;
-		}
-		rc = sfp_avago_read_rx_av_optical_pwr(data,3,sfp_rxpwr_3);
-		if (rc) {
-			printf("Error\r\n");
-			return NULL;
-		}
-		rc = sfp_avago_read_status(data,3,sfp_status_3);
-		if (rc) {
-			printf("Error\r\n");
-			return NULL;
-		}
-		rc = sfp_avago_read_temperature(data,4,sfp_temp_4);
-		if (rc) {
-			printf("Error\r\n");
-			return NULL;
-		}
-		rc = sfp_avago_read_voltage(data,4,sfp_vcc_4);
-		if (rc) {
-			printf("Error\r\n");
-			return NULL;
-		}
-		rc = sfp_avago_read_lbias_current(data,4,sfp_txbias_4);
-		if (rc) {
-			printf("Error\r\n");
-			return NULL;
-		}
-		rc = sfp_avago_read_tx_av_optical_pwr(data,4,sfp_txpwr_4);
-		if (rc) {
-			printf("Error\r\n");
-			return NULL;
-		}
-		rc = sfp_avago_read_rx_av_optical_pwr(data,4,sfp_rxpwr_4);
-		if (rc) {
-			printf("Error\r\n");
-			return NULL;
-		}
-		rc = sfp_avago_read_status(data,4,sfp_status_4);
-		if (rc) {
-			printf("Error\r\n");
-			return NULL;
-		}
-		rc = sfp_avago_read_temperature(data,5,sfp_temp_5);
-		if (rc) {
-			printf("Error\r\n");
-			return NULL;
-		}
-		rc = sfp_avago_read_voltage(data,5,sfp_vcc_5);
-		if (rc) {
-			printf("Error\r\n");
-			return NULL;
-		}
-		rc = sfp_avago_read_lbias_current(data,5,sfp_txbias_5);
-		if (rc) {
-			printf("Error\r\n");
-			return NULL;
-		}
-		rc = sfp_avago_read_tx_av_optical_pwr(data,5,sfp_txpwr_5);
-		if (rc) {
-			printf("Error\r\n");
-			return NULL;
-		}
-		rc = sfp_avago_read_rx_av_optical_pwr(data,5,sfp_rxpwr_5);
-		if (rc) {
-			printf("Error\r\n");
-			return NULL;
-		}
-		rc = sfp_avago_read_status(data,5,sfp_status_5);
-		if (rc) {
-			printf("Error\r\n");
-			return NULL;
-		}*/
 		rc = ina3221_get_voltage(data,0,volt_sfp0_2);
 		if (rc) {
 			printf("Reading Error\r\n");
@@ -3387,56 +3420,62 @@ static void *monitoring_thread(void *arg)
 
 		parsing_mon_sensor_data_into_array(jdpb,temp[0],"PCB Temperature",99);
 
-		parsing_mon_sensor_data_into_array(jdpb,sfp_temp_0[0],"SFP Temperature",0);
-		parsing_mon_sensor_data_into_array(jdpb,sfp_txbias_0[0],"SFP Laser Bias Current",0);
-		parsing_mon_sensor_data_into_array(jdpb,sfp_txpwr_0[0],"SFP TX Power",0);
-		parsing_mon_sensor_data_into_array(jdpb,sfp_rxpwr_0[0],"SFP RX Power",0);
-		parsing_mon_status_data_into_array(jdpb,sfp_status_0[0],"SFP RX_LOS Status",0);
-		parsing_mon_status_data_into_array(jdpb,sfp_status_0[1],"SFP TX_FAULT Status",0);
-
-		/*parsing_mon_sensor_data_into_array(jdpb,sfp_temp_1[0],"SFP Temperature",1);
-		parsing_mon_sensor_data_into_array(jdpb,sfp_txbias_1[0],"SFP Laser Bias Current",1);
-		parsing_mon_sensor_data_into_array(jdpb,sfp_txpwr_1[0],"SFP TX Power",1);
-		parsing_mon_sensor_data_into_array(jdpb,sfp_rxpwr_1[0],"SFP RX Power",1);
-		parsing_mon_status_data_into_array(jdpb,sfp_status_1[0],"SFP RX_LOS Status",1);
-		parsing_mon_status_data_into_array(jdpb,sfp_status_1[1],"SFP TX_FAULT Status",1);
-
-		parsing_mon_sensor_data_into_array(jdpb,sfp_temp_2[0],"SFP Temperature",2);
-		parsing_mon_sensor_data_into_array(jdpb,sfp_txbias_2[0],"SFP Laser Bias Current",2);
-		parsing_mon_sensor_data_into_array(jdpb,sfp_txpwr_2[0],"SFP TX Power",2);
-		parsing_mon_sensor_data_into_array(jdpb,sfp_rxpwr_2[0],"SFP RX Power",2);
-		parsing_mon_status_data_into_array(jdpb,sfp_status_2[0],"SFP RX_LOS Status",2);
-		parsing_mon_status_data_into_array(jdpb,sfp_status_2[1],"SFP TX_FAULT Status",2);
-
-		parsing_mon_sensor_data_into_array(jdpb,sfp_temp_3[0],"SFP Temperature",3);
-		parsing_mon_sensor_data_into_array(jdpb,sfp_txbias_3[0],"SFP Laser Bias Current",3);
-		parsing_mon_sensor_data_into_array(jdpb,sfp_txpwr_3[0],"SFP TX Power",3);
-		parsing_mon_sensor_data_into_array(jdpb,sfp_rxpwr_3[0],"SFP RX Power",3);
-		parsing_mon_status_data_into_array(jdpb,sfp_status_3[0],"SFP RX_LOS Status",3);
-		parsing_mon_status_data_into_array(jdpb,sfp_status_3[1],"SFP TX_FAULT Status",3);
-
-		parsing_mon_sensor_data_into_array(jdpb,sfp_temp_4[0],"SFP Temperature",4);
-		parsing_mon_sensor_data_into_array(jdpb,sfp_txbias_4[0],"SFP Laser Bias Current",4);
-		parsing_mon_sensor_data_into_array(jdpb,sfp_txpwr_4[0],"SFP TX Power",4);
-		parsing_mon_sensor_data_into_array(jdpb,sfp_rxpwr_4[0],"SFP RX Power",4);
-		parsing_mon_status_data_into_array(jdpb,sfp_status_4[0],"SFP RX_LOS Status",4);
-		parsing_mon_status_data_into_array(jdpb,sfp_status_4[1],"SFP TX_FAULT Status",4);
-
-		parsing_mon_sensor_data_into_array(jdpb,sfp_temp_5[0],"SFP Temperature",5);
-		parsing_mon_sensor_data_into_array(jdpb,sfp_txbias_5[0],"SFP Laser Bias Current",5);
-		parsing_mon_sensor_data_into_array(jdpb,sfp_txpwr_5[0],"SFP TX Power",5);
-		parsing_mon_sensor_data_into_array(jdpb,sfp_rxpwr_5[0],"SFP RX Power",5);
-		parsing_mon_status_data_into_array(jdpb,sfp_status_5[0],"SFP RX_LOS Status",5);
-		parsing_mon_status_data_into_array(jdpb,sfp_status_5[1],"SFP TX_FAULT Status",5);*/
-
+		if(sfp0_connected){
+			parsing_mon_sensor_data_into_array(jdpb,sfp_temp_0[0],"SFP Temperature",0);
+			parsing_mon_sensor_data_into_array(jdpb,sfp_txbias_0[0],"SFP Laser Bias Current",0);
+			parsing_mon_sensor_data_into_array(jdpb,sfp_txpwr_0[0],"SFP TX Power",0);
+			parsing_mon_sensor_data_into_array(jdpb,sfp_rxpwr_0[0],"SFP RX Power",0);
+			parsing_mon_status_data_into_array(jdpb,sfp_status_0[0],"SFP RX_LOS Status",0);
+			parsing_mon_status_data_into_array(jdpb,sfp_status_0[1],"SFP TX_FAULT Status",0);
+		}
+		if(sfp1_connected){
+			parsing_mon_sensor_data_into_array(jdpb,sfp_temp_1[0],"SFP Temperature",1);
+			parsing_mon_sensor_data_into_array(jdpb,sfp_txbias_1[0],"SFP Laser Bias Current",1);
+			parsing_mon_sensor_data_into_array(jdpb,sfp_txpwr_1[0],"SFP TX Power",1);
+			parsing_mon_sensor_data_into_array(jdpb,sfp_rxpwr_1[0],"SFP RX Power",1);
+			parsing_mon_status_data_into_array(jdpb,sfp_status_1[0],"SFP RX_LOS Status",1);
+			parsing_mon_status_data_into_array(jdpb,sfp_status_1[1],"SFP TX_FAULT Status",1);
+		}
+		if(sfp2_connected){
+			parsing_mon_sensor_data_into_array(jdpb,sfp_temp_2[0],"SFP Temperature",2);
+			parsing_mon_sensor_data_into_array(jdpb,sfp_txbias_2[0],"SFP Laser Bias Current",2);
+			parsing_mon_sensor_data_into_array(jdpb,sfp_txpwr_2[0],"SFP TX Power",2);
+			parsing_mon_sensor_data_into_array(jdpb,sfp_rxpwr_2[0],"SFP RX Power",2);
+			parsing_mon_status_data_into_array(jdpb,sfp_status_2[0],"SFP RX_LOS Status",2);
+			parsing_mon_status_data_into_array(jdpb,sfp_status_2[1],"SFP TX_FAULT Status",2);
+		}
+		if(sfp3_connected){
+			parsing_mon_sensor_data_into_array(jdpb,sfp_temp_3[0],"SFP Temperature",3);
+			parsing_mon_sensor_data_into_array(jdpb,sfp_txbias_3[0],"SFP Laser Bias Current",3);
+			parsing_mon_sensor_data_into_array(jdpb,sfp_txpwr_3[0],"SFP TX Power",3);
+			parsing_mon_sensor_data_into_array(jdpb,sfp_rxpwr_3[0],"SFP RX Power",3);
+			parsing_mon_status_data_into_array(jdpb,sfp_status_3[0],"SFP RX_LOS Status",3);
+			parsing_mon_status_data_into_array(jdpb,sfp_status_3[1],"SFP TX_FAULT Status",3);
+		}
+		if(sfp4_connected){
+			parsing_mon_sensor_data_into_array(jdpb,sfp_temp_4[0],"SFP Temperature",4);
+			parsing_mon_sensor_data_into_array(jdpb,sfp_txbias_4[0],"SFP Laser Bias Current",4);
+			parsing_mon_sensor_data_into_array(jdpb,sfp_txpwr_4[0],"SFP TX Power",4);
+			parsing_mon_sensor_data_into_array(jdpb,sfp_rxpwr_4[0],"SFP RX Power",4);
+			parsing_mon_status_data_into_array(jdpb,sfp_status_4[0],"SFP RX_LOS Status",4);
+			parsing_mon_status_data_into_array(jdpb,sfp_status_4[1],"SFP TX_FAULT Status",4);
+		}
+		if(sfp5_connected){
+			parsing_mon_sensor_data_into_array(jdpb,sfp_temp_5[0],"SFP Temperature",5);
+			parsing_mon_sensor_data_into_array(jdpb,sfp_txbias_5[0],"SFP Laser Bias Current",5);
+			parsing_mon_sensor_data_into_array(jdpb,sfp_txpwr_5[0],"SFP TX Power",5);
+			parsing_mon_sensor_data_into_array(jdpb,sfp_rxpwr_5[0],"SFP RX Power",5);
+			parsing_mon_status_data_into_array(jdpb,sfp_status_5[0],"SFP RX_LOS Status",5);
+			parsing_mon_status_data_into_array(jdpb,sfp_status_5[1],"SFP TX_FAULT Status",5);
+		}
 		parsing_mon_sensor_data_into_array(jdpb,ams_temp[0],ams_channels[0],99);
 		parsing_mon_sensor_data_into_array(jdpb,ams_temp[1],ams_channels[1],99);
 		parsing_mon_sensor_data_into_array(jdpb,ams_temp[2],ams_channels[13],99);
 
-		for(int n = 0; n<AMS_VOLT_NUM_CHAN;n++){
+		/*for(int n = 0; n<AMS_VOLT_NUM_CHAN;n++){
 			if(n != 11){
 				parsing_mon_sensor_data_into_array(jdpb,ams_volt[n],ams_channels[n+2],99);	}
-		}
+		}*/
 
 		for(int j=0;j<INA3221_NUM_CHAN;j++){
 			pwr_array[j] = volt_sfp0_2[j]*curr_sfp0_2[j];
@@ -3490,20 +3529,21 @@ static void *monitoring_thread(void *arg)
 		json_object_object_add(jobj,"timestamp", jtimestamp);
 		json_object_object_add(jobj,"device", jdevice);
 		json_object_object_add(jobj,"data",jdata);
-		const char *serialized_json = json_object_to_json_string(jobj);
-
-		/*rc = json_schema_validate("JSONSchemaMonitoring.json",serialized_json, "mon_temp.json");
+		const char *serialized_json = json_object_to_json_string(jdata);
+		FILE* fptr;
+		fptr =  fopen("/run/media/mmcblk0p1/sample.json", "a");
+		fwrite(serialized_json,sizeof(char),strlen(serialized_json),fptr);
+		fclose(fptr);
+		rc = json_schema_validate("JSONSchemaMonitoring.json",serialized_json, "mon_temp.json");
 		if (rc) {
-			printf("Error\r\n");
-			return NULL;
-		}*/
-
-		/*int rc2 = zmq_send(mon_publisher, strdup(serialized_json), strlen(serialized_json), 0);
-		if (rc2 < 0) {
-			printf("Error\r\n");
-			return NULL;
-		}*/
-
+			printf("Error validating JSON Schema\r\n");
+		}
+		else{
+			int rc2 = zmq_send(mon_publisher, strdup(serialized_json), strlen(serialized_json), 0);
+			if (rc2 < 0) {
+				printf("Error sending JSON\r\n");
+			}
+		}
 		wait_period(&info);
 	}
 	//stop_I2cSensors(&data);
@@ -3533,83 +3573,83 @@ static void *i2c_alarms_thread(void *arg){
 		sem_wait(&file_sync);
 		rc = eth_down_alarm("eth0",&eth0_flag);
 		if (rc) {
-			printf("Error\r\n");
-			return NULL;
+			printf("Error reading alarm\r\n");
 		}
 		rc = eth_down_alarm("eth1",&eth1_flag);
 		if (rc) {
-			printf("Error\r\n");
-			return NULL;
+			printf("Error reading alarm\r\n");
 		}
 		rc = aurora_down_alarm(0,&dig0_main_flag);
 		if (rc) {
-			printf("Error\r\n");
-			return NULL;
+			printf("Error reading alarm\r\n");
 		}
 		rc = aurora_down_alarm(1,&dig0_backup_flag);
 		if (rc) {
-			printf("Error\r\n");
-			return NULL;
+			printf("Error reading alarm\r\n");
 		}
 		rc = aurora_down_alarm(2,&dig1_main_flag);
 		if (rc) {
-			printf("Error\r\n");
-			return NULL;
+			printf("Error reading alarm\r\n");
 		}
 		rc = aurora_down_alarm(3,&dig1_backup_flag);
 		if (rc) {
-			printf("Error\r\n");
-			return NULL;
+			printf("Error reading alarm\r\n");
 		}
 		sem_post(&file_sync);
 		sem_wait(&i2c_sync); //Semaphore to sync I2C usage
 
 		rc = mcp9844_read_alarms(data);
 		if (rc) {
-			printf("Reading Error\r\n");
+			printf("Error reading alarm\r\n");
 		}
 		rc = ina3221_read_alarms(data,0);
 		if (rc) {
-			printf("Reading Error\r\n");
+			printf("Error reading alarm\r\n");
 		}
 		rc = ina3221_read_alarms(data,1);
 		if (rc) {
-			printf("Reading Error\r\n");
+			printf("Error reading alarm\r\n");
 		}
 		rc = ina3221_read_alarms(data,2);
 		if (rc) {
-			printf("Reading Error\r\n");
+			printf("Error reading alarm\r\n");
 		}
+		if(sfp0_connected){
 		rc = sfp_avago_read_alarms(data,0);
-		if (rc) {
-			printf("Reading Error\r\n");
+			if (rc) {
+				printf("Error reading alarm\r\n");
+			}
 		}
-		/*rc = sfp_avago_read_alarms(data,1)
-		if (rc) {
-			printf("Error\r\n");
-			return NULL;
+		if(sfp1_connected){
+		rc = sfp_avago_read_alarms(data,1);
+			if (rc) {
+				printf("Error reading alarm\r\n");
+			}
 		}
-		rc = sfp_avago_read_alarms(data,2)
-		if (rc) {
-			printf("Error\r\n");
-			return NULL;
+		if(sfp2_connected){
+		rc = sfp_avago_read_alarms(data,2);
+			if (rc) {
+				printf("Error reading alarm\r\n");
+			}
 		}
-		rc = sfp_avago_read_alarms(data,3)
-		if (rc) {
-			printf("Error\r\n");
-			return NULL;
+		if(sfp3_connected){
+		rc = sfp_avago_read_alarms(data,3);
+			if (rc) {
+				printf("Error reading alarm\r\n");
+			}
 		}
-		rc = sfp_avago_read_alarms(data,4)
-		if (rc) {
-			printf("Error\r\n");
-			return NULL;
+		if(sfp4_connected){
+		rc = sfp_avago_read_alarms(data,4);
+			if (rc) {
+				printf("Error reading alarm\r\n");
+			}
 		}
-		rc = sfp_avago_read_alarms(data,5)
-		if (rc) {
-			printf("Error\r\n");
-			return NULL;
+		if(sfp5_connected){
+		rc = sfp_avago_read_alarms(data,5);
+			if (rc) {
+				printf("Error reading alarm\r\n");
+			}
 		}
-		*/
 
 		sem_post(&i2c_sync); //Free semaphore to sync I2C usage
 		wait_period(&info);
@@ -3681,7 +3721,6 @@ static void *ams_alarms_thread(void *arg){
     			fclose(raw);
     			fclose(rising);
     			printf("AMS Voltage file could not be opened!!! \n");/*Any of the files could not be opened*/
-    			return NULL;
     			}
     		else if(chan >= 7){
     			fseek(raw, 0, SEEK_END);
@@ -3718,7 +3757,6 @@ static void *ams_alarms_thread(void *arg){
         }
 		if (rc) {
 			printf("Error\r\n");
-			return NULL;
 		}
 		wait_period(&info);
 	}
@@ -3758,9 +3796,12 @@ static void *command_thread(void *arg){
 		if (size > 255)
 		  size = 255;
 		aux_buff[size] = '\0';
-
 		strcpy(buffer,strdup(aux_buff));
 		json_object * jmsg = json_tokener_parse(buffer);
+		if(jmsg == NULL){
+			rc = command_status_response_json (msg_id,-EINCMD);
+			goto waitmsg;
+		}
 		json_object_object_get_ex(jmsg, "msg_id", &jid);
 		json_object_object_get_ex(jmsg, "msg_value", &jcmd);
 
@@ -3843,12 +3884,12 @@ static void *command_thread(void *arg){
 			else{ //DPB
 				rc = dpb_command_handling(data,cmd,msg_id);
 				if (rc) {
+					rc = command_status_response_json (msg_id,-EINCMD);
 					printf("Error\r\n");
-					return NULL;
 				}
 			}
 		}
-		wait_period(&info);
+waitmsg:		wait_period(&info);
 	}
 
 	return NULL;

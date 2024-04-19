@@ -22,6 +22,22 @@ int dig1_main_flag = 0;
 int dig0_backup_flag = 0;
 int dig1_backup_flag = 0;
 int break_flag = 0;
+int sfp0_connected = 0;
+int sfp1_connected = 0;
+int sfp2_connected = 0;
+int sfp3_connected = 0;
+int sfp4_connected = 0;
+int sfp5_connected = 0;
+/************************** SFP Alarms Masks Definitions *****************************/
+/** @defgroup SFP_Masks SFP Alarms Masks
+ *  SFP Alarms Masks Definitions
+ *  @{
+ */
+/** @brief Alarm mask */
+uint16_t alarms_mask[6] = {0,0,0,0,0,0};
+/** @brief Status mask */
+uint8_t status_mask[6] = {0,0,0,0,0,0};
+/** @} */
 /************************** GPIO Pins Definitions *****************************/
 /** @defgroup GPIO GPIO pins
  *  GPIO pins definition

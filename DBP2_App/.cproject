@@ -113,9 +113,9 @@
                                     									
                                     <listOptionValue builtIn="false" value="&quot;${workspace_loc:/DBP2_Platform/export/DBP2_Platform/sw/DBP2_Platform/linux_domain/sysroot/cortexa72-cortexa53-xilinx-linux}&quot;"/>
                                     									
-                                    <listOptionValue builtIn="false" value="/home/hyperk0/Xilinx/Vitis/2022.2/gnu/aarch64/lin/aarch64-linux/aarch64-xilinx-linux/lib"/>
+                                    <listOptionValue builtIn="false" value="${XILINX_VITIS}/gnu/aarch64/lin/aarch64-linux/aarch64-xilinx-linux/lib"/>
                                     									
-                                    <listOptionValue builtIn="false" value="/home/hyperk0/Xilinx/Vitis/2022.2/gnu/aarch64/lin/aarch64-linux/aarch64-xilinx-linux/usr/lib"/>
+                                    <listOptionValue builtIn="false" value="${XILINX_VITIS}/gnu/aarch64/lin/aarch64-linux/aarch64-xilinx-linux/usr/lib"/>
                                     									
                                     <listOptionValue builtIn="false" value="&quot;${workspace_loc:/DBP2_Platform/export/DBP2_Platform/sw/DBP2_Platform/linux_domain/sysroot/cortexa72-cortexa53-xilinx-linux/lib}&quot;"/>
                                     									
@@ -207,23 +207,23 @@
             			
             <storageModule moduleId="cdtBuildSystem" version="4.0.0">
                 				
-                <configuration artifactExtension="elf" artifactName="${ProjName}" buildArtefactType="org.eclipse.cdt.build.core.buildArtefactType.exe" buildProperties="org.eclipse.cdt.build.core.buildArtefactType=org.eclipse.cdt.build.core.buildArtefactType.exe,org.eclipse.cdt.build.core.buildType=org.eclipse.cdt.build.core.buildType.release" cleanCommand="rm -rf" description="" id="xilinx.gnu.arm.a53.linux.exe.release.1908445705" name="Release" parent="xilinx.gnu.arm.a53.linux.exe.release">
+                <configuration artifactExtension="elf" artifactName="${ProjName}" buildArtefactType="org.eclipse.cdt.build.core.buildArtefactType.exe" buildProperties="org.eclipse.cdt.build.core.buildArtefactType=org.eclipse.cdt.build.core.buildArtefactType.exe,org.eclipse.cdt.build.core.buildType=org.eclipse.cdt.build.core.buildType.release" cleanCommand="rm -rf" description="" errorParsers="org.eclipse.cdt.core.GASErrorParser;org.eclipse.cdt.core.GmakeErrorParser;org.eclipse.cdt.core.GLDErrorParser;org.eclipse.cdt.core.CWDLocator;org.eclipse.cdt.core.GCCErrorParser" id="xilinx.gnu.arm.a53.linux.exe.release.1908445705" name="Release" parent="xilinx.gnu.arm.a53.linux.exe.release" postannouncebuildStep="" postbuildStep="" preannouncebuildStep="" prebuildStep="">
                     					
                     <folderInfo id="xilinx.gnu.arm.a53.linux.exe.release.1908445705." name="/" resourcePath="">
                         						
-                        <toolChain id="xilinx.gnu.arm.a53.linux.exe.release.toolchain.2136938359" name="Xilinx ARM v8 GNU/Linux Toolchain" superClass="xilinx.gnu.arm.a53.linux.exe.release.toolchain">
+                        <toolChain errorParsers="" id="xilinx.gnu.arm.a53.linux.exe.release.toolchain.2136938359" name="Xilinx ARM v8 GNU/Linux Toolchain" superClass="xilinx.gnu.arm.a53.linux.exe.release.toolchain">
                             							
                             <targetPlatform binaryParser="com.xilinx.sdk.managedbuilder.XELF.arm.a53.linux" id="xilinx.arm.a53.linux.target.gnu.base.release.2138074908" isAbstract="false" name="Release Platform" superClass="xilinx.arm.a53.linux.target.gnu.base.release"/>
                             							
-                            <builder buildPath="${workspace_loc:/DBP2_App}/Release" enableAutoBuild="true" id="xilinx.gnu.arm.a53.linux.toolchain.builder.release.1967907907" keepEnvironmentInBuildfile="false" managedBuildOn="true" name="GNU make" superClass="xilinx.gnu.arm.a53.linux.toolchain.builder.release"/>
+                            <builder buildPath="${workspace_loc:/DBP2_App}/Release" enableAutoBuild="true" errorParsers="org.eclipse.cdt.core.GmakeErrorParser;org.eclipse.cdt.core.CWDLocator" id="xilinx.gnu.arm.a53.linux.toolchain.builder.release.1967907907" keepEnvironmentInBuildfile="false" managedBuildOn="true" name="GNU make" superClass="xilinx.gnu.arm.a53.linux.toolchain.builder.release"/>
                             							
-                            <tool id="xilinx.gnu.arm.a53.linux.c.toolchain.assembler.release.1779977448" name="ARM v8 Linux gcc assembler" superClass="xilinx.gnu.arm.a53.linux.c.toolchain.assembler.release">
+                            <tool command="aarch64-linux-gnu-gcc" commandLinePattern="${COMMAND} -c ${FLAGS} ${OUTPUT_FLAG}${OUTPUT_PREFIX}${OUTPUT} ${INPUTS}" errorParsers="org.eclipse.cdt.core.GASErrorParser" id="xilinx.gnu.arm.a53.linux.c.toolchain.assembler.release.1779977448" name="ARM v8 Linux gcc assembler" superClass="xilinx.gnu.arm.a53.linux.c.toolchain.assembler.release">
                                 								
                                 <inputType id="xilinx.gnu.assembler.input.1253199402" superClass="xilinx.gnu.assembler.input"/>
                                 							
                             </tool>
                             							
-                            <tool id="xilinx.gnu.arm.a53.linux.c.toolchain.compiler.release.879583284" name="ARM v8 Linux gcc compiler" superClass="xilinx.gnu.arm.a53.linux.c.toolchain.compiler.release">
+                            <tool command="aarch64-linux-gnu-gcc" commandLinePattern="${COMMAND} ${FLAGS} ${OUTPUT_FLAG} ${OUTPUT_PREFIX}${OUTPUT} ${INPUTS}" errorParsers="org.eclipse.cdt.core.GCCErrorParser" id="xilinx.gnu.arm.a53.linux.c.toolchain.compiler.release.879583284" name="ARM v8 Linux gcc compiler" superClass="xilinx.gnu.arm.a53.linux.c.toolchain.compiler.release">
                                 								
                                 <option defaultValue="gnu.c.optimization.level.more" id="xilinx.gnu.compiler.option.optimization.level.1600432544" name="Optimization Level" superClass="xilinx.gnu.compiler.option.optimization.level" useByScannerDiscovery="false" valueType="enumerated"/>
                                 								
@@ -259,7 +259,7 @@
                             							
                             <tool id="xilinx.gnu.arm.a53.linux.toolchain.archiver.1122580452" name="ARM v8 Linux archiver" superClass="xilinx.gnu.arm.a53.linux.toolchain.archiver"/>
                             							
-                            <tool id="xilinx.gnu.arm.a53.linux.c.toolchain.linker.release.771797339" name="ARM v8 Linux gcc linker" superClass="xilinx.gnu.arm.a53.linux.c.toolchain.linker.release">
+                            <tool command="aarch64-linux-gnu-gcc" commandLinePattern="${COMMAND} ${FLAGS} ${OUTPUT_FLAG} ${OUTPUT_PREFIX}${OUTPUT} ${INPUTS}" errorParsers="org.eclipse.cdt.core.GLDErrorParser" id="xilinx.gnu.arm.a53.linux.c.toolchain.linker.release.771797339" name="ARM v8 Linux gcc linker" superClass="xilinx.gnu.arm.a53.linux.c.toolchain.linker.release">
                                 								
                                 <option id="xilinx.gnu.linker.inferred.swplatform.flags.676575840" name="Software Platform Inferred Flags" superClass="xilinx.gnu.linker.inferred.swplatform.flags" useByScannerDiscovery="false"/>
                                 								
@@ -283,9 +283,9 @@
                                     								
                                 </option>
                                 								
-                                <option id="xilinx.gnu.c.link.option.paths.474905007" superClass="xilinx.gnu.c.link.option.paths" useByScannerDiscovery="false" valueType="libPaths">
+                                <option id="xilinx.gnu.c.link.option.paths.474905007" name="Library search path (-L)" superClass="xilinx.gnu.c.link.option.paths" useByScannerDiscovery="false" valueType="libPaths">
                                     									
-                                    <listOptionValue builtIn="false" value="/home/hyperk0/Xilinx/Vitis/2022.2/gnu/aarch64/lin/aarch64-linux/aarch64-xilinx-linux/usr/lib"/>
+                                    <listOptionValue builtIn="false" value="${XILINX_VITIS}/gnu/aarch64/lin/aarch64-linux/aarch64-xilinx-linux/usr/lib"/>
                                     								
                                 </option>
                                 								
@@ -323,7 +323,7 @@
                                 							
                             </tool>
                             							
-                            <tool id="xilinx.gnu.arm.a53.linux.size.release.1342362236" name="ARM v8 Linux Print Size" superClass="xilinx.gnu.arm.a53.linux.size.release"/>
+                            <tool command="aarch64-linux-gnu-size" commandLinePattern="${COMMAND} ${FLAGS} ${INPUTS} |tee ${OUTPUT}" errorParsers="" id="xilinx.gnu.arm.a53.linux.size.release.1342362236" name="ARM v8 Linux Print Size" superClass="xilinx.gnu.arm.a53.linux.size.release"/>
                             						
                         </toolChain>
                         					
