@@ -575,15 +575,15 @@ For SFPs, the initialization process is a bit different since each of the two pa
 We use the following function to verify that the checksum value is correct:
 
 ```c
-int checksum_check(struct I2cDevice *dev,uint8_t ini_reg, uint8_t checksum_val, int size){
+int checksum_check(struct I2cDevice *dev,uint8_t ini_reg, int size){
 	int rc = 0;
 	int sum = 0;
-	uint8_t byte_buf[size] ;
+	uint8_t byte_buf[size+1] ;
 
 	rc = i2c_readn_reg(dev,ini_reg,byte_buf,1);  //Read every register from ini_reg to ini_reg+size-1
 			if(rc < 0)
 				return rc;
-	for(int n=1;n<size;n++){
+	for(int n=1;n<(size+1);n++){
 	ini_reg ++;
 	rc = i2c_readn_reg(dev,ini_reg,&byte_buf[n],1);
 		if(rc < 0)
@@ -594,7 +594,7 @@ int checksum_check(struct I2cDevice *dev,uint8_t ini_reg, uint8_t checksum_val, 
 		sum += byte_buf[i];  //Sum every register read in order to obtain the checksum
 	}
 	uint8_t calc_checksum = (sum & 0xFF); //Only taking the 8 LSB of the checksum as the checksum register is only 8 bits
-
+	uint8_t checksum_val = byte_buf[size];
 	if (checksum_val != calc_checksum){ //Check the obtained checksum equals the device checksum register
 		printf("Checksum value does not match the expected value \r\n");
 		return -EHWPOISON;
