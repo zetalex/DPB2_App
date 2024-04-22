@@ -15,12 +15,12 @@
 #define ERRREAD 3
 /** @} */
 /************************** Global Flags Definitions *****************************/
-int eth0_flag = 0;
-int eth1_flag = 0;
-int dig0_main_flag = 0;
-int dig1_main_flag = 0;
-int dig0_backup_flag = 0;
-int dig1_backup_flag = 0;
+int eth0_flag = 1;
+int eth1_flag = 1;
+int dig0_main_flag = 1;
+int dig1_main_flag = 1;
+int dig0_backup_flag = 1;
+int dig1_backup_flag = 1;
 int break_flag = 0;
 int sfp0_connected = 0;
 int sfp1_connected = 0;

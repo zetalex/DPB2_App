@@ -15,7 +15,7 @@ def main():
     socket = context.socket(zmq.SUB)
     
     socket.setsockopt_string(zmq.SUBSCRIBE, "")
-    socket.connect("tcp://20.0.0.33:5555")
+    socket.connect("tcp://20.0.0.33:5556")
     
     
     while True:
@@ -26,3 +26,18 @@ def main():
 
 if __name__ == "__main__":
     main()
+
+# {
+#     "board": "DPB",
+#     "magnitudename": "SFP RX Power",
+#     "eventtype": "falling",
+#     "eventtimestamp": 1637343635000,
+#     "channel": 0,
+#     "value": 0.0
+# }
+# {
+#     "board": "DPB",
+#     "magnitudename": "Backup Ethernet Link Status",
+#     "eventtimestamp": 1637343636000,
+#     "value": "OFF"
+# }

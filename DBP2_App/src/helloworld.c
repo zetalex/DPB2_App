@@ -19,11 +19,15 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "linux/errno.h"
 
-/*int main()
+#include "linux/errno.h"
+//#include "dpb2sc.h"
+
+int main()
 {
+	struct DPB_I2cSensors data;
+	init_I2cSensors(&data);
 	printf("Hello World");
 
     return 0;
-}*/
+}

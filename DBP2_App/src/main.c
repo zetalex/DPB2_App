@@ -92,11 +92,9 @@ pthread_t t_4;
 /******************************************************************************
 *ZMQ Socket Initializer
 ****************************************************************************/
-void *mon_context ;
+void *zmq_context ;
 void *mon_publisher;
-void *log_context ;
-void *log_publisher ;
-void *cmd_context;
+void *alarm_publisher ;
 void *cmd_router;
 /************************** Function Prototypes ******************************/
 
@@ -134,8 +132,8 @@ int ina3221_set_limits(struct DPB_I2cSensors *,int ,int ,int  ,float );
 int ina3221_set_config(struct DPB_I2cSensors *,uint8_t *,uint8_t *, int );
 int parsing_mon_sensor_data_into_array (json_object *,float , char *, int );
 int parsing_mon_status_data_into_array(json_object *, int , char *,int );
-int alarm_json (char*,char *,char *, int , float ,int32_t ,char *);
-int status_alarm_json (char *,char *, int ,int32_t ,char *);
+int alarm_json (char*,char *,char *, int , float ,uint64_t ,char *);
+int status_alarm_json (char *,char *, int ,uint64_t ,char *);
 int command_response_json (int ,float );
 int command_status_response_json (int ,int );
 int json_schema_validate (char *,const char *, char *);
@@ -152,6 +150,9 @@ int dpb_command_handling(struct DPB_I2cSensors *, char **, int);
 void dig_command_handling(char **);
 void hv_command_handling(char **);
 void lv_command_handling(char **);
+void atexit_function();
+void sighandler(int );
+int gen_uuid(char *);
 static void *monitoring_thread(void *);
 static void *i2c_alarms_thread(void *);
 static void *ams_alarms_thread(void *);
@@ -457,7 +458,7 @@ int xlnx_ams_set_limits(int chan, char *ev_type, char *ch_type, float val){
 int init_I2cSensors(struct DPB_I2cSensors *data){
 
 	int rc;
-	int32_t timestamp;
+	uint64_t timestamp;
 	data->dev_pcb_temp.filename = "/dev/i2c-2";
 	data->dev_pcb_temp.addr = 0x18;
 
@@ -857,7 +858,7 @@ int mcp9844_set_config(struct DPB_I2cSensors *data,uint8_t *bit_ena,uint8_t *bit
  * @return 0 and handles interruption depending on the active flags
  */
 int mcp9844_interruptions(struct DPB_I2cSensors *data, uint8_t flag_buf){
-	int32_t timestamp;
+	uint64_t timestamp;
 	float res [1];
 	int rc = 0;
 	mcp9844_read_temperature(data,res);
@@ -1355,7 +1356,7 @@ int sfp_avago_read_status(struct DPB_I2cSensors *data,int n,uint8_t *res) {
  * @return 0 and handles interruption depending on the active status flags
  */
 int sfp_avago_status_interruptions(uint8_t status, int n){
-	int32_t timestamp;
+	uint64_t timestamp;
 	int rc = 0;
 
 	if(((status & 0x02) != 0) & ((status_mask[n] & 0x02) == 0)){
@@ -1379,7 +1380,7 @@ int sfp_avago_status_interruptions(uint8_t status, int n){
  * @return 0 and handles interruption depending on the active alarms flags
  */
 int sfp_avago_alarms_interruptions(struct DPB_I2cSensors *data,uint16_t flags, int n){
-	int32_t timestamp;
+	uint64_t timestamp;
 	float res [1];
 	int rc = 0;
 
@@ -1684,7 +1685,7 @@ int ina3221_get_current(struct DPB_I2cSensors *data,int n, float *res){
  * @return 0 and handles interruption depending on the active alarms flags
  */
 int ina3221_critical_interruptions(struct DPB_I2cSensors *data,uint16_t mask, int n){
-	int32_t timestamp;
+	uint64_t timestamp;
 	float res[3];
 	ina3221_get_current(data,n,res);
 	int k = 0;
@@ -1723,7 +1724,7 @@ int ina3221_critical_interruptions(struct DPB_I2cSensors *data,uint16_t mask, in
  */
 int ina3221_warning_interruptions(struct DPB_I2cSensors *data,uint16_t mask, int n){
 
-	int32_t timestamp;
+	uint64_t timestamp;
 	float res[3];
 	ina3221_get_current(data,n,res);
 	int k = 0;
@@ -2003,19 +2004,19 @@ int parsing_mon_status_data_into_array(json_object *jarray, int status, char *ma
  * @param char *board: Board that triggered the alarm
  * @param char *chip: Name of the chip that triggered the alarm
  * @param char *ev_type: Type of event that has occurred
- * @param int32_t timestamp: Time when the event occurred
+ * @param uint64_t timestamp: Time when the event occurred
  * @param char *info_type: Determines the reported event type (info: warning or critical)
  *
  *
  * @return 0 or negative integer if validation fails
  */
-int alarm_json (char *board,char *chip,char *ev_type, int chan, float val,int32_t timestamp,char *info_type)
+int alarm_json (char *board,char *chip,char *ev_type, int chan, float val,uint64_t timestamp,char *info_type)
 {
 	json_object *jalarm_data = json_object_new_object();
 	char buffer[8];
 	uint8_t level = 1;
 
-	int32_t timestamp_msg = time(NULL)*1000;
+	uint64_t timestamp_msg = time(NULL)*1000;
 
 	sprintf(buffer, "%3.4f", val);
 
@@ -2037,7 +2038,7 @@ int alarm_json (char *board,char *chip,char *ev_type, int chan, float val,int32_
 	json_object *jchip = json_object_new_string(chip);
 	json_object *jev_type = json_object_new_string(ev_type);
 	json_object *jchan = json_object_new_int(chan);
-	json_object *jtimestamp = json_object_new_int(timestamp*1000);
+	json_object *jtimestamp = json_object_new_int64(timestamp*1000);
 
 	json_object_object_add(jalarm_data,"magnitudename", jchip);
 	json_object_object_add(jalarm_data,"eventtype", jev_type);
@@ -2055,7 +2056,7 @@ int alarm_json (char *board,char *chip,char *ev_type, int chan, float val,int32_
 		return rc;
 	}
 	else{
-		zmq_send(log_publisher, strdup(serialized_json), strlen(serialized_json), 0);
+		zmq_send(alarm_publisher, strdup(serialized_json), strlen(serialized_json), 0);
 	}
 	return 0;
 }
@@ -2066,17 +2067,17 @@ int alarm_json (char *board,char *chip,char *ev_type, int chan, float val,int32_
  * @param int chan: Number of measured channel, if chan is 99 means channel will not be parsed (also indicates it is not SFP related)
  * @param char *chip: Name of the chip that triggered the alarm
  * @param char *board: Name of the board where the alarm is asserted
- * @param int32_t timestamp: Time when the event occurred
+ * @param uint64_t timestamp: Time when the event occurred
  * @param char *info_type: Determines the reported event type (inof,warning or critical)
  *
  *
  * @return 0 or negative integer if validation fails
  */
-int status_alarm_json (char *board,char *chip, int chan,int32_t timestamp,char *info_type)
+int status_alarm_json (char *board,char *chip, int chan,uint64_t timestamp,char *info_type)
 {
 	json_object *jalarm_data = json_object_new_object();
 
-	int32_t timestamp_msg = (time(NULL))*1000;
+	uint64_t timestamp_msg = (time(NULL))*1000;
 	uint8_t level = 1;
 
 	char *device = "ID DPB";
@@ -2094,7 +2095,7 @@ int status_alarm_json (char *board,char *chip, int chan,int32_t timestamp,char *
 
 	json_object *jchip = json_object_new_string(chip);
 	json_object *jchan = json_object_new_int(chan);
-	json_object *jtimestamp = json_object_new_int(timestamp*1000);
+	json_object *jtimestamp = json_object_new_int64(timestamp*1000);
 	json_object *jstatus ;
 
 	json_object_object_add(jalarm_data,"magnitudename", jchip);
@@ -2121,7 +2122,7 @@ int status_alarm_json (char *board,char *chip, int chan,int32_t timestamp,char *
 		return rc;
 	}
 	else{
-		zmq_send(log_publisher, strdup(serialized_json), strlen(serialized_json), 0);
+		zmq_send(alarm_publisher, strdup(serialized_json), strlen(serialized_json), 0);
 	}
 	return 0;
 }
@@ -2279,18 +2280,20 @@ int json_schema_validate (char *schema,const char *json_string, char *temp_file)
 	strcat(command," < ");
 	strcat(command,file_path);
 
-	int  stderr_bk; //is fd for stdout backup
+	int  stderr_bk; //is fd for stderr backup
 	stderr_bk = dup(fileno(stderr));
 
 	int pipefd[2];
 	pipe2(pipefd, 0); // O_NONBLOCK);
 
-	// What used to be stdout will now go to the pipe.
+	// What used to be stderr will now go to the pipe.
 	dup2(pipefd[1], fileno(stderr));
 	fflush(stderr);//flushall();
 	/* Open the command for reading. */
 	fp = popen(command, "r");
 	if (fp == NULL) {
+		remove(file_path);
+		close(pipefd[1]);
 		printf("Failed to run command\n" );
 		return -1;
 	}
@@ -2303,7 +2306,7 @@ int json_schema_validate (char *schema,const char *json_string, char *temp_file)
 
 	data = regexec(&r1, path, 0, NULL, 0);
 	if(data){
-		printf("Error: JSON schema not valid" );
+		printf("Error: JSON schema not valid\n" );
 		return -EINVAL;
 	}
 	return 0;
@@ -2610,7 +2613,7 @@ int eth_down_alarm(char *str,int *flag){
 
 	int eth_status[1];
 	int rc = 0;
-	int32_t timestamp ;
+	uint64_t timestamp ;
 
     if((flag[0] != 0) && (flag[0] != 1)){
     	return -EINVAL;
@@ -2653,7 +2656,7 @@ int aurora_down_alarm(int aurora_link,int *flag){
 	int aurora_status[1];
 	int rc = 0;
 	int address = 0;
-	int32_t timestamp ;
+	uint64_t timestamp ;
 	char *link_id;
 
     if((flag[0] != 0) && (flag[0] != 1)){
@@ -2668,7 +2671,7 @@ int aurora_down_alarm(int aurora_link,int *flag){
 		break;
 	case 1:
 		address = DIG0_BACKUP_AURORA_LINK;
-		link_id = "Aurora Main Link Status";
+		link_id = "Aurora Backup Link Status";
 		break;
 	case 2:
 		address = DIG1_MAIN_AURORA_LINK;
@@ -2676,7 +2679,7 @@ int aurora_down_alarm(int aurora_link,int *flag){
 		break;
 	case 3:
 		address = DIG1_BACKUP_AURORA_LINK;
-		link_id = "Aurora Main Link Status";
+		link_id = "Aurora Backup Link Status";
 		break;
 	default:
 		return -EINVAL;
@@ -2716,20 +2719,18 @@ int aurora_down_alarm(int aurora_link,int *flag){
 int zmq_socket_init (){
 
 	int rc = 0;
-    mon_context = zmq_ctx_new();
-    mon_publisher = zmq_socket(mon_context, ZMQ_PUB);
+    zmq_context = zmq_ctx_new();
+    mon_publisher = zmq_socket(zmq_context, ZMQ_PUB);
     rc = zmq_bind(mon_publisher, "tcp://*:5555");
 	if (rc) {
 		return rc;
 	}
-    log_context = zmq_ctx_new();
-    log_publisher = zmq_socket(log_context, ZMQ_PUB);
-    rc = zmq_bind(log_publisher, "tcp://*:5556");
+    alarm_publisher = zmq_socket(zmq_context, ZMQ_PUB);
+    rc = zmq_bind(alarm_publisher, "tcp://*:5556");
 	if (rc) {
 		return rc;
 	}
-    cmd_context = zmq_ctx_new();
-    cmd_router = zmq_socket(cmd_context, ZMQ_REP);
+    cmd_router = zmq_socket(zmq_context, ZMQ_REP);
     rc = zmq_bind(cmd_router, "tcp://*:5557");
 	if (rc) {
 		return rc;
@@ -3040,7 +3041,7 @@ void lv_command_handling(char **cmd){
 void atexit_function() {
 	unexport_GPIO();
     zmq_close(mon_publisher);
-    zmq_close(log_publisher);
+    zmq_close(alarm_publisher);
     zmq_close(cmd_router);
 }
 /************************** Signal Handling function declaration ******************************/
@@ -3523,9 +3524,9 @@ static void *monitoring_thread(void *arg)
 		json_object_object_add(jdata,"Dig1", jdig1);
 		json_object_object_add(jdata,"DPB", jdpb);
 
-		int32_t timestamp = time(NULL);
+		uint64_t timestamp = time(NULL);
 		json_object *jdevice = json_object_new_string("ID DPB");
-		json_object *jtimestamp = json_object_new_int(timestamp);
+		json_object *jtimestamp = json_object_new_int64(timestamp);
 		json_object_object_add(jobj,"timestamp", jtimestamp);
 		json_object_object_add(jobj,"device", jdevice);
 		json_object_object_add(jobj,"data",jdata);
