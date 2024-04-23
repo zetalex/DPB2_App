@@ -68,6 +68,9 @@ sem_t thread_sync;
 /** @brief Semaphore to synchronize GPIO file accesses */
 sem_t file_sync;
 
+/** @brief Semaphore to synchronize GPIO file accesses */
+sem_t alarm_sync;
+
 /** @} */
 
 /******************************************************************************
@@ -495,7 +498,7 @@ int init_I2cSensors(struct DPB_I2cSensors *data){
 	data->dev_sfp5_A2.filename = "/dev/i2c-13";
 	data->dev_sfp5_A2.addr = 0x51;
 
-
+	sem_post(&alarm_sync);
 	rc = init_tempSensor(&data->dev_pcb_temp);
 	if (rc) {
 		timestamp = time(NULL);
@@ -2012,6 +2015,7 @@ int parsing_mon_status_data_into_array(json_object *jarray, int status, char *ma
  */
 int alarm_json (char *board,char *chip,char *ev_type, int chan, float val,uint64_t timestamp,char *info_type)
 {
+	sem_wait(&alarm_sync);
 	json_object *jalarm_data = json_object_new_object();
 	char buffer[8];
 	uint8_t level = 1;
@@ -2058,6 +2062,7 @@ int alarm_json (char *board,char *chip,char *ev_type, int chan, float val,uint64
 	else{
 		zmq_send(alarm_publisher, strdup(serialized_json), strlen(serialized_json), 0);
 	}
+	sem_post(&alarm_sync);
 	return 0;
 }
 
@@ -2075,11 +2080,11 @@ int alarm_json (char *board,char *chip,char *ev_type, int chan, float val,uint64
  */
 int status_alarm_json (char *board,char *chip, int chan,uint64_t timestamp,char *info_type)
 {
+	sem_wait(&alarm_sync);
 	json_object *jalarm_data = json_object_new_object();
 
 	uint64_t timestamp_msg = (time(NULL))*1000;
 	uint8_t level = 1;
-
 	char *device = "ID DPB";
 
 	json_object *jboard = json_object_new_string(board);
@@ -2124,6 +2129,7 @@ int status_alarm_json (char *board,char *chip, int chan,uint64_t timestamp,char 
 	else{
 		zmq_send(alarm_publisher, strdup(serialized_json), strlen(serialized_json), 0);
 	}
+	sem_post(&alarm_sync);
 	return 0;
 }
 /**
@@ -3959,6 +3965,7 @@ int main(){
 
 	sem_init(&i2c_sync,0,1);
 	sem_init(&file_sync,1,1);
+	sem_init(&alarm_sync,1,1);
 	sem_init(&thread_sync,0,0);
 
 	/* Block all real time signals so they can be used for the timers.
