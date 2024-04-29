@@ -71,6 +71,8 @@ sem_t file_sync;
 /** @brief Semaphore to synchronize GPIO file accesses */
 sem_t alarm_sync;
 
+sem_t sem_test;
+
 /** @} */
 
 /******************************************************************************
@@ -2275,9 +2277,11 @@ int command_status_response_json (int msg_id,int val)
  */
 int json_schema_validate (char *schema,const char *json_string, char *temp_file)
 {
+	sem_wait(&sem_test);
 	FILE* fptr;
 	regex_t r1;
-	int data =regcomp(&r1, "document is valid.*", 0);
+	int data = 0;
+	data = regcomp(&r1, "document is valid.*", 0);
 	char file_path[64];
 	char schema_path[64];
 	strcpy(file_path,"/home/petalinux/");
@@ -2289,7 +2293,7 @@ int json_schema_validate (char *schema,const char *json_string, char *temp_file)
 	fwrite(json_string,sizeof(char),strlen(json_string),fptr);
 	fclose(fptr);
 
-	FILE *fp;
+	int cmd_check = 0;
 	char *command = malloc(128);
 	char path[64];
 	strcpy(command,"/usr/bin/json-schema-validate ");
@@ -2302,17 +2306,18 @@ int json_schema_validate (char *schema,const char *json_string, char *temp_file)
 
 	int pipefd[2];
 	pipe2(pipefd, 0); // O_NONBLOCK);
-
 	// What used to be stderr will now go to the pipe.
 	dup2(pipefd[1], fileno(stderr));
 	fflush(stderr);//flushall();
 	/* Open the command for reading. */
-	fp = popen(command, "r");
-	if (fp == NULL) {
+	cmd_check = system(command);
+	if (cmd_check) {
 		remove(file_path);
 		free(command);
 		regfree(&r1);
+		close(pipefd[0]);
 		close(pipefd[1]);
+		sem_post(&sem_test);
 		printf("Failed to run command\n" );
 		return -1;
 	}
@@ -2321,7 +2326,6 @@ int json_schema_validate (char *schema,const char *json_string, char *temp_file)
 
 	read(pipefd[0], path, 64);
 	remove(file_path);
-	pclose(fp);
 	close(pipefd[0]);
 	free(command);
 
@@ -2329,9 +2333,11 @@ int json_schema_validate (char *schema,const char *json_string, char *temp_file)
 	if(data){
 		printf("Error: JSON schema not valid\n" );
 		regfree(&r1);
+		sem_post(&sem_test);
 		return -EINVAL;
 	}
 	regfree(&r1);
+	sem_post(&sem_test);
 	return 0;
 }
 
@@ -2569,16 +2575,18 @@ int eth_link_status (char *eth_interface, int *status)
 {
 	char eth_link[64];
 	FILE *link_file;
-	char str[64];
+	char str[64] = "";
 
 	char cmd[64] = "ethtool ";
 
 	strcat(cmd,eth_interface);
-	strcat(cmd," | grep 'Link detected'");
+	strcat(cmd," | grep 'Link detected' >> /home/petalinux/eth_temp.txt");
 
-	link_file = popen(cmd, "r");
+	system(cmd);
+	link_file = fopen("/home/petalinux/eth_temp.txt","r");
 	fread(eth_link, sizeof(eth_link), 1, link_file);
-	pclose(link_file);
+	fclose(link_file);
+	remove("/home/petalinux/eth_temp.txt");
 
 	strtok(eth_link," ");
 	strtok(NULL," ");
@@ -2750,24 +2758,36 @@ int aurora_down_alarm(int aurora_link,int *flag){
 int zmq_socket_init (){
 
 	int rc = 0;
-	int linger = 1000;
+	int linger = 0;
+	int sndhwm = 1;
+	size_t sndhwm_size = sizeof(sndhwm);
 	size_t linger_size = sizeof(linger);
+
     zmq_context = zmq_ctx_new();
     mon_publisher = zmq_socket(zmq_context, ZMQ_PUB);
-    zmq_setsockopt (mon_publisher, ZMQ_LINGER, &linger, &linger_size);
+
+    zmq_setsockopt(mon_publisher, ZMQ_SNDHWM, &sndhwm, sndhwm_size);
+    zmq_setsockopt(mon_publisher, ZMQ_RCVHWM, &sndhwm, sndhwm_size);
+    zmq_setsockopt (mon_publisher, ZMQ_LINGER, &linger, linger_size);
     rc = zmq_bind(mon_publisher, "tcp://*:5555");
 	if (rc) {
 		return rc;
 	}
+
     alarm_publisher = zmq_socket(zmq_context, ZMQ_PUB);
-    zmq_setsockopt (alarm_publisher, ZMQ_LINGER, &linger, &linger_size);
+    zmq_setsockopt(alarm_publisher, ZMQ_SNDHWM, &sndhwm, sndhwm_size);
+    zmq_setsockopt(alarm_publisher, ZMQ_RCVHWM, &sndhwm, sndhwm_size);
+    zmq_setsockopt (alarm_publisher, ZMQ_LINGER, &linger, linger_size);
     rc = zmq_bind(alarm_publisher, "tcp://*:5556");
 	if (rc) {
 		return rc;
 	}
+
     cmd_router = zmq_socket(zmq_context, ZMQ_REP);
     rc = zmq_bind(cmd_router, "tcp://*:5557");
-    zmq_setsockopt (cmd_router, ZMQ_LINGER, &linger, &linger_size);
+    zmq_setsockopt(cmd_router, ZMQ_SNDHWM, &sndhwm, sndhwm_size);
+    zmq_setsockopt(cmd_router, ZMQ_RCVHWM, &sndhwm, sndhwm_size);
+    zmq_setsockopt (cmd_router, ZMQ_LINGER, &linger, linger_size);
 	if (rc) {
 		return rc;
 	}
@@ -3100,6 +3120,7 @@ void sighandler(int signum) {
    pthread_cancel(t_4); //End threads
    pthread_cancel(t_3); //End threads
    zmq_ctx_shutdown(zmq_context);
+   zmq_ctx_destroy(zmq_context);
    pthread_join(t_1,NULL);
    pthread_join(t_2,NULL);
    pthread_join(t_3,NULL);
@@ -3918,7 +3939,7 @@ static void *command_thread(void *arg){
 				//RS485 communication
 			}
 			else if(!strcmp(cmd[1],"LV")){
-				//Command conversion
+				//Command conversiono
 				//RS485 communication
 			}
 			else if(!strcmp(cmd[1],"Dig0")){
@@ -3953,7 +3974,7 @@ int main(){
 
 	int rc;
 	struct DPB_I2cSensors data;
-
+	sem_init(&sem_test,1,1);
 	get_GPIO_base_address(&GPIO_BASE_ADDRESS);
 
 	key_t sharedMemoryKey = MEMORY_KEY;
@@ -4007,6 +4028,7 @@ int main(){
 	sem_init(&i2c_sync,0,1);
 	sem_init(&file_sync,1,1);
 	sem_init(&alarm_sync,1,1);
+
 	sem_init(&thread_sync,0,0);
 
 	/* Block all real time signals so they can be used for the timers.
