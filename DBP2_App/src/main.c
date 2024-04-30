@@ -212,11 +212,11 @@ int xlnx_ams_read_temp(int *chan, int n, float *res){
 	FILE *raw,*offset,*scale;
 	for(int i=0;i<n;i++){
 
-		char buffer [sizeof(chan[i])*8+1];
-		snprintf(buffer, sizeof(buffer), "%d",chan[i]);
-		char raw_str[80];
-		char offset_str[80];
-		char scale_str[80];
+		char *buffer = malloc(16);
+		snprintf(buffer, 16, "%d",chan[i]);
+		char *raw_str = malloc(128);
+		char *offset_str = malloc(128);
+		char *scale_str = malloc(128);
 
 		strcpy(raw_str, "/sys/bus/iio/devices/iio:device0/in_temp");
 		strcpy(offset_str, "/sys/bus/iio/devices/iio:device0/in_temp");
@@ -235,15 +235,18 @@ int xlnx_ams_read_temp(int *chan, int n, float *res){
 		scale = fopen(scale_str,"r");
 
 		if((raw==NULL)|(offset==NULL)|(scale==NULL)){
-
-			fclose(raw);
-			fclose(offset);
-			fclose(scale);
+			free(buffer);
+			free(raw_str);
+			free(scale_str);
+			free(offset_str);
 			printf("AMS Temperature file could not be opened!!! \n");/*Any of the files could not be opened*/
 			return -1;
 			}
 		else{
-
+			free(buffer);
+			free(raw_str);
+			free(scale_str);
+			free(offset_str);
 			fseek(raw, 0, SEEK_END);
 			long fsize = ftell(raw);
 			fseek(raw, 0, SEEK_SET);  /* same as rewind(f); */
@@ -266,12 +269,12 @@ int xlnx_ams_read_temp(int *chan, int n, float *res){
 			fread(scale_string, fsize, 1, scale);
 
 			float Temperature = (atof(scale_string) * (atof(raw_string) + atof(offset_string))) / 1024; //Apply ADC conversion to Temperature, Xilinx Specs
-			fclose(raw);
-			fclose(offset);
-			fclose(scale);
 			free(offset_string);
 			free(raw_string);
 			free(scale_string);
+			fclose(raw);
+			fclose(offset);
+			fclose(scale);
 			res[i] = Temperature;
 			//return 0;
 			}
@@ -293,10 +296,10 @@ int xlnx_ams_read_volt(int *chan, int n, float *res){
 	FILE *raw,*scale;
 	for(int i=0;i<n;i++){
 
-		char buffer [sizeof(chan[i])*8+1];
-		snprintf(buffer, sizeof(buffer), "%d",chan[i]);
-		char raw_str[80];
-		char scale_str[80];
+		char *buffer = malloc(16);
+		snprintf(buffer, 16, "%d",chan[i]);
+		char *raw_str = malloc(128);
+		char *scale_str = malloc(128);
 
 		strcpy(raw_str, "/sys/bus/iio/devices/iio:device0/in_voltage");
 		strcpy(scale_str, "/sys/bus/iio/devices/iio:device0/in_voltage");
@@ -312,12 +315,16 @@ int xlnx_ams_read_volt(int *chan, int n, float *res){
 
 		if((raw==NULL)|(scale==NULL)){
 
-			fclose(raw);
-			fclose(scale);
+			free(buffer);
+			free(raw_str);
+			free(scale_str);
 			printf("AMS Voltage file could not be opened!!! \n");/*Any of the files could not be opened*/
 			return -1;
 			}
 		else{
+			free(buffer);
+			free(raw_str);
+			free(scale_str);
 
 			fseek(raw, 0, SEEK_END);
 			long fsize = ftell(raw);
@@ -389,7 +396,6 @@ int xlnx_ams_set_limits(int chan, char *ev_type, char *ch_type, float val){
 		thres = open(thres_str, O_WRONLY);
 
 		if((scale==NULL)|(thres < 0)){
-			fclose(scale);
 			printf("AMS Voltage file could not be opened!!! \n");/*Any of the files could not be opened*/
 			return -1;
 			}
@@ -401,7 +407,6 @@ int xlnx_ams_set_limits(int chan, char *ev_type, char *ch_type, float val){
 				strcat(offset_str, "_offset");
 				offset = fopen(offset_str,"r");
 				if(offset==NULL){
-					fclose(offset);
 					printf("AMS Voltage file could not be opened!!! \n");/*Any of the files could not be opened*/
 					return -1;
 				}
@@ -449,8 +454,9 @@ int xlnx_ams_set_limits(int chan, char *ev_type, char *ch_type, float val){
 
 				//return 0;
 			}
-			else
-				return -EINVAL;
+			else{
+				close(thres);
+				return -EINVAL;}
 
 			snprintf(adc_buff, sizeof(adc_buff), "%d",adc_code);
 			write (thres, &adc_buff, sizeof(adc_buff));
@@ -2282,30 +2288,36 @@ int json_schema_validate (char *schema,const char *json_string, char *temp_file)
 	regex_t r1;
 	int data = 0;
 	data = regcomp(&r1, "document is valid.*", 0);
-	char file_path[64];
-	char schema_path[64];
+	char *file_path = malloc(64);
+	char *schema_path = malloc(64);
 	strcpy(file_path,"/home/petalinux/");
 	strcpy(schema_path,"/home/petalinux/dpb2_json_schemas/");
 
 	strcat(file_path,temp_file);
 	strcat(schema_path,schema);
-	fptr =  fopen(file_path, "a");
+	fptr =  fopen(file_path, "w");
+	if(fptr == NULL){
+		free(file_path);
+		free(schema_path);
+		regfree(&r1);
+		return -EINVAL;
+	}
 	fwrite(json_string,sizeof(char),strlen(json_string),fptr);
-	fclose(fptr);
+    fclose(fptr);
 
 	int cmd_check = 0;
 	char *command = malloc(128);
-	char path[64];
+	char *path = malloc(64);
 	strcpy(command,"/usr/bin/json-schema-validate ");
 	strcat(command,schema_path);
 	strcat(command," < ");
 	strcat(command,file_path);
-
 	int  stderr_bk; //is fd for stderr backup
 	stderr_bk = dup(fileno(stderr));
 
 	int pipefd[2];
-	pipe2(pipefd, 0); // O_NONBLOCK);
+	pipe2(pipefd, 0); // (O_NONBLOCK);
+
 	// What used to be stderr will now go to the pipe.
 	dup2(pipefd[1], fileno(stderr));
 	fflush(stderr);//flushall();
@@ -2313,8 +2325,12 @@ int json_schema_validate (char *schema,const char *json_string, char *temp_file)
 	cmd_check = system(command);
 	if (cmd_check) {
 		remove(file_path);
+		free(file_path);
+		free(schema_path);
+		free(path);
 		free(command);
 		regfree(&r1);
+		close(stderr_bk);
 		close(pipefd[0]);
 		close(pipefd[1]);
 		sem_post(&sem_test);
@@ -2323,6 +2339,7 @@ int json_schema_validate (char *schema,const char *json_string, char *temp_file)
 	}
 	close(pipefd[1]);
 	dup2(stderr_bk, fileno(stderr));//restore
+	close(stderr_bk);
 
 	read(pipefd[0], path, 64);
 	remove(file_path);
@@ -2331,11 +2348,17 @@ int json_schema_validate (char *schema,const char *json_string, char *temp_file)
 
 	data = regexec(&r1, path, 0, NULL, 0);
 	if(data){
+		free(file_path);
+		free(schema_path);
+		free(path);
 		printf("Error: JSON schema not valid\n" );
 		regfree(&r1);
 		sem_post(&sem_test);
 		return -EINVAL;
 	}
+	free(file_path);
+	free(schema_path);
+	free(path);
 	regfree(&r1);
 	sem_post(&sem_test);
 	return 0;
@@ -2419,30 +2442,42 @@ int get_GPIO_base_address(int *address){
  */
 int write_GPIO(int address, int value){
 
-	char cmd1[64];
-	char cmd2[64];
-	char dir_add[64];
-	char val_add[64];
+	sem_wait(&file_sync);
+	char *cmd1 = malloc(64);
+	char *cmd2 = malloc(64);
+	char *dir_add = malloc(64);
+	char *val_add = malloc(64);
     FILE *fd1;
     FILE *fd2;
     char val[1];
-    char *dir = "out";
+    static char *dir = "out";
 
-    if((value != 0) && (value != 1) )
+    if((value != 0) && (value != 1) ){
+        free(cmd1);
+        free(cmd2);
+        free(val_add);
+        free(dir_add);
+        sem_post(&file_sync);
     	return -EINVAL;
+    }
 
     val[0] = value + '0';
 	int add = address + GPIO_BASE_ADDRESS;
 
     // Building first command
-    snprintf(cmd1, sizeof(cmd1), "echo %d > /sys/class/gpio/export", add);
+    snprintf(cmd1, 64, "echo %d > /sys/class/gpio/export", add);
 
     // Building GPIO sysfs file
     if (system(cmd1) == -1) {
+        free(cmd1);
+        free(cmd2);
+        free(val_add);
+        free(dir_add);
+        sem_post(&file_sync);
         return -EINVAL;
     }
-    snprintf(dir_add, sizeof(dir_add), "/sys/class/gpio/gpio%d/direction", add);
-    snprintf(val_add, sizeof(val_add), "/sys/class/gpio/gpio%d/value", add);
+    snprintf(dir_add, 64, "/sys/class/gpio/gpio%d/direction", add);
+    snprintf(val_add, 64, "/sys/class/gpio/gpio%d/value", add);
 
     fd1 = fopen(dir_add,"w");
     fwrite(dir, sizeof(dir), 1,fd1);
@@ -2453,12 +2488,22 @@ int write_GPIO(int address, int value){
     fclose(fd2);
 
     // Building second command
-    snprintf(cmd2, sizeof(cmd2), "echo %d > /sys/class/gpio/unexport", add);
+    snprintf(cmd2, 64, "echo %d > /sys/class/gpio/unexport", add);
 
     //Removing GPIO sysfs file
     if (system(cmd2) == -1) {
+        free(cmd1);
+        free(cmd2);
+        free(val_add);
+        free(dir_add);
+        sem_post(&file_sync);
         return -EINVAL;
     }
+    free(cmd1);
+    free(cmd2);
+    free(val_add);
+    free(dir_add);
+    sem_post(&file_sync);
 	return 0;
 }
 
@@ -2472,32 +2517,56 @@ int write_GPIO(int address, int value){
  */
 int read_GPIO(int address,int *value){
 
-	char cmd1[64];
-	char cmd2[64];
-	char dir_add[64];
-	char val_add[64];
+	sem_wait(&file_sync);
+	char *cmd1 = malloc(64);
+	char *cmd2 = malloc(64);
+	char *dir_add = malloc(64);
+	char *val_add = malloc(64);
     FILE *fd1;
-    char *dir = "in";
-    FILE *GPIO_val;
+    static char *dir = "in";
+    FILE *GPIO_val ;
 
 	int add = address + GPIO_BASE_ADDRESS;
     // Building first command
-    snprintf(cmd1, sizeof(cmd1), "echo %d > /sys/class/gpio/export", add);
+    snprintf(cmd1, 64, "echo %d > /sys/class/gpio/export", add);
 
 
     // Building GPIO sysfs file
     if (system(cmd1) == -1) {
+        free(cmd1);
+        free(cmd2);
+        free(val_add);
+        free(dir_add);
+        sem_post(&file_sync);
         return -EINVAL;
     }
-    snprintf(dir_add, sizeof(dir_add), "/sys/class/gpio/gpio%d/direction", add);
-    snprintf(val_add, sizeof(val_add), "/sys/class/gpio/gpio%d/value", add);
+    snprintf(dir_add, 64, "/sys/class/gpio/gpio%d/direction", add);
+    snprintf(val_add, 64, "/sys/class/gpio/gpio%d/value", add);
 
 
     fd1 = fopen(dir_add,"w");
+    if(fd1 == NULL){
+        free(cmd1);
+        free(cmd2);
+        free(val_add);
+        free(dir_add);
+        sem_post(&file_sync);
+        printf("NO he podido abrir\n");
+        return -EINVAL;
+    }
     fwrite(dir, sizeof(dir), 1,fd1);
     fclose(fd1);
 
     GPIO_val = fopen(val_add,"r");
+    if(GPIO_val == NULL){
+        free(cmd1);
+        free(cmd2);
+        free(val_add);
+        free(dir_add);
+        sem_post(&file_sync);
+        printf("NO he podido abrir2\n");
+        return -EINVAL;
+    }
 	fseek(GPIO_val, 0, SEEK_END);
 	long fsize = ftell(GPIO_val);
 	fseek(GPIO_val, 0, SEEK_SET);  /* same as rewind(f); */
@@ -2509,13 +2578,23 @@ int read_GPIO(int address,int *value){
 	free(value_string);
 
     // Building second command
-    snprintf(cmd2, sizeof(cmd2), "echo %d > /sys/class/gpio/unexport", add);
+    snprintf(cmd2, 64, "echo %d > /sys/class/gpio/unexport", add);
 
     //Removing GPIO sysfs file
     if (system(cmd2) == -1) {
         return -EINVAL;
+        free(cmd1);
+        free(cmd2);
+        free(val_add);
+        free(dir_add);
+        sem_post(&file_sync);
     }
-	return 0;
+    free(cmd1);
+    free(cmd2);
+    free(val_add);
+    free(dir_add);
+    sem_post(&file_sync);
+    return 0;
 }
 
 /**
@@ -2573,20 +2652,29 @@ void unexport_GPIO(){
  */
 int eth_link_status (char *eth_interface, int *status)
 {
-	char eth_link[64];
+	int rc = 0;
+	sem_wait(&file_sync);
+	char *eth_link = malloc(64);
 	FILE *link_file;
-	char str[64] = "";
+	char *str = malloc(64);
 
-	char cmd[64] = "ethtool ";
+	char *cmd = malloc(64);
 
+	strcpy(cmd,"ethtool ");
 	strcat(cmd,eth_interface);
 	strcat(cmd," | grep 'Link detected' >> /home/petalinux/eth_temp.txt");
 
-	system(cmd);
+	rc = system(cmd);
 	link_file = fopen("/home/petalinux/eth_temp.txt","r");
-	fread(eth_link, sizeof(eth_link), 1, link_file);
-	fclose(link_file);
-	remove("/home/petalinux/eth_temp.txt");
+	if((rc != 0) | (link_file == NULL)){
+		free(cmd);
+		free(eth_link);
+		free(str);
+		sem_post(&file_sync);
+		return -EINVAL;
+	}
+	fread(eth_link, 64, 1, link_file);
+    fclose(link_file);
 
 	strtok(eth_link," ");
 	strtok(NULL," ");
@@ -2597,8 +2685,18 @@ int eth_link_status (char *eth_interface, int *status)
 	else if((strcmp(str,"no")) == 0)
 		status[0] = 0;
 	else{
+		remove("/home/petalinux/eth_temp.txt");
+		free(cmd);
+		free(eth_link);
+		free(str);
+		sem_post(&file_sync);
 		return -EINVAL;
 	}
+	remove("/home/petalinux/eth_temp.txt");
+	free(cmd);
+	free(eth_link);
+	free(str);
+	sem_post(&file_sync);
 	return 0;
 
 }
@@ -3442,7 +3540,6 @@ static void *monitoring_thread(void *arg)
 		if (rc) {
 			printf("Reading Error\r\n");
 		}
-		sem_wait(&file_sync);
 		rc = eth_link_status("eth0",&eth_status[0]);
 		if (rc) {
 			printf("Reading Error\r\n");
@@ -3467,7 +3564,6 @@ static void *monitoring_thread(void *arg)
 		if (rc) {
 			printf("Reading Error\r\n");
 		}
-		sem_post(&file_sync);
 		//json_object * jobj = json_object_new_object();
 		json_object *jdata = json_object_new_object();
 		json_object *jlv = json_object_new_array();
@@ -3590,7 +3686,7 @@ static void *monitoring_thread(void *arg)
 		json_object_object_add(jdata,"Dig1", jdig1);
 		json_object_object_add(jdata,"DPB", jdpb);
 
-		uint64_t timestamp = time(NULL)*1000;
+		//uint64_t timestamp = time(NULL)*1000;
 		/*json_object *jdevice = json_object_new_string("ID DPB");
 		json_object *jtimestamp = json_object_new_int64(timestamp);
 		json_object_object_add(jobj,"timestamp", jtimestamp);
@@ -3634,7 +3730,6 @@ static void *i2c_alarms_thread(void *arg){
 	}
 	sem_post(&thread_sync);
 	while(1){
-		sem_wait(&file_sync);
 		rc = eth_down_alarm("eth0",&eth0_flag);
 		if (rc) {
 			printf("Error reading alarm\r\n");
@@ -3659,7 +3754,6 @@ static void *i2c_alarms_thread(void *arg){
 		if (rc) {
 			printf("Error reading alarm\r\n");
 		}
-		sem_post(&file_sync);
 		sem_wait(&i2c_sync); //Semaphore to sync I2C usage
 
 		rc = mcp9844_read_alarms(data);
@@ -3780,9 +3874,6 @@ static void *ams_alarms_thread(void *arg){
     		rising = fopen(ris_str,"r");
 
     		if((raw==NULL)|(rising==NULL)){
-
-    			fclose(raw);
-    			fclose(rising);
     			printf("AMS Voltage file could not be opened!!! \n");/*Any of the files could not be opened*/
     			}
     		else if(chan >= 7){
@@ -3975,6 +4066,7 @@ int main(){
 	int rc;
 	struct DPB_I2cSensors data;
 	sem_init(&sem_test,1,1);
+	sem_init(&file_sync,1,1);
 	get_GPIO_base_address(&GPIO_BASE_ADDRESS);
 
 	key_t sharedMemoryKey = MEMORY_KEY;
@@ -3990,7 +4082,6 @@ int main(){
 	    exit(1);
 	}
 
-	//printf("Initializtaion !\n");
 	strcpy(memory->ev_type,"");
 	strcpy(memory->ch_type,"");
 	sem_init(&memory->ams_sync, 1, 0);
@@ -4026,7 +4117,6 @@ int main(){
 	signal(SIGINT, sighandler);
 
 	sem_init(&i2c_sync,0,1);
-	sem_init(&file_sync,1,1);
 	sem_init(&alarm_sync,1,1);
 
 	sem_init(&thread_sync,0,0);
