@@ -1,7 +1,7 @@
 from ctypes import *
 import ctypes
-import sys
 import re
+import os
 
 class I2cDevice(ctypes.Structure):
     _fields_ = [
@@ -84,18 +84,32 @@ structure_i2c = DPB_I2cSensors()
 #     # Agrega más tipos según sea necesario
 # }
 
+def find_and_load_library(pattern, directory):
+    
+    files = os.listdir(directory)
+    for file_name in files:
+        if re.match(pattern, file_name):
+            file_path = os.path.join(directory, file_name)
+            try:
+                return ctypes.CDLL(file_path, mode=RTLD_GLOBAL)
+            except OSError:
+                continue
+    return None
+
+library_directory = "/usr/lib"
 function_defs = {}
 
 def main():
-    ctypes.CDLL("libjson-c.so.5",mode=RTLD_GLOBAL)
-    ctypes.CDLL("libzmq.so.5",mode=RTLD_GLOBAL)
+    
+    find_and_load_library(r'^libjson-c\.so', library_directory)
+    find_and_load_library(r'^libzmq\.so', library_directory)
     dpb2sc = ctypes.CDLL("libdpb2sc.so")
     GPIO_Base_Address = c_int.in_dll(dpb2sc, "GPIO_BASE_ADDRESS")
     start_line = 0
     end_line = 0
 
     with open(r'/usr/include/dpb2sc.h', 'r') as fp:
-        # read all lines using readline()
+        # read all lines using readline()func_name
         lines = fp.readlines()
         for row in lines:
             # check if string present on a current line
@@ -145,6 +159,7 @@ def main():
     dpb2sc.iio_event_monitor_up(b"/run/media/mmcblk0p1/IIO_MONITOR.elf")
     dpb2sc.get_GPIO_base_address(byref(GPIO_Base_Address))
     print(GPIO_Base_Address.value)
+
     # for func_name, func_def in function_defs.items():
     #     # Convertir cada tipo de argumento a su representación legible
     #     arg_str = [type_repr[arg] if arg in type_repr else str(arg) for arg in func_def['argtypes']]

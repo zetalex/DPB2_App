@@ -15,7 +15,7 @@ def main():
     socket = context.socket(zmq.SUB)
     
     socket.setsockopt_string(zmq.SUBSCRIBE, "")
-    socket.connect("tcp://20.0.0.33:5555")
+    socket.connect("tcp://20.0.0.33:5556")
     
     
     while True:

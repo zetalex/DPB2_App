@@ -68,10 +68,11 @@ sem_t thread_sync;
 /** @brief Semaphore to synchronize GPIO file accesses */
 sem_t file_sync;
 
-/** @brief Semaphore to synchronize GPIO file accesses */
+/** @brief Semaphore to synchronize GPIO AND Ethernet file accesses */
 sem_t alarm_sync;
 
-sem_t sem_test;
+/** @brief Semaphore to avoid race conditions when JSON validating */
+sem_t sem_valid;
 
 /** @} */
 
@@ -212,11 +213,11 @@ int xlnx_ams_read_temp(int *chan, int n, float *res){
 	FILE *raw,*offset,*scale;
 	for(int i=0;i<n;i++){
 
-		char *buffer = malloc(16);
-		snprintf(buffer, 16, "%d",chan[i]);
-		char *raw_str = malloc(128);
-		char *offset_str = malloc(128);
-		char *scale_str = malloc(128);
+		char buffer [sizeof(chan[i])*8+1];
+		snprintf(buffer, sizeof(buffer), "%d",chan[i]);
+		char raw_str[128];
+		char offset_str[128];
+		char scale_str[128];
 
 		strcpy(raw_str, "/sys/bus/iio/devices/iio:device0/in_temp");
 		strcpy(offset_str, "/sys/bus/iio/devices/iio:device0/in_temp");
@@ -235,18 +236,10 @@ int xlnx_ams_read_temp(int *chan, int n, float *res){
 		scale = fopen(scale_str,"r");
 
 		if((raw==NULL)|(offset==NULL)|(scale==NULL)){
-			free(buffer);
-			free(raw_str);
-			free(scale_str);
-			free(offset_str);
 			printf("AMS Temperature file could not be opened!!! \n");/*Any of the files could not be opened*/
 			return -1;
 			}
 		else{
-			free(buffer);
-			free(raw_str);
-			free(scale_str);
-			free(offset_str);
 			fseek(raw, 0, SEEK_END);
 			long fsize = ftell(raw);
 			fseek(raw, 0, SEEK_SET);  /* same as rewind(f); */
@@ -296,10 +289,10 @@ int xlnx_ams_read_volt(int *chan, int n, float *res){
 	FILE *raw,*scale;
 	for(int i=0;i<n;i++){
 
-		char *buffer = malloc(16);
-		snprintf(buffer, 16, "%d",chan[i]);
-		char *raw_str = malloc(128);
-		char *scale_str = malloc(128);
+		char buffer [sizeof(chan[i])*8+1];
+		snprintf(buffer, sizeof(buffer), "%d",chan[i]);
+		char raw_str[128];
+		char scale_str[128];
 
 		strcpy(raw_str, "/sys/bus/iio/devices/iio:device0/in_voltage");
 		strcpy(scale_str, "/sys/bus/iio/devices/iio:device0/in_voltage");
@@ -314,17 +307,10 @@ int xlnx_ams_read_volt(int *chan, int n, float *res){
 		scale = fopen(scale_str,"r");
 
 		if((raw==NULL)|(scale==NULL)){
-
-			free(buffer);
-			free(raw_str);
-			free(scale_str);
 			printf("AMS Voltage file could not be opened!!! \n");/*Any of the files could not be opened*/
 			return -1;
 			}
 		else{
-			free(buffer);
-			free(raw_str);
-			free(scale_str);
 
 			fseek(raw, 0, SEEK_END);
 			long fsize = ftell(raw);
@@ -2283,13 +2269,13 @@ int command_status_response_json (int msg_id,int val)
  */
 int json_schema_validate (char *schema,const char *json_string, char *temp_file)
 {
-	sem_wait(&sem_test);
+	sem_wait(&sem_valid);
 	FILE* fptr;
 	regex_t r1;
 	int data = 0;
 	data = regcomp(&r1, "document is valid.*", 0);
-	char *file_path = malloc(64);
-	char *schema_path = malloc(64);
+	char file_path[64];
+	char schema_path[64];
 	strcpy(file_path,"/home/petalinux/");
 	strcpy(schema_path,"/home/petalinux/dpb2_json_schemas/");
 
@@ -2297,21 +2283,19 @@ int json_schema_validate (char *schema,const char *json_string, char *temp_file)
 	strcat(schema_path,schema);
 	fptr =  fopen(file_path, "w");
 	if(fptr == NULL){
-		free(file_path);
-		free(schema_path);
 		regfree(&r1);
 		return -EINVAL;
 	}
 	fwrite(json_string,sizeof(char),strlen(json_string),fptr);
     fclose(fptr);
 
-	int cmd_check = 0;
-	char *command = malloc(128);
-	char *path = malloc(64);
+	char command[128];
+	char path[64];
 	strcpy(command,"/usr/bin/json-schema-validate ");
 	strcat(command,schema_path);
 	strcat(command," < ");
 	strcat(command,file_path);
+
 	int  stderr_bk; //is fd for stderr backup
 	stderr_bk = dup(fileno(stderr));
 
@@ -2322,18 +2306,14 @@ int json_schema_validate (char *schema,const char *json_string, char *temp_file)
 	dup2(pipefd[1], fileno(stderr));
 	fflush(stderr);//flushall();
 	/* Open the command for reading. */
-	cmd_check = system(command);
-	if (cmd_check) {
+	if (system(command) == -1) {
 		remove(file_path);
-		free(file_path);
-		free(schema_path);
-		free(path);
-		free(command);
 		regfree(&r1);
+		dup2(stderr_bk, fileno(stderr));//restore
 		close(stderr_bk);
 		close(pipefd[0]);
 		close(pipefd[1]);
-		sem_post(&sem_test);
+		sem_post(&sem_valid);
 		printf("Failed to run command\n" );
 		return -1;
 	}
@@ -2344,23 +2324,16 @@ int json_schema_validate (char *schema,const char *json_string, char *temp_file)
 	read(pipefd[0], path, 64);
 	remove(file_path);
 	close(pipefd[0]);
-	free(command);
 
 	data = regexec(&r1, path, 0, NULL, 0);
 	if(data){
-		free(file_path);
-		free(schema_path);
-		free(path);
 		printf("Error: JSON schema not valid\n" );
 		regfree(&r1);
-		sem_post(&sem_test);
+		sem_post(&sem_valid);
 		return -EINVAL;
 	}
-	free(file_path);
-	free(schema_path);
-	free(path);
 	regfree(&r1);
-	sem_post(&sem_test);
+	sem_post(&sem_valid);
 	return 0;
 }
 
@@ -2443,20 +2416,16 @@ int get_GPIO_base_address(int *address){
 int write_GPIO(int address, int value){
 
 	sem_wait(&file_sync);
-	char *cmd1 = malloc(64);
-	char *cmd2 = malloc(64);
-	char *dir_add = malloc(64);
-	char *val_add = malloc(64);
+	char cmd1[64];
+	char cmd2[64];
+	char dir_add[64];
+	char val_add[64];
     FILE *fd1;
     FILE *fd2;
     char val[1];
     static char *dir = "out";
 
     if((value != 0) && (value != 1) ){
-        free(cmd1);
-        free(cmd2);
-        free(val_add);
-        free(dir_add);
         sem_post(&file_sync);
     	return -EINVAL;
     }
@@ -2469,10 +2438,6 @@ int write_GPIO(int address, int value){
 
     // Building GPIO sysfs file
     if (system(cmd1) == -1) {
-        free(cmd1);
-        free(cmd2);
-        free(val_add);
-        free(dir_add);
         sem_post(&file_sync);
         return -EINVAL;
     }
@@ -2492,17 +2457,9 @@ int write_GPIO(int address, int value){
 
     //Removing GPIO sysfs file
     if (system(cmd2) == -1) {
-        free(cmd1);
-        free(cmd2);
-        free(val_add);
-        free(dir_add);
         sem_post(&file_sync);
         return -EINVAL;
     }
-    free(cmd1);
-    free(cmd2);
-    free(val_add);
-    free(dir_add);
     sem_post(&file_sync);
 	return 0;
 }
@@ -2518,10 +2475,10 @@ int write_GPIO(int address, int value){
 int read_GPIO(int address,int *value){
 
 	sem_wait(&file_sync);
-	char *cmd1 = malloc(64);
-	char *cmd2 = malloc(64);
-	char *dir_add = malloc(64);
-	char *val_add = malloc(64);
+	char cmd1[64];
+	char cmd2[64];
+	char dir_add[64];
+	char val_add[64];
     FILE *fd1;
     static char *dir = "in";
     FILE *GPIO_val ;
@@ -2533,10 +2490,6 @@ int read_GPIO(int address,int *value){
 
     // Building GPIO sysfs file
     if (system(cmd1) == -1) {
-        free(cmd1);
-        free(cmd2);
-        free(val_add);
-        free(dir_add);
         sem_post(&file_sync);
         return -EINVAL;
     }
@@ -2546,10 +2499,6 @@ int read_GPIO(int address,int *value){
 
     fd1 = fopen(dir_add,"w");
     if(fd1 == NULL){
-        free(cmd1);
-        free(cmd2);
-        free(val_add);
-        free(dir_add);
         sem_post(&file_sync);
         printf("NO he podido abrir\n");
         return -EINVAL;
@@ -2559,10 +2508,6 @@ int read_GPIO(int address,int *value){
 
     GPIO_val = fopen(val_add,"r");
     if(GPIO_val == NULL){
-        free(cmd1);
-        free(cmd2);
-        free(val_add);
-        free(dir_add);
         sem_post(&file_sync);
         printf("NO he podido abrir2\n");
         return -EINVAL;
@@ -2583,16 +2528,8 @@ int read_GPIO(int address,int *value){
     //Removing GPIO sysfs file
     if (system(cmd2) == -1) {
         return -EINVAL;
-        free(cmd1);
-        free(cmd2);
-        free(val_add);
-        free(dir_add);
         sem_post(&file_sync);
     }
-    free(cmd1);
-    free(cmd2);
-    free(val_add);
-    free(dir_add);
     sem_post(&file_sync);
     return 0;
 }
@@ -2654,11 +2591,11 @@ int eth_link_status (char *eth_interface, int *status)
 {
 	int rc = 0;
 	sem_wait(&file_sync);
-	char *eth_link = malloc(64);
+	char eth_link[64];
 	FILE *link_file;
-	char *str = malloc(64);
+	char str[64];
 
-	char *cmd = malloc(64);
+	char cmd[64];
 
 	strcpy(cmd,"ethtool ");
 	strcat(cmd,eth_interface);
@@ -2666,10 +2603,7 @@ int eth_link_status (char *eth_interface, int *status)
 
 	rc = system(cmd);
 	link_file = fopen("/home/petalinux/eth_temp.txt","r");
-	if((rc != 0) | (link_file == NULL)){
-		free(cmd);
-		free(eth_link);
-		free(str);
+	if((rc == -1) | (link_file == NULL)){
 		sem_post(&file_sync);
 		return -EINVAL;
 	}
@@ -2686,16 +2620,10 @@ int eth_link_status (char *eth_interface, int *status)
 		status[0] = 0;
 	else{
 		remove("/home/petalinux/eth_temp.txt");
-		free(cmd);
-		free(eth_link);
-		free(str);
 		sem_post(&file_sync);
 		return -EINVAL;
 	}
 	remove("/home/petalinux/eth_temp.txt");
-	free(cmd);
-	free(eth_link);
-	free(str);
 	sem_post(&file_sync);
 	return 0;
 
@@ -3692,6 +3620,7 @@ static void *monitoring_thread(void *arg)
 		json_object_object_add(jobj,"timestamp", jtimestamp);
 		json_object_object_add(jobj,"device", jdevice);
 		json_object_object_add(jobj,"data",jdata);*/
+
 		const char *serialized_json = json_object_to_json_string(jdata);
 		rc = json_schema_validate("JSONSchemaMonitoring.json",serialized_json, "mon_temp.json");
 		if (rc) {
@@ -3956,7 +3885,7 @@ static void *command_thread(void *arg){
 		strcpy(buffer,aux_buff);
 		json_object * jmsg = json_tokener_parse(buffer);
 		if(jmsg == NULL){
-			rc = command_status_response_json (msg_id,-EINCMD);
+			rc = command_status_response_json (0,-EINCMD);
 			goto waitmsg;
 		}
 		json_object_object_get_ex(jmsg, "msg_id", &jid);
@@ -4065,7 +3994,7 @@ int main(){
 
 	int rc;
 	struct DPB_I2cSensors data;
-	sem_init(&sem_test,1,1);
+	sem_init(&sem_valid,1,1);
 	sem_init(&file_sync,1,1);
 	get_GPIO_base_address(&GPIO_BASE_ADDRESS);
 
