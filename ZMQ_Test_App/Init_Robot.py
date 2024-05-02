@@ -63,7 +63,7 @@ ctype_map = {
     'uint64_t ': ctypes.c_uint64,
     'json_object ':JsonObject,
     'void':None,
-    # Agrega más tipos según sea necesario
+    # Add more types in case it is necessary
 }
 GPIO_Base_Address = c_int()
 structure_i2c = DPB_I2cSensors()
