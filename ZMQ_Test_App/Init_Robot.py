@@ -154,8 +154,8 @@ def main():
                         'restype': ctype_map[return_type]
                     }
     fp.close()
-    dpb2sc.init_I2cSensors(byref(structure_i2c))
     dpb2sc.zmq_socket_init()
+    dpb2sc.init_I2cSensors(byref(structure_i2c))
     dpb2sc.iio_event_monitor_up(b"/run/media/mmcblk0p1/IIO_MONITOR.elf")
     dpb2sc.get_GPIO_base_address(byref(GPIO_Base_Address))
     print(GPIO_Base_Address.value)
