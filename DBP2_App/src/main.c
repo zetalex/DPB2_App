@@ -2827,6 +2827,7 @@ int zmq_socket_init (){
 *
 * @param DPB_I2cSensors *data: Struct that contains I2C devices
 * @param char **cmd: Segmented command
+* @param int msg_id: Unique identifier of the received JSON command request message
 *
 * @return 0 if parameters OK and reports the event, if not returns negative integer.
 */
