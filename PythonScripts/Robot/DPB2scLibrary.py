@@ -100,8 +100,34 @@ class DPB2scLibrary(object):
     #########################################################
     #Ethernet Links functions
     #########################################################
-    def ethernet_speed_test (self,eth_interface):
-        i = 0
+    def ethernet_speed_test(self,IP_address):
+        aux = 0
+        str = 'iperf3 -c ' + IP_address + ' --logfile /home/petalinux/log.txt'
+        os.system(str)
+        with open(r'/home/petalinux/log.txt', 'r') as fp:
+            # read all lines using readline()func_name
+            lines = fp.readlines()
+            for row in lines:
+                word1 = 'iperf Done'
+                if row.find(word1) != -1:
+                    aux = 1 
+                    file_str = fp.read() 
+        fp.close()
+        os.system('rm /home/petalinux/log.txt')
+        if aux == 0:
+            raise AssertionError("Iperf3 could not be performed")
+        elif aux == 1:
+            logger.info(file_str)
+
+    def select_active_ethernet_interface(self,eth_interface):
+        str = 'echo /sys/devices/virtual/net/daq-bond/bonding/active_slave > '
+        if eth_interface == "Main":
+            str += "eth0"
+        elif eth_interface == "Backup":
+            str += "eth1"
+        os.system(str)
+    
+
     def set_ethernet_link_status (self,eth_interface,value):
         if eth_interface == "Main":
             c_eth_interface = c_char_p("eth0")
