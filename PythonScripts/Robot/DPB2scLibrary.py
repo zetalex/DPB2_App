@@ -115,6 +115,15 @@ class DPB2scLibrary(object):
         elif aux == 1:
             logger.info(file_str)
 
+    def select_active_ethernet_interface(self,eth_interface):
+        str = 'echo /sys/devices/virtual/net/daq-bond/bonding/active_slave > '
+        if eth_interface == "Main":
+            str += "eth0"
+        elif eth_interface == "Backup":
+            str += "eth1"
+        os.system(str)
+    
+
     def set_ethernet_link_status (self,eth_interface,value):
         if eth_interface == "Main":
             c_eth_interface = c_char_p("eth0")
