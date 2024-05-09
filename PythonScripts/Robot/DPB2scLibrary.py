@@ -5,8 +5,12 @@ import re
 import os
 import zmq
 import json
+<<<<<<< HEAD
 from robot.api import logger
 
+=======
+import time
+>>>>>>> b9a65801a19d6291cc5fa7d9dc270fe93ef78247
 
 class DPB2scLibrary(object):
     def _find_and_load_library(pattern, directory): 
@@ -96,34 +100,8 @@ class DPB2scLibrary(object):
     #########################################################
     #Ethernet Links functions
     #########################################################
-    def ethernet_speed_test(self,IP_address):
-        aux = 0
-        str = 'iperf3 -c ' + IP_address + ' --logfile /home/petalinux/log.txt'
-        os.system(str)
-        with open(r'/home/petalinux/log.txt', 'r') as fp:
-            # read all lines using readline()func_name
-            lines = fp.readlines()
-            for row in lines:
-                word1 = 'iperf Done'
-                if row.find(word1) != -1:
-                    aux = 1 
-                    file_str = fp.read() 
-        fp.close()
-        os.system('rm /home/petalinux/log.txt')
-        if aux == 0:
-            raise AssertionError("Iperf3 could not be performed")
-        elif aux == 1:
-            logger.info(file_str)
-
-    def select_active_ethernet_interface(self,eth_interface):
-        str = 'echo /sys/devices/virtual/net/daq-bond/bonding/active_slave > '
-        if eth_interface == "Main":
-            str += "eth0"
-        elif eth_interface == "Backup":
-            str += "eth1"
-        os.system(str)
-    
-
+    def ethernet_speed_test (self,eth_interface):
+        i = 0
     def set_ethernet_link_status (self,eth_interface,value):
         if eth_interface == "Main":
             c_eth_interface = c_char_p("eth0")
@@ -260,7 +238,11 @@ class DPB2scLibrary(object):
     
     def write_gpio (self, pin_num, value):
         if (self._result < 0 or self._result > 11) and (self._result < 48 or self._result > 65):
+<<<<<<< HEAD
             raise AssertionError('Pin number not in valid range. Pin number = %s' % (self._result))
+=======
+            raise AssertionError('Pin number not in valid range. Pin number = %d' % (self._result))
+>>>>>>> b9a65801a19d6291cc5fa7d9dc270fe93ef78247
         if value == "ON":
             c_value = c_int(1)
         elif value == "OFF": 
