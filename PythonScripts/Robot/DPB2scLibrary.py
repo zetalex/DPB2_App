@@ -430,7 +430,7 @@ class DPB2scLibrary(object):
 
         Args:
         expected(float): Expected value.
-        tolreance(string): Expected tolerance with '%'.
+        tolerance(string): Expected tolerance with '%'.
 
         """
 

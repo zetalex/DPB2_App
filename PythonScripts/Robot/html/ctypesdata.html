@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ctypesdata module &mdash; DPB2scLibrary 0.0.1 documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=19f00094" />
+      <link rel="stylesheet" type="text/css" href="_static/./_static/custom.css" />
+
+  
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="_static/jquery.js?v=5d32c60e"></script>
+        <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js?v=f6245a2f"></script>
+        <script src="_static/doctools.js?v=888ff710"></script>
+        <script src="_static/sphinx_highlight.js?v=4825356b"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            DPB2scLibrary
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <!-- Local TOC -->
+              <div class="local-toc"><ul>
+<li><a class="reference internal" href="#">ctypesdata module</a><ul>
+<li><a class="reference internal" href="#ctypesdata.DPB_I2cSensors"><code class="docutils literal notranslate"><span class="pre">DPB_I2cSensors</span></code></a><ul>
+<li><a class="reference internal" href="#ctypesdata.DPB_I2cSensors.dev_pcb_temp"><code class="docutils literal notranslate"><span class="pre">DPB_I2cSensors.dev_pcb_temp</span></code></a></li>
+<li><a class="reference internal" href="#ctypesdata.DPB_I2cSensors.dev_sfp0_2_volt"><code class="docutils literal notranslate"><span class="pre">DPB_I2cSensors.dev_sfp0_2_volt</span></code></a></li>
+<li><a class="reference internal" href="#ctypesdata.DPB_I2cSensors.dev_sfp0_A0"><code class="docutils literal notranslate"><span class="pre">DPB_I2cSensors.dev_sfp0_A0</span></code></a></li>
+<li><a class="reference internal" href="#ctypesdata.DPB_I2cSensors.dev_sfp0_A2"><code class="docutils literal notranslate"><span class="pre">DPB_I2cSensors.dev_sfp0_A2</span></code></a></li>
+<li><a class="reference internal" href="#ctypesdata.DPB_I2cSensors.dev_sfp1_A0"><code class="docutils literal notranslate"><span class="pre">DPB_I2cSensors.dev_sfp1_A0</span></code></a></li>
+<li><a class="reference internal" href="#ctypesdata.DPB_I2cSensors.dev_sfp1_A2"><code class="docutils literal notranslate"><span class="pre">DPB_I2cSensors.dev_sfp1_A2</span></code></a></li>
+<li><a class="reference internal" href="#ctypesdata.DPB_I2cSensors.dev_sfp2_A0"><code class="docutils literal notranslate"><span class="pre">DPB_I2cSensors.dev_sfp2_A0</span></code></a></li>
+<li><a class="reference internal" href="#ctypesdata.DPB_I2cSensors.dev_sfp2_A2"><code class="docutils literal notranslate"><span class="pre">DPB_I2cSensors.dev_sfp2_A2</span></code></a></li>
+<li><a class="reference internal" href="#ctypesdata.DPB_I2cSensors.dev_sfp3_5_volt"><code class="docutils literal notranslate"><span class="pre">DPB_I2cSensors.dev_sfp3_5_volt</span></code></a></li>
+<li><a class="reference internal" href="#ctypesdata.DPB_I2cSensors.dev_sfp3_A0"><code class="docutils literal notranslate"><span class="pre">DPB_I2cSensors.dev_sfp3_A0</span></code></a></li>
+<li><a class="reference internal" href="#ctypesdata.DPB_I2cSensors.dev_sfp3_A2"><code class="docutils literal notranslate"><span class="pre">DPB_I2cSensors.dev_sfp3_A2</span></code></a></li>
+<li><a class="reference internal" href="#ctypesdata.DPB_I2cSensors.dev_sfp4_A0"><code class="docutils literal notranslate"><span class="pre">DPB_I2cSensors.dev_sfp4_A0</span></code></a></li>
+<li><a class="reference internal" href="#ctypesdata.DPB_I2cSensors.dev_sfp4_A2"><code class="docutils literal notranslate"><span class="pre">DPB_I2cSensors.dev_sfp4_A2</span></code></a></li>
+<li><a class="reference internal" href="#ctypesdata.DPB_I2cSensors.dev_sfp5_A0"><code class="docutils literal notranslate"><span class="pre">DPB_I2cSensors.dev_sfp5_A0</span></code></a></li>
+<li><a class="reference internal" href="#ctypesdata.DPB_I2cSensors.dev_sfp5_A2"><code class="docutils literal notranslate"><span class="pre">DPB_I2cSensors.dev_sfp5_A2</span></code></a></li>
+<li><a class="reference internal" href="#ctypesdata.DPB_I2cSensors.dev_som_volt"><code class="docutils literal notranslate"><span class="pre">DPB_I2cSensors.dev_som_volt</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#ctypesdata.I2cDevice"><code class="docutils literal notranslate"><span class="pre">I2cDevice</span></code></a><ul>
+<li><a class="reference internal" href="#ctypesdata.I2cDevice.addr"><code class="docutils literal notranslate"><span class="pre">I2cDevice.addr</span></code></a></li>
+<li><a class="reference internal" href="#ctypesdata.I2cDevice.fd"><code class="docutils literal notranslate"><span class="pre">I2cDevice.fd</span></code></a></li>
+<li><a class="reference internal" href="#ctypesdata.I2cDevice.filename"><code class="docutils literal notranslate"><span class="pre">I2cDevice.filename</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#ctypesdata.JsonObject"><code class="docutils literal notranslate"><span class="pre">JsonObject</span></code></a><ul>
+<li><a class="reference internal" href="#ctypesdata.JsonObject.o_type"><code class="docutils literal notranslate"><span class="pre">JsonObject.o_type</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#ctypesdata.JsonType"><code class="docutils literal notranslate"><span class="pre">JsonType</span></code></a></li>
+<li><a class="reference internal" href="#ctypesdata.Wrapper"><code class="docutils literal notranslate"><span class="pre">Wrapper</span></code></a><ul>
+<li><a class="reference internal" href="#ctypesdata.Wrapper.ams_sync"><code class="docutils literal notranslate"><span class="pre">Wrapper.ams_sync</span></code></a></li>
+<li><a class="reference internal" href="#ctypesdata.Wrapper.ch_type"><code class="docutils literal notranslate"><span class="pre">Wrapper.ch_type</span></code></a></li>
+<li><a class="reference internal" href="#ctypesdata.Wrapper.chn"><code class="docutils literal notranslate"><span class="pre">Wrapper.chn</span></code></a></li>
+<li><a class="reference internal" href="#ctypesdata.Wrapper.empty"><code class="docutils literal notranslate"><span class="pre">Wrapper.empty</span></code></a></li>
+<li><a class="reference internal" href="#ctypesdata.Wrapper.ev_type"><code class="docutils literal notranslate"><span class="pre">Wrapper.ev_type</span></code></a></li>
+<li><a class="reference internal" href="#ctypesdata.Wrapper.full"><code class="docutils literal notranslate"><span class="pre">Wrapper.full</span></code></a></li>
+<li><a class="reference internal" href="#ctypesdata.Wrapper.tmpstmp"><code class="docutils literal notranslate"><span class="pre">Wrapper.tmpstmp</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</div>
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">DPB2scLibrary</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">ctypesdata module</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/ctypesdata.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="module-ctypesdata">
+<span id="ctypesdata-module"></span><h1>ctypesdata module<a class="headerlink" href="#module-ctypesdata" title="Permalink to this heading"></a></h1>
+<dl class="py class">
+<dt class="sig sig-object py" id="ctypesdata.DPB_I2cSensors">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ctypesdata.</span></span><span class="sig-name descname"><span class="pre">DPB_I2cSensors</span></span><a class="reference internal" href="_modules/ctypesdata.html#DPB_I2cSensors"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ctypesdata.DPB_I2cSensors" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Structure</span></code></p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ctypesdata.DPB_I2cSensors.dev_pcb_temp">
+<span class="sig-name descname"><span class="pre">dev_pcb_temp</span></span><a class="headerlink" href="#ctypesdata.DPB_I2cSensors.dev_pcb_temp" title="Permalink to this definition"></a></dt>
+<dd><p>Structure/Union member</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ctypesdata.DPB_I2cSensors.dev_sfp0_2_volt">
+<span class="sig-name descname"><span class="pre">dev_sfp0_2_volt</span></span><a class="headerlink" href="#ctypesdata.DPB_I2cSensors.dev_sfp0_2_volt" title="Permalink to this definition"></a></dt>
+<dd><p>Structure/Union member</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ctypesdata.DPB_I2cSensors.dev_sfp0_A0">
+<span class="sig-name descname"><span class="pre">dev_sfp0_A0</span></span><a class="headerlink" href="#ctypesdata.DPB_I2cSensors.dev_sfp0_A0" title="Permalink to this definition"></a></dt>
+<dd><p>Structure/Union member</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ctypesdata.DPB_I2cSensors.dev_sfp0_A2">
+<span class="sig-name descname"><span class="pre">dev_sfp0_A2</span></span><a class="headerlink" href="#ctypesdata.DPB_I2cSensors.dev_sfp0_A2" title="Permalink to this definition"></a></dt>
+<dd><p>Structure/Union member</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ctypesdata.DPB_I2cSensors.dev_sfp1_A0">
+<span class="sig-name descname"><span class="pre">dev_sfp1_A0</span></span><a class="headerlink" href="#ctypesdata.DPB_I2cSensors.dev_sfp1_A0" title="Permalink to this definition"></a></dt>
+<dd><p>Structure/Union member</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ctypesdata.DPB_I2cSensors.dev_sfp1_A2">
+<span class="sig-name descname"><span class="pre">dev_sfp1_A2</span></span><a class="headerlink" href="#ctypesdata.DPB_I2cSensors.dev_sfp1_A2" title="Permalink to this definition"></a></dt>
+<dd><p>Structure/Union member</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ctypesdata.DPB_I2cSensors.dev_sfp2_A0">
+<span class="sig-name descname"><span class="pre">dev_sfp2_A0</span></span><a class="headerlink" href="#ctypesdata.DPB_I2cSensors.dev_sfp2_A0" title="Permalink to this definition"></a></dt>
+<dd><p>Structure/Union member</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ctypesdata.DPB_I2cSensors.dev_sfp2_A2">
+<span class="sig-name descname"><span class="pre">dev_sfp2_A2</span></span><a class="headerlink" href="#ctypesdata.DPB_I2cSensors.dev_sfp2_A2" title="Permalink to this definition"></a></dt>
+<dd><p>Structure/Union member</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ctypesdata.DPB_I2cSensors.dev_sfp3_5_volt">
+<span class="sig-name descname"><span class="pre">dev_sfp3_5_volt</span></span><a class="headerlink" href="#ctypesdata.DPB_I2cSensors.dev_sfp3_5_volt" title="Permalink to this definition"></a></dt>
+<dd><p>Structure/Union member</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ctypesdata.DPB_I2cSensors.dev_sfp3_A0">
+<span class="sig-name descname"><span class="pre">dev_sfp3_A0</span></span><a class="headerlink" href="#ctypesdata.DPB_I2cSensors.dev_sfp3_A0" title="Permalink to this definition"></a></dt>
+<dd><p>Structure/Union member</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ctypesdata.DPB_I2cSensors.dev_sfp3_A2">
+<span class="sig-name descname"><span class="pre">dev_sfp3_A2</span></span><a class="headerlink" href="#ctypesdata.DPB_I2cSensors.dev_sfp3_A2" title="Permalink to this definition"></a></dt>
+<dd><p>Structure/Union member</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ctypesdata.DPB_I2cSensors.dev_sfp4_A0">
+<span class="sig-name descname"><span class="pre">dev_sfp4_A0</span></span><a class="headerlink" href="#ctypesdata.DPB_I2cSensors.dev_sfp4_A0" title="Permalink to this definition"></a></dt>
+<dd><p>Structure/Union member</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ctypesdata.DPB_I2cSensors.dev_sfp4_A2">
+<span class="sig-name descname"><span class="pre">dev_sfp4_A2</span></span><a class="headerlink" href="#ctypesdata.DPB_I2cSensors.dev_sfp4_A2" title="Permalink to this definition"></a></dt>
+<dd><p>Structure/Union member</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ctypesdata.DPB_I2cSensors.dev_sfp5_A0">
+<span class="sig-name descname"><span class="pre">dev_sfp5_A0</span></span><a class="headerlink" href="#ctypesdata.DPB_I2cSensors.dev_sfp5_A0" title="Permalink to this definition"></a></dt>
+<dd><p>Structure/Union member</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ctypesdata.DPB_I2cSensors.dev_sfp5_A2">
+<span class="sig-name descname"><span class="pre">dev_sfp5_A2</span></span><a class="headerlink" href="#ctypesdata.DPB_I2cSensors.dev_sfp5_A2" title="Permalink to this definition"></a></dt>
+<dd><p>Structure/Union member</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ctypesdata.DPB_I2cSensors.dev_som_volt">
+<span class="sig-name descname"><span class="pre">dev_som_volt</span></span><a class="headerlink" href="#ctypesdata.DPB_I2cSensors.dev_som_volt" title="Permalink to this definition"></a></dt>
+<dd><p>Structure/Union member</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="ctypesdata.I2cDevice">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ctypesdata.</span></span><span class="sig-name descname"><span class="pre">I2cDevice</span></span><a class="reference internal" href="_modules/ctypesdata.html#I2cDevice"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ctypesdata.I2cDevice" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Structure</span></code></p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ctypesdata.I2cDevice.addr">
+<span class="sig-name descname"><span class="pre">addr</span></span><a class="headerlink" href="#ctypesdata.I2cDevice.addr" title="Permalink to this definition"></a></dt>
+<dd><p>Structure/Union member</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ctypesdata.I2cDevice.fd">
+<span class="sig-name descname"><span class="pre">fd</span></span><a class="headerlink" href="#ctypesdata.I2cDevice.fd" title="Permalink to this definition"></a></dt>
+<dd><p>Structure/Union member</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ctypesdata.I2cDevice.filename">
+<span class="sig-name descname"><span class="pre">filename</span></span><a class="headerlink" href="#ctypesdata.I2cDevice.filename" title="Permalink to this definition"></a></dt>
+<dd><p>Structure/Union member</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="ctypesdata.JsonObject">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ctypesdata.</span></span><span class="sig-name descname"><span class="pre">JsonObject</span></span><a class="reference internal" href="_modules/ctypesdata.html#JsonObject"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ctypesdata.JsonObject" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Structure</span></code></p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ctypesdata.JsonObject.o_type">
+<span class="sig-name descname"><span class="pre">o_type</span></span><a class="headerlink" href="#ctypesdata.JsonObject.o_type" title="Permalink to this definition"></a></dt>
+<dd><p>Structure/Union member</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="ctypesdata.JsonType">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ctypesdata.</span></span><span class="sig-name descname"><span class="pre">JsonType</span></span><a class="reference internal" href="_modules/ctypesdata.html#JsonType"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ctypesdata.JsonType" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">c_int</span></code></p>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="ctypesdata.Wrapper">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ctypesdata.</span></span><span class="sig-name descname"><span class="pre">Wrapper</span></span><a class="reference internal" href="_modules/ctypesdata.html#Wrapper"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ctypesdata.Wrapper" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Structure</span></code></p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ctypesdata.Wrapper.ams_sync">
+<span class="sig-name descname"><span class="pre">ams_sync</span></span><a class="headerlink" href="#ctypesdata.Wrapper.ams_sync" title="Permalink to this definition"></a></dt>
+<dd><p>Structure/Union member</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ctypesdata.Wrapper.ch_type">
+<span class="sig-name descname"><span class="pre">ch_type</span></span><a class="headerlink" href="#ctypesdata.Wrapper.ch_type" title="Permalink to this definition"></a></dt>
+<dd><p>Structure/Union member</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ctypesdata.Wrapper.chn">
+<span class="sig-name descname"><span class="pre">chn</span></span><a class="headerlink" href="#ctypesdata.Wrapper.chn" title="Permalink to this definition"></a></dt>
+<dd><p>Structure/Union member</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ctypesdata.Wrapper.empty">
+<span class="sig-name descname"><span class="pre">empty</span></span><a class="headerlink" href="#ctypesdata.Wrapper.empty" title="Permalink to this definition"></a></dt>
+<dd><p>Structure/Union member</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ctypesdata.Wrapper.ev_type">
+<span class="sig-name descname"><span class="pre">ev_type</span></span><a class="headerlink" href="#ctypesdata.Wrapper.ev_type" title="Permalink to this definition"></a></dt>
+<dd><p>Structure/Union member</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ctypesdata.Wrapper.full">
+<span class="sig-name descname"><span class="pre">full</span></span><a class="headerlink" href="#ctypesdata.Wrapper.full" title="Permalink to this definition"></a></dt>
+<dd><p>Structure/Union member</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ctypesdata.Wrapper.tmpstmp">
+<span class="sig-name descname"><span class="pre">tmpstmp</span></span><a class="headerlink" href="#ctypesdata.Wrapper.tmpstmp" title="Permalink to this definition"></a></dt>
+<dd><p>Structure/Union member</p>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, Borja Martinez Sanchez.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
