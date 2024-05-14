@@ -173,13 +173,43 @@ static void *command_thread(void *);
  */
 int iio_event_monitor_up() {
 
+	int rc = 0;
+	char path[64];
+	FILE *temp_file;
+	char str[64];
+	regex_t r1;
+	int data = regcomp(&r1, "*.IIO_MONITOR.*", 0);
+
+	char cmd[64];
+	strcpy(cmd,"which IIO_MONITOR >> /home/petalinux/path_temp.txt");
+
+	rc = system(cmd);
+	temp_file = fopen("/home/petalinux/path_temp.txt","r");
+	if((rc == -1) | (temp_file == NULL)){
+		return -EINVAL;
+	}
+	fread(path, 64, 1, temp_file);
+	fclose(temp_file);
+
+	strcpy(str,strtok(path,"\n"));
+	strcat(str,"");
+	data = regexec(&r1, str, 0, NULL, 0);
+	if(data){
+		remove("/home/petalinux/path_temp.txt");
+		regfree(&r1);
+	}
+	else{
+		remove("/home/petalinux/path_temp.txt");
+		regfree(&r1);
+		return -EINVAL;
+	}
 
     child_pid = fork(); // Create a child process
 
     if (child_pid == 0) {
         // Child process
         // Path of the .elf file and arguments
-        char *args[] = {"/run/media/mmcblk0p1/IIO_MONITOR.elf", "-a", "/dev/iio:device0", NULL};
+        char *args[] = {str, "-a", "/dev/iio:device0", NULL};
 
         // Execute the .elf file
         if (execvp(args[0], args) == -1) {
@@ -3121,12 +3151,12 @@ void lv_command_handling(char **cmd){
 /**
  * Closes ZMQ sockets and GPIOs when exiting.
  */
-void atexit_function() {
+/*void atexit_function() {
 	unexport_GPIO();
     zmq_close(mon_publisher);
     zmq_close(alarm_publisher);
     zmq_close(cmd_router);
-}
+}*/
 /************************** Signal Handling function declaration ******************************/
 /**
  * Handles termination signals, kills every subprocess
@@ -4030,23 +4060,20 @@ int main(){
 	    perror("shmget(): ");
 	    exit(1);
 	 }
-
 	rc = zmq_socket_init(); //Initialize ZMQ Sockets
-		if (rc) {
-			printf("Error\r\n");
-			return rc;
-	}
-	rc = init_I2cSensors(&data); //Initialize i2c sensors
-
 	if (rc) {
 		printf("Error\r\n");
-		return 0;
+		goto end;
 	}
-
+	rc = init_I2cSensors(&data); //Initialize i2c sensors
+	if (rc) {
+		printf("Error\r\n");
+		goto end;
+	}
 	rc = iio_event_monitor_up(); //Initialize iio event monitor
 	if (rc) {
 		printf("Error\r\n");
-		return rc;
+		goto end;
 	}
 
 	signal(SIGTERM, sighandler);
@@ -4081,6 +4108,12 @@ int main(){
 			break;
 		}
 	}
+end:
+    zmq_close(mon_publisher);
+    zmq_close(alarm_publisher);
+    zmq_close(cmd_router);
+    zmq_ctx_shutdown(zmq_context);
+    zmq_ctx_destroy(zmq_context);
 	stop_I2cSensors(&data);
 
 	return 0;
