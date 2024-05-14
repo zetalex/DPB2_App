@@ -4,12 +4,21 @@ import ctypes
 import re
 import os
 import zmq
+import sys
 import json
 from robot.api import logger
+from robotremoteserver import RobotRemoteServer
 
 
 class DPB2scLibrary(object):
-    def _find_and_load_library(pattern, directory): 
+    def _find_and_load_library(pattern, directory):
+        """Searches library in determiend directory and loads it for ctypes.
+
+        Args:
+        pattern (str): Name of the library.
+        directory (str): Directory where the library is to be found.
+        
+        """ 
         files = os.listdir(directory)
         for file_name in files:
             if re.match(pattern, file_name):
@@ -27,6 +36,10 @@ class DPB2scLibrary(object):
     # Initialization functions
     #########################################################
     def __init__(self):
+        """Initializes Remote Server, library and necessary resources of the DPB.
+        
+        """ 
+        RobotRemoteServer(DPB2scLibrary(), *sys.argv[1:])
         self._find_and_load_library(r'^libjson-c\.so', self.library_directory)
         self._find_and_load_library(r'^libzmq\.so', self.library_directory)
         self.dpb2sc = ctypes.CDLL("libdpb2sc.so")
@@ -80,23 +93,39 @@ class DPB2scLibrary(object):
                         }
         fp.close()    
     def initialize_zmq_ethernet_sockets (self):
+        """Initializes DPB ZMQ sockets.
+        """ 
         self._zmq_rc = self.dpb2sc.zmq_socket_init()
     def initialize_i2c_devices (self):
+        """Initializes DPB I2C Devices.
+        """ 
         self.context = zmq.Context()
         self.socket = self.context.socket(zmq.SUB)
         self.socket.bind("tcp://127.0.0.1:5556")
         self.socket.setsockopt_string(zmq.SUBSCRIBE, "")  
         self.dpb2sc.init_I2cSensors(byref(self.structure_i2c))
     def initialize_iio_event_monitor (self):
+        """Initializes DPB IIO Event Monitor.
+        """ 
         self._iio_rc = self.dpb2sc.iio_event_monitor_up(b"/run/media/mmcblk0p1/IIO_MONITOR.elf")
     def get_gpio_base_address (self):
+        """Gets DPB GPIO Base Address.
+        """ 
         self.GPIO_Base_Address = c_int.in_dll(self.dpb2sc, "GPIO_BASE_ADDRESS")
         self.dpb2sc.get_GPIO_base_address(byref(self.GPIO_Base_Address))
-      
+    """This is a docstring."""
     #########################################################
     #Ethernet Links functions
     #########################################################
     def ethernet_speed_test(self,IP_address):
+        """Performs a speed test using iperf3 over the Ethernet interface.
+
+        Args:
+        IP_address (str): The destination IP address for the speed test.
+        
+        Returns:
+        str: A string containing the results of the speed test.
+        """
         aux = 0
         str = 'iperf3 -c ' + IP_address + ' --logfile /home/petalinux/log.txt'
         os.system(str)
@@ -116,6 +145,12 @@ class DPB2scLibrary(object):
             logger.info(file_str)
 
     def select_active_ethernet_interface(self,eth_interface):
+        """Select active Ethernet interface
+
+        Args:
+        eth_interface (string): Ethernet interface.
+
+        """
         str = 'echo /sys/devices/virtual/net/daq-bond/bonding/active_slave > '
         if eth_interface == "Main":
             str += "eth0"
@@ -125,6 +160,13 @@ class DPB2scLibrary(object):
     
 
     def set_ethernet_link_status (self,eth_interface,value):
+        """Set Ethernet interface status
+
+        Args:
+        eth_interface (string): Ethernet interface.
+        value (string): Status ON/OFF.
+
+        """
         if eth_interface == "Main":
             c_eth_interface = c_char_p("eth0")
         elif eth_interface == "Backup": 
@@ -139,6 +181,12 @@ class DPB2scLibrary(object):
     #INA3221 functions
     #########################################################
     def get_bus_voltage (self,chip):
+        """Get Bus Voltage
+
+        Args:
+        chip (string): Desired voltage chip.
+
+        """
         FloatPointer = ctypes.POINTER(ctypes.c_float)
         float_array = (ctypes.c_float * 3)
         float_ptr = ctypes.cast(float_array, FloatPointer)
@@ -173,6 +221,12 @@ class DPB2scLibrary(object):
         self._result = float_array[channel]
 
     def get_bus_current (self,chip):
+        """Get Bus Current
+
+        Args:
+        chip (string): Desired current chip.
+
+        """
         FloatPointer = ctypes.POINTER(ctypes.c_float)
         float_array = (ctypes.c_float * 3)
         float_ptr = ctypes.cast(float_array, FloatPointer)
@@ -211,6 +265,12 @@ class DPB2scLibrary(object):
     #SFPs functions
     #########################################################
     def sfp_tx_power (self,chip):
+        """Get SFP TX Power
+
+        Args:
+        chip (string): Desired SFP TX Power.
+
+        """
         FloatPointer = ctypes.POINTER(ctypes.c_float)
         float_array = (ctypes.c_float * 1)
         float_ptr = ctypes.cast(float_array, FloatPointer)
@@ -230,6 +290,12 @@ class DPB2scLibrary(object):
         self._result = float_array[0]
 
     def sfp_rx_power (self,chip):
+        """Get SFP RX Power
+
+        Args:
+        chip (string): Desired SFP RX Power.
+
+        """
         FloatPointer = ctypes.POINTER(ctypes.c_float)
         float_array = (ctypes.c_float * 1)
         float_ptr = ctypes.cast(float_array, FloatPointer)
@@ -253,12 +319,25 @@ class DPB2scLibrary(object):
     #########################################################
 
     def read_gpio (self, pin_num):
+        """Read GPIO
+
+        Args:
+        pin_num (int): Desired GPIO pin to read
+
+        """
         gpio_result = POINTER(c_int)
         c_pin_num = c_int(pin_num)
         self.dpb2sc.read_gpio(c_pin_num,gpio_result)
         self._result = gpio_result.value
     
     def write_gpio (self, pin_num, value):
+        """Write GPIO
+
+        Args:
+        pin_num (int): Desired GPIO pin to write.
+        value (int): Value to write.
+
+        """
         if (self._result < 0 or self._result > 11) and (self._result < 48 or self._result > 65):
             raise AssertionError('Pin number not in valid range. Pin number = %s' % (self._result))
         if value == "ON":
@@ -273,6 +352,12 @@ class DPB2scLibrary(object):
     #########################################################
         
     def get_ams_voltage (self, channel):
+        """Get AMS Voltage
+
+        Args:
+        channel (int): Desired channel to get voltage from
+
+        """
         FloatPointer = ctypes.POINTER(ctypes.c_float)
         float_array = (ctypes.c_float * 1)
         float_ptr = ctypes.cast(float_array, FloatPointer)
@@ -285,6 +370,15 @@ class DPB2scLibrary(object):
         self._result = float_array[0]
 
     def set_ams_alarms_limit (self,magnitude,ev_dir,channel,value):
+        """Set AMS alarm limit
+
+        Args:
+        channel (int): Desired channel to set limit.
+        magnitude(string): Channel magnitude.
+        ev_dir(string): Alarm direction.
+        value(float): Value to set.
+
+        """
         if magnitude == "Temperature":
             c_magnitude = c_char_p("temp")
         elif magnitude == "Voltage": 
@@ -302,6 +396,12 @@ class DPB2scLibrary(object):
     #########################################################
         
     def execute_dpb_command (self,command):
+        """Execute command in DPB
+
+        Args:
+        command(string): DPB command.
+
+        """
         self.context = zmq.Context()
         self.socket = self.context.socket(zmq.REQ)
         self.socket.connect("tcp://127.0.0.1:5557")
@@ -326,6 +426,13 @@ class DPB2scLibrary(object):
     #Check functions
     #########################################################
     def result_should_be_within_tolerance_range(self, expected, tolerance):
+        """Check if value is within range
+
+        Args:
+        expected(float): Expected value.
+        tolreance(string): Expected tolerance with '%'.
+
+        """
 
         tolerance_decimal = float(tolerance.strip('%')) / 100.0
 
@@ -336,14 +443,26 @@ class DPB2scLibrary(object):
             raise AssertionError('%s is not within the range [%s, %s]' % (self._result, lower_bound, upper_bound))
         
     def result_should_be(self, expected):
+        """Check if value matches
+
+        Args:
+        expected(float): Expected value.
+
+        """
         if self._result != expected:
             raise AssertionError('%s != %s' % (self._result, expected))
         
     def check_zmq_initialization(self):
+        """Check ZMQ sockets intialization
+
+        """
         if self._zmq_rc != 0:
             raise AssertionError('%s != %s' % (self._zmq_rc, 0))
         
     def check_i2c_devices_initialization(self):
+        """Check I2C devices intialization
+
+        """
         alarmas = []
         try:
             while True:
@@ -372,23 +491,44 @@ class DPB2scLibrary(object):
             raise AssertionError(mensaje_error)
 
     def check_gpio_base_address(self):
+        """Check GPIO Base Address is correct
+
+        """
         if self.GPIO_Base_Address != 412:
             raise AssertionError('GPIO Base Address :%s != %s' % (self.GPIO_Base_Address, 412)) 
         
     def check_valid_command(self):
+        """Check command is valid
+
+        """
         if re.search(r'\bERROR\b', self.cmd_msg_value, re.IGNORECASE):
             raise AssertionError(f"An unexpected error was found in the command reply: {self.cmd_msg_value}")
     def check_set_command_error(self):
+        """Check SET command error reply is correct
+
+        """
         if not re.search(r'\bERROR: SET operation not successful\b', self.cmd_msg_value, re.IGNORECASE):
             raise AssertionError(f"An expected error was not found in the command reply: {self.cmd_msg_value}")
     def check_read_command_error(self):
+        """Check READ command error reply is correct
+
+        """
         if not re.search(r'\bERROR: READ operation not successful\b', self.cmd_msg_value, re.IGNORECASE):
             raise AssertionError(f"An expected error was not found in the command reply: {self.cmd_msg_value}")
     def check_invalid_command(self):
+        """Check Invalid command error reply is correct
+
+        """
         if not re.search(r'\bERROR: Command not valid\b', self.cmd_msg_value, re.IGNORECASE):
             raise AssertionError(f"An expected error was not found in the command reply: {self.cmd_msg_value}")
         
     def check_ethernet_alarm(self,eth_interface):
+        """Forces and check Ethernet alarm triggered
+
+        Args:
+        eth_interface(string): Ethernet interface used to force alarm.
+
+        """
         self.context = zmq.Context()
         self.socket = self.context.socket(zmq.SUB)
         self.socket.bind("tcp://127.0.0.1:5556")
@@ -417,6 +557,12 @@ class DPB2scLibrary(object):
             raise AssertionError(f"The expected alarm was not found in alarm socket, found this: {magnitudename}")
         
     def check_ams_voltage_alarm(self,channel):
+        """Check AMS voltage alarm triggered after forcing it
+
+        Args:
+        channel(int): Channel that is supposed to trigger the alarm.
+
+        """
 
         memory = Wrapper.in_dll(self.dpb2sc,"memory")
         memory_pointer = POINTER(memory)
@@ -428,6 +574,9 @@ class DPB2scLibrary(object):
             raise AssertionError(f"The expected alarm was not detected by IIO Event Monitor")
         
     def check_sfp_presence(self):
+        """Check all 6 SFPs presence
+
+        """
         missing_sfps = []
         for i in range(6):
             self.read_gpio(13+(4*i)) 
@@ -441,7 +590,9 @@ class DPB2scLibrary(object):
             raise AssertionError(mensaje_error)
 
     def result_matches_rx_power_ranges(self):
+        """Check SFP RX Power value is within manufacturer valid rangesm
 
+        """
         lower_bound = 0.00002
         upper_bound = 0.001
 
@@ -449,7 +600,9 @@ class DPB2scLibrary(object):
             raise AssertionError('%s is not within the RX Power range [%s, %s]' % (self._result, lower_bound, upper_bound))
         
     def result_matches_tx_power_ranges(self):
+        """Check SFP TX Power value is within manufacturer valid rangesm
 
+        """
         lower_bound = 0.000112
         upper_bound = 0.0005
 
@@ -457,6 +610,12 @@ class DPB2scLibrary(object):
             raise AssertionError('%s is not within the TX Power range [%s, %s]' % (self._result, lower_bound, upper_bound))
         
     def check_sfp_gpio_pins (self,chip):
+        """Check SFP GPIO pins value matches I2C corresponding register value
+
+        Args:
+        chip(string): SFP to be validated.
+
+        """
         IntPointer = ctypes.POINTER(ctypes.c_int)
         int_array = (ctypes.c_int * 2)
         int_ptr = ctypes.cast(int_array, IntPointer)

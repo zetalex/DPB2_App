@@ -2184,11 +2184,11 @@ int command_response_json (int msg_id, float val)
 	json_object_object_add(jcmd_data,"uuid", juuid);
 
 	const char *serialized_json = json_object_to_json_string(jcmd_data);
-	/*int rc = json_schema_validate("JSONSchemaCommand.json",serialized_json, "cmd_temp.json");
+	int rc = json_schema_validate("JSONSchemaSlowControl.json",serialized_json, "cmd_temp.json");
 	if (rc) {
 		printf("Error\r\n");
 		return rc;
-	}*/
+	}
 	zmq_send(cmd_router, serialized_json, strlen(serialized_json), 0);
 	json_object_put(jcmd_data);
 	return 0;
@@ -2249,11 +2249,11 @@ int command_status_response_json (int msg_id,int val)
 	json_object_object_add(jcmd_data,"uuid", juuid);
 
 	const char *serialized_json = json_object_to_json_string(jcmd_data);
-	/*int rc = json_schema_validate("JSONSchemaCommand.json",serialized_json, "cmd_temp.json");
+	int rc = json_schema_validate("JSONSchemaSlowControl.json",serialized_json, "cmd_temp.json");
 	if (rc) {
 		printf("Error\r\n");
 		return rc;
-	}*/
+	}
 	zmq_send(cmd_router, serialized_json, strlen(serialized_json), 0);
 	json_object_put(jcmd_data);
 	return 0;
@@ -3886,6 +3886,12 @@ static void *command_thread(void *arg){
 		strcpy(buffer,aux_buff);
 		json_object * jmsg = json_tokener_parse(buffer);
 		if(jmsg == NULL){
+			rc = command_status_response_json (0,-EINCMD);
+			goto waitmsg;
+		}
+		const char *serialized_json_msg = json_object_to_json_string(jmsg);
+		rc = json_schema_validate("JSONSchemaSlowControl.json",serialized_json_msg, "cmd_temp.json");
+		if(rc){
 			rc = command_status_response_json (0,-EINCMD);
 			goto waitmsg;
 		}
