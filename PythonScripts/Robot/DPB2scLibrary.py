@@ -115,7 +115,7 @@ class DPB2scLibrary(object):
     def initialize_iio_event_monitor (self):
         """Initializes DPB IIO Event Monitor.
         """ 
-        self._iio_rc = self.dpb2sc.iio_event_monitor_up(b"/run/media/mmcblk0p1/IIO_MONITOR.elf")
+        self._iio_rc = self.dpb2sc.iio_event_monitor_up()
     def get_gpio_base_address (self):
         """Gets DPB GPIO Base Address.
         """ 
