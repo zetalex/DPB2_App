@@ -60,6 +60,7 @@
 <li><a class="reference internal" href="#DPB2scLibrary.DPB2scLibrary.check_zmq_initialization"><code class="docutils literal notranslate"><span class="pre">DPB2scLibrary.check_zmq_initialization()</span></code></a></li>
 <li><a class="reference internal" href="#DPB2scLibrary.DPB2scLibrary.ethernet_speed_test"><code class="docutils literal notranslate"><span class="pre">DPB2scLibrary.ethernet_speed_test()</span></code></a></li>
 <li><a class="reference internal" href="#DPB2scLibrary.DPB2scLibrary.execute_dpb_command"><code class="docutils literal notranslate"><span class="pre">DPB2scLibrary.execute_dpb_command()</span></code></a></li>
+<li><a class="reference internal" href="#DPB2scLibrary.DPB2scLibrary.find_and_load_library"><code class="docutils literal notranslate"><span class="pre">DPB2scLibrary.find_and_load_library()</span></code></a></li>
 <li><a class="reference internal" href="#DPB2scLibrary.DPB2scLibrary.function_defs"><code class="docutils literal notranslate"><span class="pre">DPB2scLibrary.function_defs</span></code></a></li>
 <li><a class="reference internal" href="#DPB2scLibrary.DPB2scLibrary.get_ams_voltage"><code class="docutils literal notranslate"><span class="pre">DPB2scLibrary.get_ams_voltage()</span></code></a></li>
 <li><a class="reference internal" href="#DPB2scLibrary.DPB2scLibrary.get_bus_current"><code class="docutils literal notranslate"><span class="pre">DPB2scLibrary.get_bus_current()</span></code></a></li>
@@ -207,10 +208,21 @@ str: A string containing the results of the speed test.</p>
 command(string): DPB command.</p>
 </dd></dl>
 
+<dl class="py method">
+<dt class="sig sig-object py" id="DPB2scLibrary.DPB2scLibrary.find_and_load_library">
+<span class="sig-name descname"><span class="pre">find_and_load_library</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">directory</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/DPB2scLibrary.html#DPB2scLibrary.find_and_load_library"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#DPB2scLibrary.DPB2scLibrary.find_and_load_library" title="Permalink to this definition"></a></dt>
+<dd><p>Searches library in determiend directory and loads it for ctypes.</p>
+<p>Args:
+pattern (str): Name of the library.</p>
+<p>Args:
+directory (str): Directory where the library is to be found.</p>
+</dd></dl>
+
 <dl class="py attribute">
 <dt class="sig sig-object py" id="DPB2scLibrary.DPB2scLibrary.function_defs">
 <span class="sig-name descname"><span class="pre">function_defs</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{}</span></em><a class="headerlink" href="#DPB2scLibrary.DPB2scLibrary.function_defs" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
+<dd><p>Array of C functions in ctypes</p>
+</dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="DPB2scLibrary.DPB2scLibrary.get_ams_voltage">
@@ -263,7 +275,8 @@ chip (string): Desired voltage chip.</p>
 <dl class="py attribute">
 <dt class="sig sig-object py" id="DPB2scLibrary.DPB2scLibrary.library_directory">
 <span class="sig-name descname"><span class="pre">library_directory</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'/usr/lib'</span></em><a class="headerlink" href="#DPB2scLibrary.DPB2scLibrary.library_directory" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
+<dd><p>Libraries directory</p>
+</dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="DPB2scLibrary.DPB2scLibrary.read_gpio">
@@ -298,7 +311,8 @@ expected(float): Expected value.</p>
 <span class="sig-name descname"><span class="pre">result_should_be_within_tolerance_range</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">expected</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tolerance</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/DPB2scLibrary.html#DPB2scLibrary.result_should_be_within_tolerance_range"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#DPB2scLibrary.DPB2scLibrary.result_should_be_within_tolerance_range" title="Permalink to this definition"></a></dt>
 <dd><p>Check if value is within range</p>
 <p>Args:
-expected(float): Expected value.
+expected(float): Expected value.</p>
+<p>Args:
 tolerance(string): Expected tolerance with ‘%’.</p>
 </dd></dl>
 
@@ -315,9 +329,12 @@ eth_interface (string): Ethernet interface.</p>
 <span class="sig-name descname"><span class="pre">set_ams_alarms_limit</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">magnitude</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ev_dir</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">channel</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">value</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/DPB2scLibrary.html#DPB2scLibrary.set_ams_alarms_limit"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#DPB2scLibrary.DPB2scLibrary.set_ams_alarms_limit" title="Permalink to this definition"></a></dt>
 <dd><p>Set AMS alarm limit</p>
 <p>Args:
-channel (int): Desired channel to set limit.
-magnitude(string): Channel magnitude.
-ev_dir(string): Alarm direction.
+channel (int): Desired channel to set limit.</p>
+<p>Args:
+magnitude(string): Channel magnitude.</p>
+<p>Args:
+ev_dir(string): Alarm direction.</p>
+<p>Args:
 value(float): Value to set.</p>
 </dd></dl>
 
@@ -326,7 +343,8 @@ value(float): Value to set.</p>
 <span class="sig-name descname"><span class="pre">set_ethernet_link_status</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">eth_interface</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">value</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/DPB2scLibrary.html#DPB2scLibrary.set_ethernet_link_status"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#DPB2scLibrary.DPB2scLibrary.set_ethernet_link_status" title="Permalink to this definition"></a></dt>
 <dd><p>Set Ethernet interface status</p>
 <p>Args:
-eth_interface (string): Ethernet interface.
+eth_interface (string): Ethernet interface.</p>
+<p>Args:
 value (string): Status ON/OFF.</p>
 </dd></dl>
 
@@ -349,14 +367,16 @@ chip (string): Desired SFP TX Power.</p>
 <dl class="py attribute">
 <dt class="sig sig-object py" id="DPB2scLibrary.DPB2scLibrary.structure_i2c">
 <span class="sig-name descname"><span class="pre">structure_i2c</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">&lt;ctypesdata.DPB_I2cSensors</span> <span class="pre">object&gt;</span></em><a class="headerlink" href="#DPB2scLibrary.DPB2scLibrary.structure_i2c" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
+<dd><p>I2C Devices Structure</p>
+</dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="DPB2scLibrary.DPB2scLibrary.write_gpio">
 <span class="sig-name descname"><span class="pre">write_gpio</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pin_num</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">value</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/DPB2scLibrary.html#DPB2scLibrary.write_gpio"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#DPB2scLibrary.DPB2scLibrary.write_gpio" title="Permalink to this definition"></a></dt>
 <dd><p>Write GPIO</p>
 <p>Args:
-pin_num (int): Desired GPIO pin to write.
+pin_num (int): Desired GPIO pin to write.</p>
+<p>Args:
 value (int): Value to write.</p>
 </dd></dl>
 

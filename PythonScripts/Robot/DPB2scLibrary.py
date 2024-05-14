@@ -11,11 +11,13 @@ from robotremoteserver import RobotRemoteServer
 
 
 class DPB2scLibrary(object):
-    def _find_and_load_library(pattern, directory):
+    def find_and_load_library(pattern, directory):
         """Searches library in determiend directory and loads it for ctypes.
 
         Args:
         pattern (str): Name of the library.
+
+        Args:
         directory (str): Directory where the library is to be found.
         
         """ 
@@ -30,8 +32,14 @@ class DPB2scLibrary(object):
         return None
 
     library_directory = "/usr/lib"
+    """ Libraries directory
+    """ 
     function_defs = {}
+    """ Array of C functions in ctypes
+    """ 
     structure_i2c = DPB_I2cSensors()
+    """ I2C Devices Structure
+    """ 
     #########################################################
     # Initialization functions
     #########################################################
@@ -40,8 +48,8 @@ class DPB2scLibrary(object):
         
         """ 
         RobotRemoteServer(DPB2scLibrary(), *sys.argv[1:])
-        self._find_and_load_library(r'^libjson-c\.so', self.library_directory)
-        self._find_and_load_library(r'^libzmq\.so', self.library_directory)
+        self.find_and_load_library(r'^libjson-c\.so', self.library_directory)
+        self.find_and_load_library(r'^libzmq\.so', self.library_directory)
         self.dpb2sc = ctypes.CDLL("libdpb2sc.so")
         start_line = 0
         end_line = 0
@@ -113,7 +121,7 @@ class DPB2scLibrary(object):
         """ 
         self.GPIO_Base_Address = c_int.in_dll(self.dpb2sc, "GPIO_BASE_ADDRESS")
         self.dpb2sc.get_GPIO_base_address(byref(self.GPIO_Base_Address))
-    """This is a docstring."""
+
     #########################################################
     #Ethernet Links functions
     #########################################################
@@ -164,6 +172,8 @@ class DPB2scLibrary(object):
 
         Args:
         eth_interface (string): Ethernet interface.
+
+        Args:
         value (string): Status ON/OFF.
 
         """
@@ -335,6 +345,8 @@ class DPB2scLibrary(object):
 
         Args:
         pin_num (int): Desired GPIO pin to write.
+
+        Args:
         value (int): Value to write.
 
         """
@@ -374,8 +386,14 @@ class DPB2scLibrary(object):
 
         Args:
         channel (int): Desired channel to set limit.
+
+        Args:
         magnitude(string): Channel magnitude.
+
+        Args:
         ev_dir(string): Alarm direction.
+
+        Args:
         value(float): Value to set.
 
         """
@@ -430,6 +448,8 @@ class DPB2scLibrary(object):
 
         Args:
         expected(float): Expected value.
+        
+        Args:
         tolerance(string): Expected tolerance with '%'.
 
         """

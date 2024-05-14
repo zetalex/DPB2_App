@@ -82,11 +82,13 @@
 
 
 <div class="viewcode-block" id="DPB2scLibrary"><a class="viewcode-back" href="../DPB2scLibrary.html#DPB2scLibrary.DPB2scLibrary">[docs]</a><span class="k">class</span> <span class="nc">DPB2scLibrary</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
-    <span class="k">def</span> <span class="nf">_find_and_load_library</span><span class="p">(</span><span class="n">pattern</span><span class="p">,</span> <span class="n">directory</span><span class="p">):</span>
+<div class="viewcode-block" id="DPB2scLibrary.find_and_load_library"><a class="viewcode-back" href="../DPB2scLibrary.html#DPB2scLibrary.DPB2scLibrary.find_and_load_library">[docs]</a>    <span class="k">def</span> <span class="nf">find_and_load_library</span><span class="p">(</span><span class="n">pattern</span><span class="p">,</span> <span class="n">directory</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Searches library in determiend directory and loads it for ctypes.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">        pattern (str): Name of the library.</span>
+
+<span class="sd">        Args:</span>
 <span class="sd">        directory (str): Directory where the library is to be found.</span>
 <span class="sd">        </span>
 <span class="sd">        &quot;&quot;&quot;</span> 
@@ -98,11 +100,17 @@
                     <span class="k">return</span> <span class="n">ctypes</span><span class="o">.</span><span class="n">CDLL</span><span class="p">(</span><span class="n">file_path</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="n">RTLD_GLOBAL</span><span class="p">)</span>
                 <span class="k">except</span> <span class="ne">OSError</span><span class="p">:</span>
                     <span class="k">continue</span>
-        <span class="k">return</span> <span class="kc">None</span>
+        <span class="k">return</span> <span class="kc">None</span></div>
 
     <span class="n">library_directory</span> <span class="o">=</span> <span class="s2">&quot;/usr/lib&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot; Libraries directory</span>
+<span class="sd">    &quot;&quot;&quot;</span> 
     <span class="n">function_defs</span> <span class="o">=</span> <span class="p">{}</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot; Array of C functions in ctypes</span>
+<span class="sd">    &quot;&quot;&quot;</span> 
     <span class="n">structure_i2c</span> <span class="o">=</span> <span class="n">DPB_I2cSensors</span><span class="p">()</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot; I2C Devices Structure</span>
+<span class="sd">    &quot;&quot;&quot;</span> 
     <span class="c1">#########################################################</span>
     <span class="c1"># Initialization functions</span>
     <span class="c1">#########################################################</span>
@@ -111,8 +119,8 @@
 <span class="sd">        </span>
 <span class="sd">        &quot;&quot;&quot;</span> 
         <span class="n">RobotRemoteServer</span><span class="p">(</span><span class="n">DPB2scLibrary</span><span class="p">(),</span> <span class="o">*</span><span class="n">sys</span><span class="o">.</span><span class="n">argv</span><span class="p">[</span><span class="mi">1</span><span class="p">:])</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_find_and_load_library</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;^libjson-c\.so&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">library_directory</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_find_and_load_library</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;^libzmq\.so&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">library_directory</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">find_and_load_library</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;^libjson-c\.so&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">library_directory</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">find_and_load_library</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;^libzmq\.so&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">library_directory</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">dpb2sc</span> <span class="o">=</span> <span class="n">ctypes</span><span class="o">.</span><span class="n">CDLL</span><span class="p">(</span><span class="s2">&quot;libdpb2sc.so&quot;</span><span class="p">)</span>
         <span class="n">start_line</span> <span class="o">=</span> <span class="mi">0</span>
         <span class="n">end_line</span> <span class="o">=</span> <span class="mi">0</span>
@@ -184,7 +192,7 @@
 <span class="sd">        &quot;&quot;&quot;</span> 
         <span class="bp">self</span><span class="o">.</span><span class="n">GPIO_Base_Address</span> <span class="o">=</span> <span class="n">c_int</span><span class="o">.</span><span class="n">in_dll</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dpb2sc</span><span class="p">,</span> <span class="s2">&quot;GPIO_BASE_ADDRESS&quot;</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">dpb2sc</span><span class="o">.</span><span class="n">get_GPIO_base_address</span><span class="p">(</span><span class="n">byref</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">GPIO_Base_Address</span><span class="p">))</span></div>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;This is a docstring.&quot;&quot;&quot;</span>
+
     <span class="c1">#########################################################</span>
     <span class="c1">#Ethernet Links functions</span>
     <span class="c1">#########################################################</span>
@@ -235,6 +243,8 @@
 
 <span class="sd">        Args:</span>
 <span class="sd">        eth_interface (string): Ethernet interface.</span>
+
+<span class="sd">        Args:</span>
 <span class="sd">        value (string): Status ON/OFF.</span>
 
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -406,6 +416,8 @@
 
 <span class="sd">        Args:</span>
 <span class="sd">        pin_num (int): Desired GPIO pin to write.</span>
+
+<span class="sd">        Args:</span>
 <span class="sd">        value (int): Value to write.</span>
 
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -445,8 +457,14 @@
 
 <span class="sd">        Args:</span>
 <span class="sd">        channel (int): Desired channel to set limit.</span>
+
+<span class="sd">        Args:</span>
 <span class="sd">        magnitude(string): Channel magnitude.</span>
+
+<span class="sd">        Args:</span>
 <span class="sd">        ev_dir(string): Alarm direction.</span>
+
+<span class="sd">        Args:</span>
 <span class="sd">        value(float): Value to set.</span>
 
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -501,6 +519,8 @@
 
 <span class="sd">        Args:</span>
 <span class="sd">        expected(float): Expected value.</span>
+<span class="sd">        </span>
+<span class="sd">        Args:</span>
 <span class="sd">        tolerance(string): Expected tolerance with &#39;%&#39;.</span>
 
 <span class="sd">        &quot;&quot;&quot;</span>
