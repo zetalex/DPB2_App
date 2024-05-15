@@ -11,7 +11,7 @@ from robotremoteserver import RobotRemoteServer
 
 
 class DPB2scLibrary(object):
-    def find_and_load_library(pattern, directory):
+    def find_and_load_library(self,pattern, directory):
         """Searches library in determiend directory and loads it for ctypes.
 
         Args:
