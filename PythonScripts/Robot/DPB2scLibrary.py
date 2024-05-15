@@ -478,7 +478,7 @@ class DPB2scLibrary(object):
         expected(float): Expected value.
 
         """
-        if self._result.value != expected:
+        if self._result != expected:
             raise AssertionError('%s != %s' % (self._result, expected))
         
     def check_zmq_initialization(self):
