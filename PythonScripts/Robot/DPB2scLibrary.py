@@ -47,7 +47,6 @@ class DPB2scLibrary(object):
         """Initializes Remote Server, library and necessary resources of the DPB.
         
         """ 
-        RobotRemoteServer(DPB2scLibrary(), *sys.argv[1:])
         self.find_and_load_library(r'^libjson-c\.so', self.library_directory)
         self.find_and_load_library(r'^libzmq\.so', self.library_directory)
         self.dpb2sc = ctypes.CDLL("libdpb2sc.so")
@@ -664,4 +663,7 @@ class DPB2scLibrary(object):
         self.read_gpio(6+i)
         if (status & 0x80) and (self._result != 1):
             raise AssertionError('GPIO Pin TX_Disable value (%s) of SFP%s does not match I2C register value' % (self._result, i))
+        
+if __name__ == '__main__':
+    RobotRemoteServer(DPB2scLibrary(), *sys.argv[1:])
     
