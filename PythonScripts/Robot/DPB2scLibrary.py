@@ -99,7 +99,13 @@ class DPB2scLibrary(object):
                             'argtypes': argtypes,
                             'restype': ctype_map[return_type]
                         }
-        fp.close()    
+        fp.close()
+
+    def __del__(self):
+        """Destroys class
+        """ 
+        self.dpb2sc.sighandler(ctypes.c_int(15))
+
     def initialize_zmq_ethernet_sockets (self):
         """Initializes DPB ZMQ sockets.
         """ 
@@ -115,7 +121,7 @@ class DPB2scLibrary(object):
     def initialize_iio_event_monitor (self):
         """Initializes DPB IIO Event Monitor.
         """ 
-        self._iio_rc = self.dpb2sc.iio_event_monitor_up()
+        self.dpb2sc.iio_event_monitor_up()
     def get_gpio_base_address (self):
         """Gets DPB GPIO Base Address.
         """ 
@@ -228,7 +234,7 @@ class DPB2scLibrary(object):
             c_chip = c_int(2)
             channel = 2
         self.dpb2sc.ina3221_get_voltage(byref(self.structure_i2c),c_chip,float_ptr)
-        self._result = float_array[channel]
+        self._result = float_array[channel].value
 
     def get_bus_current (self,chip):
         """Get Bus Current
@@ -268,7 +274,7 @@ class DPB2scLibrary(object):
             c_chip = c_int(2)
             channel = 2
         self.dpb2sc.ina3221_get_current(byref(self.structure_i2c),c_chip,float_ptr)
-        self._result = float_array[channel]
+        self._result = float_array[channel].value
 
 
     #########################################################
@@ -297,7 +303,7 @@ class DPB2scLibrary(object):
         elif chip == "SFP5": 
             c_chip = c_int(5)
         self.dpb2sc.sfp_avago_read_tx_av_optical_pwr(byref(self.structure_i2c),c_chip,float_ptr)
-        self._result = float_array[0]
+        self._result = float_array[0].value
 
     def sfp_rx_power (self,chip):
         """Get SFP RX Power
@@ -322,7 +328,7 @@ class DPB2scLibrary(object):
         elif chip == "SFP5": 
             c_chip = c_int(5)
         self.dpb2sc.sfp_avago_read_rx_av_optical_pwr(byref(self.structure_i2c),c_chip,float_ptr)
-        self._result = float_array[0]
+        self._result = float_array[0].value
 
     #########################################################
     #GPIO functions
@@ -335,10 +341,13 @@ class DPB2scLibrary(object):
         pin_num (int): Desired GPIO pin to read
 
         """
-        gpio_result = POINTER(c_int)
+        Int_pointer = POINTER(c_int)
+        int_array = (ctypes.c_int * 1)
+        int_ptr = ctypes.cast(int_array, Int_pointer)
+
         c_pin_num = c_int(pin_num)
-        self.dpb2sc.read_gpio(c_pin_num,gpio_result)
-        self._result = gpio_result.value
+        self.dpb2sc.read_GPIO(c_pin_num,int_ptr)
+        self._result = int_array[0].value
     
     def write_gpio (self, pin_num, value):
         """Write GPIO
@@ -357,7 +366,7 @@ class DPB2scLibrary(object):
         elif value == "OFF": 
             c_value = c_int(0)
         c_pin_num = c_int(pin_num)
-        self.dpb2sc.write_gpio(c_pin_num,c_value)
+        self.dpb2sc.write_GPIO(c_pin_num,c_value)
 
     #########################################################
     #AMS functions
@@ -379,7 +388,7 @@ class DPB2scLibrary(object):
         int_ptr = ctypes.cast(int_array, IntPointer)
 
         self.dpb2sc.xlnx_ams_read_volt(int_ptr,c_int(1),float_ptr)
-        self._result = float_array[0]
+        self._result = float_array[0].value
 
     def set_ams_alarms_limit (self,magnitude,ev_dir,channel,value):
         """Set AMS alarm limit
@@ -469,7 +478,7 @@ class DPB2scLibrary(object):
         expected(float): Expected value.
 
         """
-        if self._result != expected:
+        if self._result.value != expected:
             raise AssertionError('%s != %s' % (self._result, expected))
         
     def check_zmq_initialization(self):
@@ -514,7 +523,7 @@ class DPB2scLibrary(object):
         """Check GPIO Base Address is correct
 
         """
-        if self.GPIO_Base_Address != 412:
+        if self.GPIO_Base_Address.value != 412:
             raise AssertionError('GPIO Base Address :%s != %s' % (self.GPIO_Base_Address, 412)) 
         
     def check_valid_command(self):
