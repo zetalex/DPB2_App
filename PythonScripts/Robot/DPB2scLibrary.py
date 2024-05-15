@@ -676,7 +676,7 @@ class DPB2scLibrary(object):
                 raise AssertionError('Failed to run IIO Event Monitor')
 
         except Exception as e:
-            print(f"FAiled to execute command {e}")
+            print(f"Failed to execute command {e}")
             return 0
         
 if __name__ == '__main__':
