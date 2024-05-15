@@ -6,6 +6,7 @@ import os
 import zmq
 import sys
 import json
+import subprocess
 from robot.api import logger
 from robotremoteserver import RobotRemoteServer
 
@@ -108,7 +109,7 @@ class DPB2scLibrary(object):
         """ 
         self.context = zmq.Context()
         self.socket = self.context.socket(zmq.SUB)
-        self.socket.bind("tcp://127.0.0.1:5556")
+        self.socket.connect("tcp://127.0.0.1:5556")
         self.socket.setsockopt_string(zmq.SUBSCRIBE, "")  
         self.dpb2sc.init_I2cSensors(byref(self.structure_i2c))
     def initialize_iio_event_monitor (self):
@@ -550,7 +551,7 @@ class DPB2scLibrary(object):
         """
         self.context = zmq.Context()
         self.socket = self.context.socket(zmq.SUB)
-        self.socket.bind("tcp://127.0.0.1:5556")
+        self.socket.connect("tcp://127.0.0.1:5556")
         self.socket.setsockopt_string(zmq.SUBSCRIBE, "")
 
         if eth_interface == "Main" :
@@ -663,6 +664,20 @@ class DPB2scLibrary(object):
         self.read_gpio(6+i)
         if (status & 0x80) and (self._result != 1):
             raise AssertionError('GPIO Pin TX_Disable value (%s) of SFP%s does not match I2C register value' % (self._result, i))
+        
+    def check_iio_monitor(self):
+    # Ejecuta el comando top -b -n 1 y captura la salida
+        try:
+            result = subprocess.run(['top', '-b', '-n', '1'], stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+            output = result.stdout
+
+            # Busca la expresión IIO_MONITOR en la salida utilizando una expresión regular
+            if not re.search(r'IIO_MONITOR -a /dev/iio:device0', output):
+                raise AssertionError('Failed to run IIO Event Monitor')
+
+        except Exception as e:
+            print(f"FAiled to execute command {e}")
+            return 0
         
 if __name__ == '__main__':
     RobotRemoteServer(DPB2scLibrary(), *sys.argv[1:])
