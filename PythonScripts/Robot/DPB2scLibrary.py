@@ -150,13 +150,14 @@ class DPB2scLibrary(object):
                 word1 = 'iperf Done'
                 if row.find(word1) != -1:
                     aux = 1 
+                    fp.seek(0)
                     file_str = fp.read() 
         fp.close()
         os.system('rm /home/petalinux/log.txt')
         if aux == 0:
             raise AssertionError("Iperf3 could not be performed")
         elif aux == 1:
-            logger.info(file_str)
+            print(file_str)
 
     def select_active_ethernet_interface(self,eth_interface):
         """Select active Ethernet interface
@@ -165,12 +166,30 @@ class DPB2scLibrary(object):
         eth_interface (string): Ethernet interface.
 
         """
+        cmd = "cat /sys/devices/virtual/net/daq-bond/bonding/active_slave > /home/petalinux/temp.txt"
+        rm_cmd = "rm /home/petalinux/temp.txt"
         str = 'echo /sys/devices/virtual/net/daq-bond/bonding/active_slave > '
         if eth_interface == "Main":
             str += "eth0"
+            os.system(str)
+            os.system(cmd)
+            with open(r'/home/petalinux/temp.txt', 'r') as fp:
+                eth_int = fp.read
+            fp.close
+            os.system(rm_cmd)
+            if not eth_int == "eth0":
+                raise AssertionError("Active Ethernet interface selection failed")
         elif eth_interface == "Backup":
             str += "eth1"
-        os.system(str)
+            os.system(str)
+            os.system(cmd)
+            with open(r'/home/petalinux/temp.txt', 'r') as fp:
+                eth_int = fp.read
+            fp.close
+            os.system(rm_cmd)
+            if not eth_int == "eth1":
+                raise AssertionError("Active Ethernet interface selection failed")
+        
     
 
     def set_ethernet_link_status (self,eth_interface,value):
@@ -184,14 +203,14 @@ class DPB2scLibrary(object):
 
         """
         if eth_interface == "Main":
-            c_eth_interface = c_char_p("eth0")
+            c_eth_interface = c_char_p(b"eth0")
         elif eth_interface == "Backup": 
-            c_eth_interface = c_char_p("eth1")
+            c_eth_interface = c_char_p(b"eth1")
         if value == "ON":
             c_value = c_int(1)
         elif value == "OFF": 
             c_value = c_int(0)
-        self.dpb2sc.eth_link_status_config(c_eth_interface,c_value)
+        self.dpb2sc.eth_link_status_config(byref(c_eth_interface),c_value)
 
     #########################################################
     #INA3221 functions
@@ -407,16 +426,16 @@ class DPB2scLibrary(object):
 
         """
         if magnitude == "Temperature":
-            c_magnitude = c_char_p("temp")
+            c_magnitude = c_char_p(b"temp")
         elif magnitude == "Voltage": 
-            c_magnitude = c_char_p("voltage")
+            c_magnitude = c_char_p(b"voltage")
 
         if ev_dir == "Upper":
-            c_ev_dir = c_char_p("rising")
+            c_ev_dir = c_char_p(b"rising")
         elif ev_dir == "Lower": 
-            c_ev_dir = c_char_p("falling")
+            c_ev_dir = c_char_p(b"falling")
 
-        self.dpb2sc.xlnx_ams_set_limits(c_int(channel),c_ev_dir,c_magnitude,c_float(value))
+        self.dpb2sc.xlnx_ams_set_limits(c_int(channel),byref(c_ev_dir),byref(c_magnitude),c_float(value))
 
     #########################################################
     #Command functions
@@ -465,8 +484,8 @@ class DPB2scLibrary(object):
 
         tolerance_decimal = float(tolerance.strip('%')) / 100.0
 
-        lower_bound = expected * (1 - tolerance_decimal)
-        upper_bound = expected * (1 + tolerance_decimal)
+        lower_bound = float(expected) * (1 - tolerance_decimal)
+        upper_bound = float(expected) * (1 + tolerance_decimal)
 
         if not (lower_bound <= self._result <= upper_bound):
             raise AssertionError('%s is not within the range [%s, %s]' % (self._result, lower_bound, upper_bound))
@@ -478,7 +497,7 @@ class DPB2scLibrary(object):
         expected(float): Expected value.
 
         """
-        if self._result != expected:
+        if self._result != float(expected):
             raise AssertionError('%s != %s' % (self._result, expected))
         
     def check_zmq_initialization(self):
@@ -551,6 +570,29 @@ class DPB2scLibrary(object):
         if not re.search(r'\bERROR: Command not valid\b', self.cmd_msg_value, re.IGNORECASE):
             raise AssertionError(f"An expected error was not found in the command reply: {self.cmd_msg_value}")
         
+    def get_ethernet_rx_link_status(self,eth_interface):
+        """Forces and check Ethernet alarm triggered
+
+        Args:
+        eth_interface(string): Ethernet interface used to check status.
+
+        """
+        Int_pointer = POINTER(c_int)
+        int_array = (ctypes.c_int * 1) (0)
+        int_ptr = ctypes.cast(int_array, Int_pointer)
+
+        if eth_interface == "Main" :
+            c_interface = c_char_p(b"eth0")
+        elif eth_interface == "Backup":
+            c_interface = c_char_p(b"eth1")
+
+        self.set_ethernet_link_status(eth_interface,"ON")
+        self.dpb2sc.eth_link_status(byref(c_interface) ,int_ptr)
+        if int_ptr[0] == 0:
+            return "OFF"
+        else:
+            return "ON"
+        
     def check_ethernet_alarm(self,eth_interface):
         """Forces and check Ethernet alarm triggered
 
@@ -564,17 +606,17 @@ class DPB2scLibrary(object):
         self.socket.setsockopt_string(zmq.SUBSCRIBE, "")
 
         if eth_interface == "Main" :
-            c_interface = c_char_p("eth0")
+            c_interface = c_char_p(b"eth0")
             c_flag = "eth0_flag"
         elif eth_interface == "Backup":
-            c_interface = c_char_p("eth1")
+            c_interface = c_char_p(b"eth1")
             c_flag = "eth1_flag"
 
         ethernet_flag = c_int.in_dll(self.dpb2sc, c_flag)
         self.set_ethernet_link_status(eth_interface,"ON")
-        self.dpb2sc.eth_down_alarm(c_interface ,byref(ethernet_flag))
+        self.dpb2sc.eth_down_alarm(byref(c_interface) ,byref(ethernet_flag))
         self.set_ethernet_link_status(eth_interface,"OFF")
-        self.dpb2sc.eth_down_alarm(c_interface ,byref(ethernet_flag))
+        self.dpb2sc.eth_down_alarm(byref(c_interface) ,byref(ethernet_flag))
 
         mensaje = self.socket.recv_string(flags=zmq.NOBLOCK)
         mensaje_json = json.loads(mensaje)
