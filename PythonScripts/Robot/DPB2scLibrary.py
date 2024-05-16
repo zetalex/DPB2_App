@@ -6,6 +6,7 @@ import os
 import zmq
 import sys
 import json
+import time
 import subprocess
 from robot.api import logger
 from robotremoteserver import RobotRemoteServer
@@ -105,6 +106,8 @@ class DPB2scLibrary(object):
         """Destroys class
         """ 
         self.dpb2sc.sighandler(ctypes.c_int(15))
+        self.set_ethernet_link_status("Main","ON")
+        self.set_ethernet_link_status("Backup","ON")
 
     def initialize_zmq_ethernet_sockets (self):
         """Initializes DPB ZMQ sockets.
@@ -174,8 +177,8 @@ class DPB2scLibrary(object):
             os.system(str)
             os.system(cmd)
             with open(r'/home/petalinux/temp.txt', 'r') as fp:
-                eth_int = fp.read
-            fp.close
+                eth_int = fp.read()
+            fp.close()
             os.system(rm_cmd)
             if not eth_int == "eth0":
                 raise AssertionError("Active Ethernet interface selection failed")
@@ -184,8 +187,8 @@ class DPB2scLibrary(object):
             os.system(str)
             os.system(cmd)
             with open(r'/home/petalinux/temp.txt', 'r') as fp:
-                eth_int = fp.read
-            fp.close
+                eth_int = fp.read()
+            fp.close()
             os.system(rm_cmd)
             if not eth_int == "eth1":
                 raise AssertionError("Active Ethernet interface selection failed")
@@ -210,7 +213,8 @@ class DPB2scLibrary(object):
             c_value = c_int(1)
         elif value == "OFF": 
             c_value = c_int(0)
-        self.dpb2sc.eth_link_status_config(byref(c_eth_interface),c_value)
+        self.dpb2sc.eth_link_status_config(c_eth_interface,c_value)
+        time.sleep(2)
 
     #########################################################
     #INA3221 functions
@@ -313,32 +317,32 @@ class DPB2scLibrary(object):
             c_chip = c_int(0)
             sfp_connected = c_int.in_dll(self.dpb2sc, "sfp0_connected")
             if sfp_connected.value != 1:
-                raise AssertionError('SFP%s not available = %s' % (0))
+                raise AssertionError('SFP%s not available' % (0))
         elif chip == "SFP1": 
             c_chip = c_int(1)
             sfp_connected = c_int.in_dll(self.dpb2sc, "sfp1_connected")
             if sfp_connected.value != 1:
-                raise AssertionError('SFP%s not available = %s' % (1))
+                raise AssertionError('SFP%s not available' % (1))
         elif chip == "SFP2": 
             c_chip = c_int(2)
             sfp_connected = c_int.in_dll(self.dpb2sc, "sfp2_connected")
             if sfp_connected.value != 1:
-                raise AssertionError('SFP%s not available = %s' % (2))
+                raise AssertionError('SFP%s not available' % (2))
         elif chip == "SFP3": 
             c_chip = c_int(3)
             sfp_connected = c_int.in_dll(self.dpb2sc, "sfp3_connected")
             if sfp_connected.value != 1:
-                raise AssertionError('SFP%s not available = %s' % (3))
+                raise AssertionError('SFP%s not available' % (3))
         elif chip == "SFP4": 
             c_chip = c_int(4)
             sfp_connected = c_int.in_dll(self.dpb2sc, "sfp4_connected")
             if sfp_connected.value != 1:
-                raise AssertionError('SFP%s not available = %s' % (4))
+                raise AssertionError('SFP%s not available' % (4))
         elif chip == "SFP5": 
             c_chip = c_int(5)
             sfp_connected = c_int.in_dll(self.dpb2sc, "sfp5_connected")
             if sfp_connected.value != 1:
-                raise AssertionError('SFP%s not available = %s' % (5))
+                raise AssertionError('SFP%s not available' % (5))
         self.dpb2sc.sfp_avago_read_tx_av_optical_pwr(byref(self.structure_i2c),c_chip,float_ptr)
         self._result = float_array[0]
 
@@ -356,32 +360,32 @@ class DPB2scLibrary(object):
             c_chip = c_int(0)
             sfp_connected = c_int.in_dll(self.dpb2sc, "sfp0_connected")
             if sfp_connected.value != 1:
-                raise AssertionError('SFP%s not available = %s' % (0))
+                raise AssertionError('SFP%s not available' % (0))
         elif chip == "SFP1": 
             c_chip = c_int(1)
             sfp_connected = c_int.in_dll(self.dpb2sc, "sfp1_connected")
             if sfp_connected.value != 1:
-                raise AssertionError('SFP%s not available = %s' % (1))
+                raise AssertionError('SFP%s not available' % (1))
         elif chip == "SFP2": 
             c_chip = c_int(2)
             sfp_connected = c_int.in_dll(self.dpb2sc, "sfp2_connected")
             if sfp_connected.value != 1:
-                raise AssertionError('SFP%s not available = %s' % (2))
+                raise AssertionError('SFP%s not available' % (2))
         elif chip == "SFP3": 
             c_chip = c_int(3)
             sfp_connected = c_int.in_dll(self.dpb2sc, "sfp3_connected")
             if sfp_connected.value != 1:
-                raise AssertionError('SFP%s not available = %s' % (3))
+                raise AssertionError('SFP%s not available' % (3))
         elif chip == "SFP4": 
             c_chip = c_int(4)
             sfp_connected = c_int.in_dll(self.dpb2sc, "sfp4_connected")
             if sfp_connected.value != 1:
-                raise AssertionError('SFP%s not available = %s' % (4))
+                raise AssertionError('SFP%s not available' % (4))
         elif chip == "SFP5": 
             c_chip = c_int(5)
             sfp_connected = c_int.in_dll(self.dpb2sc, "sfp5_connected")
             if sfp_connected.value != 1:
-                raise AssertionError('SFP%s not available = %s' % (5))
+                raise AssertionError('SFP%s not available' % (5))
         self.dpb2sc.sfp_avago_read_rx_av_optical_pwr(byref(self.structure_i2c),c_chip,float_ptr)
         self._result = float_array[0]
 
@@ -613,21 +617,19 @@ class DPB2scLibrary(object):
         eth_interface(string): Ethernet interface used to check status.
 
         """
-        Int_pointer = POINTER(c_int)
-        int_array = (ctypes.c_int * 1) (0)
-        int_ptr = ctypes.cast(int_array, Int_pointer)
-
         if eth_interface == "Main" :
-            c_interface = c_char_p(b"eth0")
+            os.system("ethtool eth0 | grep 'Link detected' >> /home/petalinux/eth_temp.txt")
         elif eth_interface == "Backup":
-            c_interface = c_char_p(b"eth1")
-
-        self.set_ethernet_link_status(eth_interface,"ON")
-        self.dpb2sc.eth_link_status(byref(c_interface) ,int_ptr)
-        if int_ptr[0] == 0:
-            return "OFF"
+            os.system("ethtool eth1 | grep 'Link detected' >> /home/petalinux/eth_temp.txt")
+        with open(r'/home/petalinux/eth_temp.txt', 'r') as fp:
+            eth_status = fp.read()
+        fp.close
+        os.system("rm /home/petalinux/eth_temp.txt")
+        print(type(eth_status))
+        if re.search(r'\byes\b', eth_status, re.IGNORECASE):
+            return b"ON"
         else:
-            return "ON"
+            return b"OFF"
         
     def check_ethernet_alarm(self,eth_interface):
         """Forces and check Ethernet alarm triggered
@@ -650,9 +652,9 @@ class DPB2scLibrary(object):
 
         ethernet_flag = c_int.in_dll(self.dpb2sc, c_flag)
         self.set_ethernet_link_status(eth_interface,"ON")
-        self.dpb2sc.eth_down_alarm(byref(c_interface) ,byref(ethernet_flag))
+        self.dpb2sc.eth_down_alarm(c_interface ,byref(ethernet_flag))
         self.set_ethernet_link_status(eth_interface,"OFF")
-        self.dpb2sc.eth_down_alarm(byref(c_interface) ,byref(ethernet_flag))
+        self.dpb2sc.eth_down_alarm(c_interface ,byref(ethernet_flag))
 
         mensaje = self.socket.recv_string(flags=zmq.NOBLOCK)
         mensaje_json = json.loads(mensaje)
