@@ -1,0 +1,80 @@
+.TH "wrapper" 3 "Version 1.0.0" "DPB2 App Documentation" \" -*- nroff -*-
+.ad l
+.nh
+.SH NAME
+wrapper \- Shared Memory content\&.  
+
+.SH SYNOPSIS
+.br
+.PP
+.PP
+\fR#include <constants\&.h>\fP
+.SS "Data Fields"
+
+.in +1c
+.ti -1c
+.RI "char \fBev_type\fP [8]"
+.br
+.RI "Catched event type\&. "
+.ti -1c
+.RI "char \fBch_type\fP [16]"
+.br
+.RI "Catched channel type\&. "
+.ti -1c
+.RI "int \fBchn\fP"
+.br
+.RI "Catched channel\&. "
+.ti -1c
+.RI "__s64 \fBtmpstmp\fP"
+.br
+.RI "Catched event timestamp\&. "
+.ti -1c
+.RI "sem_t \fBempty\fP"
+.br
+.RI "Semaphore that indicates there is no event catched\&. "
+.ti -1c
+.RI "sem_t \fBfull\fP"
+.br
+.RI "Semaphore that indicates event has been catched\&. "
+.ti -1c
+.RI "sem_t \fBams_sync\fP"
+.br
+.RI "Semaphore to synchronize IIO Event monitor with main application\&. "
+.in -1c
+.SH "Detailed Description"
+.PP 
+Shared Memory content\&. 
+.SH "Field Documentation"
+.PP 
+.SS "sem_t ams_sync"
+
+.PP
+Semaphore to synchronize IIO Event monitor with main application\&. 
+.SS "char ch_type[16]"
+
+.PP
+Catched channel type\&. 
+.SS "int chn"
+
+.PP
+Catched channel\&. 
+.SS "sem_t empty"
+
+.PP
+Semaphore that indicates there is no event catched\&. 
+.SS "char ev_type[8]"
+
+.PP
+Catched event type\&. 
+.SS "sem_t full"
+
+.PP
+Semaphore that indicates event has been catched\&. 
+.SS "__s64 tmpstmp"
+
+.PP
+Catched event timestamp\&. 
+
+.SH "Author"
+.PP 
+Generated automatically by Doxygen for DPB2 App Documentation from the source code\&.

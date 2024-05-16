@@ -1,0 +1,182 @@
+.TH "GPIO" 3 "Version 1.0.0" "DPB2 App Documentation" \" -*- nroff -*-
+.ad l
+.nh
+.SH NAME
+GPIO \- GPIO pins
+.SH SYNOPSIS
+.br
+.PP
+.SS "Macros"
+
+.in +1c
+.ti -1c
+.RI "#define \fBGPIO_PINS_SIZE\fP   22"
+.br
+.RI "Number of GPIO pins used\&. "
+.ti -1c
+.RI "#define \fBDIG0_MAIN_AURORA_LINK\fP   40"
+.br
+.RI "GPIO pins definition\&. "
+.ti -1c
+.RI "#define \fBDIG0_BACKUP_AURORA_LINK\fP   41"
+.br
+.ti -1c
+.RI "#define \fBDIG1_MAIN_AURORA_LINK\fP   42"
+.br
+.ti -1c
+.RI "#define \fBDIG1_BACKUP_AURORA_LINK\fP   43"
+.br
+.ti -1c
+.RI "#define \fBSFP0_PWR_ENA\fP   0"
+.br
+.ti -1c
+.RI "#define \fBSFP1_PWR_ENA\fP   1"
+.br
+.ti -1c
+.RI "#define \fBSFP2_PWR_ENA\fP   2"
+.br
+.ti -1c
+.RI "#define \fBSFP3_PWR_ENA\fP   3"
+.br
+.ti -1c
+.RI "#define \fBSFP4_PWR_ENA\fP   4"
+.br
+.ti -1c
+.RI "#define \fBSFP5_PWR_ENA\fP   5"
+.br
+.ti -1c
+.RI "#define \fBSFP0_TX_DIS\fP   6"
+.br
+.ti -1c
+.RI "#define \fBSFP1_TX_DIS\fP   7"
+.br
+.ti -1c
+.RI "#define \fBSFP2_TX_DIS\fP   8"
+.br
+.ti -1c
+.RI "#define \fBSFP3_TX_DIS\fP   9"
+.br
+.ti -1c
+.RI "#define \fBSFP4_TX_DIS\fP   10"
+.br
+.ti -1c
+.RI "#define \fBSFP5_TX_DIS\fP   11"
+.br
+.ti -1c
+.RI "#define \fBSFP0_RX_LOS\fP   14"
+.br
+.ti -1c
+.RI "#define \fBSFP1_RX_LOS\fP   18"
+.br
+.ti -1c
+.RI "#define \fBSFP2_RX_LOS\fP   22"
+.br
+.ti -1c
+.RI "#define \fBSFP3_RX_LOS\fP   26"
+.br
+.ti -1c
+.RI "#define \fBSFP4_RX_LOS\fP   30"
+.br
+.ti -1c
+.RI "#define \fBSFP5_RX_LOS\fP   34"
+.br
+.in -1c
+.SS "Variables"
+
+.in +1c
+.ti -1c
+.RI "const int \fBGPIO_PINS\fP [\fBGPIO_PINS_SIZE\fP]"
+.br
+.RI "GPIO pins list\&. "
+.in -1c
+.SH "Detailed Description"
+.PP 
+GPIO pins definition 
+.SH "Macro Definition Documentation"
+.PP 
+.SS "#define DIG0_BACKUP_AURORA_LINK   41"
+
+.SS "#define DIG0_MAIN_AURORA_LINK   40"
+
+.PP
+GPIO pins definition\&. 
+.SS "#define DIG1_BACKUP_AURORA_LINK   43"
+
+.SS "#define DIG1_MAIN_AURORA_LINK   42"
+
+.SS "#define GPIO_PINS_SIZE   22"
+
+.PP
+Number of GPIO pins used\&. 
+.SS "#define SFP0_PWR_ENA   0"
+
+.SS "#define SFP0_RX_LOS   14"
+
+.SS "#define SFP0_TX_DIS   6"
+
+.SS "#define SFP1_PWR_ENA   1"
+
+.SS "#define SFP1_RX_LOS   18"
+
+.SS "#define SFP1_TX_DIS   7"
+
+.SS "#define SFP2_PWR_ENA   2"
+
+.SS "#define SFP2_RX_LOS   22"
+
+.SS "#define SFP2_TX_DIS   8"
+
+.SS "#define SFP3_PWR_ENA   3"
+
+.SS "#define SFP3_RX_LOS   26"
+
+.SS "#define SFP3_TX_DIS   9"
+
+.SS "#define SFP4_PWR_ENA   4"
+
+.SS "#define SFP4_RX_LOS   30"
+
+.SS "#define SFP4_TX_DIS   10"
+
+.SS "#define SFP5_PWR_ENA   5"
+
+.SS "#define SFP5_RX_LOS   34"
+
+.SS "#define SFP5_TX_DIS   11"
+
+.SH "Variable Documentation"
+.PP 
+.SS "const int GPIO_PINS[\fBGPIO_PINS_SIZE\fP]"
+\fBInitial value:\fP.PP
+.nf
+= {
+    DIG0_MAIN_AURORA_LINK,
+    DIG0_BACKUP_AURORA_LINK,
+    DIG1_MAIN_AURORA_LINK,
+    DIG1_BACKUP_AURORA_LINK,
+    SFP0_PWR_ENA,
+    SFP1_PWR_ENA,
+    SFP2_PWR_ENA,
+    SFP3_PWR_ENA,
+    SFP4_PWR_ENA,
+    SFP5_PWR_ENA,
+    SFP0_TX_DIS, 
+    SFP1_TX_DIS, 
+    SFP2_TX_DIS, 
+    SFP3_TX_DIS, 
+    SFP4_TX_DIS, 
+    SFP5_TX_DIS, 
+    SFP0_RX_LOS, 
+    SFP1_RX_LOS, 
+    SFP2_RX_LOS, 
+    SFP3_RX_LOS, 
+    SFP4_RX_LOS, 
+    SFP5_RX_LOS
+}
+.fi
+
+.PP
+GPIO pins list\&. 
+.SH "Author"
+.PP 
+Generated automatically by Doxygen for DPB2 App Documentation from the source code\&.

@@ -1,0 +1,42 @@
+.TH "timer.c" 3 "Version 1.0.0" "DPB2 App Documentation" \" -*- nroff -*-
+.ad l
+.nh
+.SH NAME
+timer.c
+.SH SYNOPSIS
+.br
+.PP
+\fR#include <stdio\&.h>\fP
+.br
+\fR#include <signal\&.h>\fP
+.br
+\fR#include <errno\&.h>\fP
+.br
+\fR#include <time\&.h>\fP
+.br
+\fR#include <pthread\&.h>\fP
+.br
+\fR#include 'timer\&.h'\fP
+.br
+\fR#include <unistd\&.h>\fP
+.br
+
+.SS "Functions"
+
+.in +1c
+.ti -1c
+.RI "int \fBmake_periodic\fP (int unsigned period, struct \fBperiodic_info\fP *info)"
+.br
+.ti -1c
+.RI "void \fBwait_period\fP (struct \fBperiodic_info\fP *info)"
+.br
+.in -1c
+.SH "Function Documentation"
+.PP 
+.SS "int make_periodic (int unsigned period, struct \fBperiodic_info\fP * info)"
+
+.SS "void wait_period (struct \fBperiodic_info\fP * info)"
+
+.SH "Author"
+.PP 
+Generated automatically by Doxygen for DPB2 App Documentation from the source code\&.

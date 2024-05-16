@@ -1,6 +1,6 @@
 var searchData=
 [
-  ['main_0',['main',['../helloworld_8c.html#ae66f6b31b5ad750f1fe042a706a4e3d4',1,'main():&#160;helloworld.c'],['../main_8c.html#ae66f6b31b5ad750f1fe042a706a4e3d4',1,'main():&#160;main.c']]],
+  ['main_0',['main',['../main_8c.html#ae66f6b31b5ad750f1fe042a706a4e3d4',1,'main.c']]],
   ['main_2ec_1',['main.c',['../main_8c.html',1,'']]],
   ['make_5fperiodic_2',['make_periodic',['../timer_8c.html#a011f0be95c8fc6074964582116b9c772',1,'make_periodic(int unsigned period, struct periodic_info *info):&#160;timer.c'],['../timer_8h.html#a011f0be95c8fc6074964582116b9c772',1,'make_periodic(int unsigned period, struct periodic_info *info):&#160;timer.c']]],
   ['masks_3',['SFP Alarms Masks',['../group___s_f_p___masks.html',1,'']]],

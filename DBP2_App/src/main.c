@@ -487,7 +487,7 @@ int xlnx_ams_set_limits(int chan, char *ev_type, char *ch_type, float val){
  *
  * @param DPB_I2cSensors *data; struct which contains every I2C sensor available
  *
- * @return Negative integer if initialization fails.If not, returns 0 every I2C sensor initialized.
+ * @return 0 and every I2C sensor initialized.
  */
 int init_I2cSensors(struct DPB_I2cSensors *data){
 
@@ -647,13 +647,11 @@ int init_I2cSensors(struct DPB_I2cSensors *data){
 	rc = mcp9844_set_limits(data,0,60);
 	if (rc) {
 		printf("Failed to set MCP9844 Upper Limit\r\n");
-		return rc;
 	}
 
 	rc = mcp9844_set_limits(data,2,80);
 	if (rc) {
 		printf("Failed to set MCP9844 Critical Limit\r\n");
-		return rc;
 	}
 
 	return 0;
@@ -1713,8 +1711,8 @@ int ina3221_get_current(struct DPB_I2cSensors *data,int n, float *res){
  * Handles INA3221 Voltage and Current Sensor critical alarm interruptions
  *
  * @param struct DPB_I2cSensors *data: being the corresponding I2C device INA3221 Voltage and Current Sensor
- * @param uint16_t mask contains critical alarm flags
- * @param int n indicate from which of the 3 INA3221 is dealing with
+ * @param uint16_t mask: contains critical alarm flags
+ * @param int n: indicate from which of the 3 INA3221 is dealing with
  *
  * @return 0 and handles interruption depending on the active alarms flags
  */
@@ -2530,7 +2528,6 @@ int read_GPIO(int address,int *value){
     fd1 = fopen(dir_add,"w");
     if(fd1 == NULL){
         sem_post(&file_sync);
-        printf("NO he podido abrir\n");
         return -EINVAL;
     }
     fwrite(dir, sizeof(dir), 1,fd1);
@@ -2539,7 +2536,6 @@ int read_GPIO(int address,int *value){
     GPIO_val = fopen(val_add,"r");
     if(GPIO_val == NULL){
         sem_post(&file_sync);
-        printf("NO he podido abrir2\n");
         return -EINVAL;
     }
 	fseek(GPIO_val, 0, SEEK_END);
@@ -2567,7 +2563,7 @@ int read_GPIO(int address,int *value){
 /**
  * Unexport possible remaining GPIO files when terminating app
  *
- * @return
+ * @return NULL
  */
 void unexport_GPIO(){
 
@@ -3193,7 +3189,7 @@ void sighandler(int signum) {
  *
  * @param char *uuid: String where UUID is stored
  *
- * @return 0 ans stores the UUID gnerated
+ * @return 0 and stores the UUID generated
  */
 int gen_uuid(char *uuid) {
     char v[] = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f'};

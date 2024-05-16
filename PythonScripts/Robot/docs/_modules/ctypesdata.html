@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ctypesdata &mdash; DPB2scLibrary 0.0.1 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=19f00094" />
+      <link rel="stylesheet" type="text/css" href="../_static/./_static/custom.css" />
+
+  
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="../_static/jquery.js?v=5d32c60e"></script>
+        <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js?v=f6245a2f"></script>
+        <script src="../_static/doctools.js?v=888ff710"></script>
+        <script src="../_static/sphinx_highlight.js?v=4825356b"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            DPB2scLibrary
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <!-- Local TOC -->
+              <div class="local-toc"></div>
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">DPB2scLibrary</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="index.html">Module code</a></li>
+      <li class="breadcrumb-item active">ctypesdata</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for ctypesdata</h1><div class="highlight"><pre>
+<span></span><span class="kn">from</span> <span class="nn">ctypes</span> <span class="kn">import</span> <span class="o">*</span>
+<span class="kn">import</span> <span class="nn">ctypes</span>
+
+<div class="viewcode-block" id="I2cDevice"><a class="viewcode-back" href="../ctypesdata.html#ctypesdata.I2cDevice">[docs]</a><span class="k">class</span> <span class="nc">I2cDevice</span><span class="p">(</span><span class="n">ctypes</span><span class="o">.</span><span class="n">Structure</span><span class="p">):</span>
+    <span class="n">_fields_</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="p">(</span><span class="s1">&#39;filename&#39;</span><span class="p">,</span> <span class="n">ctypes</span><span class="o">.</span><span class="n">c_char_p</span><span class="p">),</span>
+        <span class="p">(</span><span class="s1">&#39;addr&#39;</span><span class="p">,</span> <span class="n">ctypes</span><span class="o">.</span><span class="n">c_uint</span><span class="p">,</span><span class="mi">16</span><span class="p">),</span> 
+        <span class="p">(</span><span class="s1">&#39;fd&#39;</span><span class="p">,</span> <span class="n">ctypes</span><span class="o">.</span><span class="n">c_int</span><span class="p">,</span><span class="mi">32</span><span class="p">)</span>
+    <span class="p">]</span></div>
+
+<div class="viewcode-block" id="JsonType"><a class="viewcode-back" href="../ctypesdata.html#ctypesdata.JsonType">[docs]</a><span class="k">class</span> <span class="nc">JsonType</span><span class="p">(</span><span class="n">ctypes</span><span class="o">.</span><span class="n">c_int</span><span class="p">):</span>
+    <span class="k">pass</span></div>
+
+<div class="viewcode-block" id="JsonObject"><a class="viewcode-back" href="../ctypesdata.html#ctypesdata.JsonObject">[docs]</a><span class="k">class</span> <span class="nc">JsonObject</span><span class="p">(</span><span class="n">ctypes</span><span class="o">.</span><span class="n">Structure</span><span class="p">):</span>
+    <span class="n">_fields_</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="p">(</span><span class="s1">&#39;o_type&#39;</span><span class="p">,</span> <span class="n">JsonType</span><span class="p">),</span>                         <span class="c1"># enum json_type o_type;</span>
+        <span class="p">(</span><span class="s1">&#39;_ref_count&#39;</span><span class="p">,</span> <span class="n">ctypes</span><span class="o">.</span><span class="n">c_uint32</span><span class="p">),</span>              <span class="c1"># uint32_t _ref_count;</span>
+        <span class="p">(</span><span class="s1">&#39;_to_json_string&#39;</span><span class="p">,</span> <span class="n">ctypes</span><span class="o">.</span><span class="n">c_void_p</span><span class="p">),</span>         <span class="c1"># json_object_to_json_string_fn *_to_json_string;</span>
+        <span class="p">(</span><span class="s1">&#39;_pb&#39;</span><span class="p">,</span> <span class="n">ctypes</span><span class="o">.</span><span class="n">c_void_p</span><span class="p">),</span>                     <span class="c1"># struct printbuf *_pb;</span>
+        <span class="p">(</span><span class="s1">&#39;_user_delete&#39;</span><span class="p">,</span> <span class="n">ctypes</span><span class="o">.</span><span class="n">c_void_p</span><span class="p">),</span>            <span class="c1"># json_object_delete_fn *_user_delete;</span>
+        <span class="p">(</span><span class="s1">&#39;_userdata&#39;</span><span class="p">,</span> <span class="n">ctypes</span><span class="o">.</span><span class="n">c_void_p</span><span class="p">)</span>                <span class="c1"># void *_userdata;</span>
+    <span class="p">]</span></div>
+
+<div class="viewcode-block" id="DPB_I2cSensors"><a class="viewcode-back" href="../ctypesdata.html#ctypesdata.DPB_I2cSensors">[docs]</a><span class="k">class</span> <span class="nc">DPB_I2cSensors</span><span class="p">(</span><span class="n">ctypes</span><span class="o">.</span><span class="n">Structure</span><span class="p">):</span>
+    <span class="n">_fields_</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="p">(</span><span class="s1">&#39;dev_pcb_temp&#39;</span><span class="p">,</span> <span class="n">I2cDevice</span><span class="p">),</span>
+        <span class="p">(</span><span class="s1">&#39;dev_sfp0_2_volt&#39;</span><span class="p">,</span> <span class="n">I2cDevice</span><span class="p">),</span>
+        <span class="p">(</span><span class="s1">&#39;dev_sfp3_5_volt&#39;</span><span class="p">,</span> <span class="n">I2cDevice</span><span class="p">),</span>
+        <span class="p">(</span><span class="s1">&#39;dev_som_volt&#39;</span><span class="p">,</span> <span class="n">I2cDevice</span><span class="p">),</span>
+        <span class="p">(</span><span class="s1">&#39;dev_sfp0_A0&#39;</span><span class="p">,</span> <span class="n">I2cDevice</span><span class="p">),</span>
+        <span class="p">(</span><span class="s1">&#39;dev_sfp1_A0&#39;</span><span class="p">,</span> <span class="n">I2cDevice</span><span class="p">),</span>
+        <span class="p">(</span><span class="s1">&#39;dev_sfp2_A0&#39;</span><span class="p">,</span> <span class="n">I2cDevice</span><span class="p">),</span>
+        <span class="p">(</span><span class="s1">&#39;dev_sfp3_A0&#39;</span><span class="p">,</span> <span class="n">I2cDevice</span><span class="p">),</span>
+        <span class="p">(</span><span class="s1">&#39;dev_sfp4_A0&#39;</span><span class="p">,</span> <span class="n">I2cDevice</span><span class="p">),</span>
+        <span class="p">(</span><span class="s1">&#39;dev_sfp5_A0&#39;</span><span class="p">,</span> <span class="n">I2cDevice</span><span class="p">),</span>
+        <span class="p">(</span><span class="s1">&#39;dev_sfp0_A2&#39;</span><span class="p">,</span> <span class="n">I2cDevice</span><span class="p">),</span>
+        <span class="p">(</span><span class="s1">&#39;dev_sfp1_A2&#39;</span><span class="p">,</span> <span class="n">I2cDevice</span><span class="p">),</span>
+        <span class="p">(</span><span class="s1">&#39;dev_sfp2_A2&#39;</span><span class="p">,</span> <span class="n">I2cDevice</span><span class="p">),</span>
+        <span class="p">(</span><span class="s1">&#39;dev_sfp3_A2&#39;</span><span class="p">,</span> <span class="n">I2cDevice</span><span class="p">),</span>
+        <span class="p">(</span><span class="s1">&#39;dev_sfp4_A2&#39;</span><span class="p">,</span> <span class="n">I2cDevice</span><span class="p">),</span>
+        <span class="p">(</span><span class="s1">&#39;dev_sfp5_A2&#39;</span><span class="p">,</span> <span class="n">I2cDevice</span><span class="p">)</span>
+        <span class="p">]</span></div>
+
+<span class="n">ctype_map</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s1">&#39;int&#39;</span><span class="p">:</span> <span class="n">ctypes</span><span class="o">.</span><span class="n">c_int</span><span class="p">,</span>
+    <span class="s1">&#39;float&#39;</span><span class="p">:</span> <span class="n">ctypes</span><span class="o">.</span><span class="n">c_float</span><span class="p">,</span>
+    <span class="s1">&#39;char&#39;</span><span class="p">:</span> <span class="n">ctypes</span><span class="o">.</span><span class="n">c_char</span><span class="p">,</span>
+    <span class="s1">&#39;struct DPB_I2cSensors&#39;</span><span class="p">:</span><span class="n">DPB_I2cSensors</span><span class="p">,</span>
+    <span class="s1">&#39;struct I2cDevice&#39;</span><span class="p">:</span><span class="n">I2cDevice</span><span class="p">,</span>
+    <span class="s1">&#39;uint16_t&#39;</span><span class="p">:</span> <span class="n">ctypes</span><span class="o">.</span><span class="n">c_uint16</span><span class="p">,</span>
+    <span class="s1">&#39;uint8_t&#39;</span><span class="p">:</span> <span class="n">ctypes</span><span class="o">.</span><span class="n">c_ubyte</span><span class="p">,</span>
+    <span class="s1">&#39;uint64_t&#39;</span><span class="p">:</span> <span class="n">ctypes</span><span class="o">.</span><span class="n">c_uint64</span><span class="p">,</span>
+    <span class="s1">&#39;json_object&#39;</span><span class="p">:</span><span class="n">JsonObject</span><span class="p">,</span>
+    <span class="s1">&#39;int &#39;</span><span class="p">:</span> <span class="n">ctypes</span><span class="o">.</span><span class="n">c_int</span><span class="p">,</span>
+    <span class="s1">&#39;float &#39;</span><span class="p">:</span> <span class="n">ctypes</span><span class="o">.</span><span class="n">c_float</span><span class="p">,</span>
+    <span class="s1">&#39;char &#39;</span><span class="p">:</span> <span class="n">ctypes</span><span class="o">.</span><span class="n">c_char</span><span class="p">,</span>
+    <span class="s1">&#39;struct DPB_I2cSensors &#39;</span><span class="p">:</span><span class="n">DPB_I2cSensors</span><span class="p">,</span>
+    <span class="s1">&#39;struct I2cDevice &#39;</span><span class="p">:</span><span class="n">I2cDevice</span><span class="p">,</span>
+    <span class="s1">&#39;uint16_t &#39;</span><span class="p">:</span> <span class="n">ctypes</span><span class="o">.</span><span class="n">c_uint16</span><span class="p">,</span>
+    <span class="s1">&#39;uint8_t &#39;</span><span class="p">:</span> <span class="n">ctypes</span><span class="o">.</span><span class="n">c_ubyte</span><span class="p">,</span>
+    <span class="s1">&#39;uint64_t &#39;</span><span class="p">:</span> <span class="n">ctypes</span><span class="o">.</span><span class="n">c_uint64</span><span class="p">,</span>
+    <span class="s1">&#39;json_object &#39;</span><span class="p">:</span><span class="n">JsonObject</span><span class="p">,</span>
+    <span class="s1">&#39;void&#39;</span><span class="p">:</span><span class="kc">None</span><span class="p">,</span>
+    <span class="c1"># Add more types in case it is necessary</span>
+<span class="p">}</span>
+
+<div class="viewcode-block" id="Wrapper"><a class="viewcode-back" href="../ctypesdata.html#ctypesdata.Wrapper">[docs]</a><span class="k">class</span> <span class="nc">Wrapper</span><span class="p">(</span><span class="n">ctypes</span><span class="o">.</span><span class="n">Structure</span><span class="p">):</span>
+    <span class="n">_fields_</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="p">(</span><span class="s2">&quot;ev_type&quot;</span><span class="p">,</span> <span class="n">ctypes</span><span class="o">.</span><span class="n">c_char</span> <span class="o">*</span> <span class="mi">8</span><span class="p">),</span>
+        <span class="p">(</span><span class="s2">&quot;ch_type&quot;</span><span class="p">,</span> <span class="n">ctypes</span><span class="o">.</span><span class="n">c_char</span> <span class="o">*</span> <span class="mi">16</span><span class="p">),</span>
+        <span class="p">(</span><span class="s2">&quot;chn&quot;</span><span class="p">,</span> <span class="n">ctypes</span><span class="o">.</span><span class="n">c_int</span><span class="p">),</span>
+        <span class="p">(</span><span class="s2">&quot;tmpstmp&quot;</span><span class="p">,</span> <span class="n">ctypes</span><span class="o">.</span><span class="n">c_longlong</span><span class="p">),</span>
+        <span class="p">(</span><span class="s2">&quot;empty&quot;</span><span class="p">,</span> <span class="n">ctypes</span><span class="o">.</span><span class="n">c_void_p</span><span class="p">),</span>  <span class="c1"># Señaladores en Python no tienen un tipo específico, se puede cambiar si se necesita un tipo específico</span>
+        <span class="p">(</span><span class="s2">&quot;full&quot;</span><span class="p">,</span> <span class="n">ctypes</span><span class="o">.</span><span class="n">c_void_p</span><span class="p">),</span>   <span class="c1"># Señaladores en Python no tienen un tipo específico, se puede cambiar si se necesita un tipo específico</span>
+        <span class="p">(</span><span class="s2">&quot;ams_sync&quot;</span><span class="p">,</span> <span class="n">ctypes</span><span class="o">.</span><span class="n">c_void_p</span><span class="p">)</span> <span class="c1"># Señaladores en Python no tienen un tipo específico, se puede cambiar si se necesita un tipo específico</span>
+    <span class="p">]</span></div>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, Borja Martinez Sanchez.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

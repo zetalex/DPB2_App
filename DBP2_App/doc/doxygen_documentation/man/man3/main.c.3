@@ -1,0 +1,1235 @@
+.TH "main.c" 3 "Version 1.0.0" "DPB2 App Documentation" \" -*- nroff -*-
+.ad l
+.nh
+.SH NAME
+main.c
+.SH SYNOPSIS
+.br
+.PP
+\fR#include <stdio\&.h>\fP
+.br
+\fR#include <unistd\&.h>\fP
+.br
+\fR#include <pthread\&.h>\fP
+.br
+\fR#include <stdlib\&.h>\fP
+.br
+\fR#include <string\&.h>\fP
+.br
+\fR#include 'timer\&.h'\fP
+.br
+\fR#include <semaphore\&.h>\fP
+.br
+\fR#include <sys/shm\&.h>\fP
+.br
+\fR#include <fcntl\&.h>\fP
+.br
+\fR#include <time\&.h>\fP
+.br
+\fR#include <zmq\&.h>\fP
+.br
+\fR#include 'json\-c/json\&.h'\fP
+.br
+\fR#include <math\&.h>\fP
+.br
+\fR#include <dirent\&.h>\fP
+.br
+\fR#include <signal\&.h>\fP
+.br
+\fR#include <regex\&.h>\fP
+.br
+\fR#include 'i2c\&.h'\fP
+.br
+\fR#include 'constants\&.h'\fP
+.br
+\fR#include 'linux/errno\&.h'\fP
+.br
+
+.SS "Data Structures"
+
+.in +1c
+.ti -1c
+.RI "struct \fBDPB_I2cSensors\fP"
+.br
+.in -1c
+.SS "Functions"
+
+.in +1c
+.ti -1c
+.RI "int \fBinit_tempSensor\fP (struct \fBI2cDevice\fP *)"
+.br
+.ti -1c
+.RI "int \fBinit_voltSensor\fP (struct \fBI2cDevice\fP *)"
+.br
+.ti -1c
+.RI "int \fBchecksum_check\fP (struct \fBI2cDevice\fP *, uint8_t, int)"
+.br
+.ti -1c
+.RI "int \fBinit_SFP_A0\fP (struct \fBI2cDevice\fP *)"
+.br
+.ti -1c
+.RI "int \fBinit_SFP_A2\fP (struct \fBI2cDevice\fP *)"
+.br
+.ti -1c
+.RI "int \fBinit_I2cSensors\fP (struct \fBDPB_I2cSensors\fP *)"
+.br
+.ti -1c
+.RI "int \fBstop_I2cSensors\fP (struct \fBDPB_I2cSensors\fP *)"
+.br
+.ti -1c
+.RI "int \fBiio_event_monitor_up\fP ()"
+.br
+.ti -1c
+.RI "int \fBxlnx_ams_read_temp\fP (int *, int, float *)"
+.br
+.ti -1c
+.RI "int \fBxlnx_ams_read_volt\fP (int *, int, float *)"
+.br
+.ti -1c
+.RI "int \fBxlnx_ams_set_limits\fP (int, char *, char *, float)"
+.br
+.ti -1c
+.RI "int \fBmcp9844_read_temperature\fP (struct \fBDPB_I2cSensors\fP *, float *)"
+.br
+.ti -1c
+.RI "int \fBmcp9844_set_limits\fP (struct \fBDPB_I2cSensors\fP *, int, float)"
+.br
+.ti -1c
+.RI "int \fBmcp9844_set_config\fP (struct \fBDPB_I2cSensors\fP *, uint8_t *, uint8_t *)"
+.br
+.ti -1c
+.RI "int \fBmcp9844_interruptions\fP (struct \fBDPB_I2cSensors\fP *, uint8_t)"
+.br
+.ti -1c
+.RI "int \fBmcp9844_read_alarms\fP (struct \fBDPB_I2cSensors\fP *)"
+.br
+.ti -1c
+.RI "int \fBsfp_avago_read_temperature\fP (struct \fBDPB_I2cSensors\fP *, int, float *)"
+.br
+.ti -1c
+.RI "int \fBsfp_avago_read_voltage\fP (struct \fBDPB_I2cSensors\fP *, int, float *)"
+.br
+.ti -1c
+.RI "int \fBsfp_avago_read_lbias_current\fP (struct \fBDPB_I2cSensors\fP *, int, float *)"
+.br
+.ti -1c
+.RI "int \fBsfp_avago_read_tx_av_optical_pwr\fP (struct \fBDPB_I2cSensors\fP *, int, float *)"
+.br
+.ti -1c
+.RI "int \fBsfp_avago_read_rx_av_optical_pwr\fP (struct \fBDPB_I2cSensors\fP *, int, float *)"
+.br
+.ti -1c
+.RI "int \fBsfp_avago_read_status\fP (struct \fBDPB_I2cSensors\fP *, int, uint8_t *)"
+.br
+.ti -1c
+.RI "int \fBsfp_avago_status_interruptions\fP (uint8_t, int)"
+.br
+.ti -1c
+.RI "int \fBsfp_avago_alarms_interruptions\fP (struct \fBDPB_I2cSensors\fP *, uint16_t, int)"
+.br
+.ti -1c
+.RI "int \fBsfp_avago_read_alarms\fP (struct \fBDPB_I2cSensors\fP *, int)"
+.br
+.ti -1c
+.RI "int \fBina3221_get_voltage\fP (struct \fBDPB_I2cSensors\fP *, int, float *)"
+.br
+.ti -1c
+.RI "int \fBina3221_get_current\fP (struct \fBDPB_I2cSensors\fP *, int, float *)"
+.br
+.ti -1c
+.RI "int \fBina3221_critical_interruptions\fP (struct \fBDPB_I2cSensors\fP *, uint16_t, int)"
+.br
+.ti -1c
+.RI "int \fBina3221_warning_interruptions\fP (struct \fBDPB_I2cSensors\fP *, uint16_t, int)"
+.br
+.ti -1c
+.RI "int \fBina3221_read_alarms\fP (struct \fBDPB_I2cSensors\fP *, int)"
+.br
+.ti -1c
+.RI "int \fBina3221_set_limits\fP (struct \fBDPB_I2cSensors\fP *, int, int, int, float)"
+.br
+.ti -1c
+.RI "int \fBina3221_set_config\fP (struct \fBDPB_I2cSensors\fP *, uint8_t *, uint8_t *, int)"
+.br
+.ti -1c
+.RI "int \fBparsing_mon_sensor_data_into_array\fP (json_object *, float, char *, int)"
+.br
+.ti -1c
+.RI "int \fBparsing_mon_status_data_into_array\fP (json_object *, int, char *, int)"
+.br
+.ti -1c
+.RI "int \fBalarm_json\fP (char *, char *, char *, int, float, uint64_t, char *)"
+.br
+.ti -1c
+.RI "int \fBstatus_alarm_json\fP (char *, char *, int, uint64_t, char *)"
+.br
+.ti -1c
+.RI "int \fBcommand_response_json\fP (int, float)"
+.br
+.ti -1c
+.RI "int \fBcommand_status_response_json\fP (int, int)"
+.br
+.ti -1c
+.RI "int \fBjson_schema_validate\fP (char *, const char *, char *)"
+.br
+.ti -1c
+.RI "int \fBget_GPIO_base_address\fP (int *)"
+.br
+.ti -1c
+.RI "int \fBwrite_GPIO\fP (int, int)"
+.br
+.ti -1c
+.RI "int \fBread_GPIO\fP (int, int *)"
+.br
+.ti -1c
+.RI "void \fBunexport_GPIO\fP ()"
+.br
+.ti -1c
+.RI "int \fBeth_link_status\fP (char *, int *)"
+.br
+.ti -1c
+.RI "int \fBeth_link_status_config\fP (char *, int)"
+.br
+.ti -1c
+.RI "int \fBeth_down_alarm\fP (char *, int *)"
+.br
+.ti -1c
+.RI "int \fBaurora_down_alarm\fP (int, int *)"
+.br
+.ti -1c
+.RI "int \fBzmq_socket_init\fP ()"
+.br
+.ti -1c
+.RI "int \fBdpb_command_handling\fP (struct \fBDPB_I2cSensors\fP *, char **, int)"
+.br
+.ti -1c
+.RI "void \fBdig_command_handling\fP (char **)"
+.br
+.ti -1c
+.RI "void \fBhv_command_handling\fP (char **)"
+.br
+.ti -1c
+.RI "void \fBlv_command_handling\fP (char **)"
+.br
+.ti -1c
+.RI "void \fBatexit_function\fP ()"
+.br
+.ti -1c
+.RI "void \fBsighandler\fP (int)"
+.br
+.ti -1c
+.RI "int \fBgen_uuid\fP (char *)"
+.br
+.ti -1c
+.RI "int \fBmain\fP ()"
+.br
+.in -1c
+.SS "Variables"
+
+.in +1c
+.ti -1c
+.RI "sem_t \fBi2c_sync\fP"
+.br
+.RI "Semaphore to synchronize I2C Bus usage\&. "
+.ti -1c
+.RI "sem_t \fBthread_sync\fP"
+.br
+.RI "Semaphore to synchronize thread creation\&. "
+.ti -1c
+.RI "sem_t \fBfile_sync\fP"
+.br
+.RI "Semaphore to synchronize GPIO file accesses\&. "
+.ti -1c
+.RI "sem_t \fBalarm_sync\fP"
+.br
+.RI "Semaphore to synchronize GPIO AND Ethernet file accesses\&. "
+.ti -1c
+.RI "sem_t \fBsem_valid\fP"
+.br
+.RI "Semaphore to avoid race conditions when JSON validating\&. "
+.ti -1c
+.RI "pid_t \fBchild_pid\fP"
+.br
+.RI "IIO Event Monitor Process ID\&. "
+.ti -1c
+.RI "pthread_t \fBt_1\fP"
+.br
+.RI "AMS alarm Thread\&. "
+.ti -1c
+.RI "pthread_t \fBt_2\fP"
+.br
+.RI "I2C alarm Thread\&. "
+.ti -1c
+.RI "pthread_t \fBt_3\fP"
+.br
+.RI "Monitoring Thread\&. "
+.ti -1c
+.RI "pthread_t \fBt_4\fP"
+.br
+.RI "Command Handling Thread\&. "
+.ti -1c
+.RI "void * \fBzmq_context\fP"
+.br
+.ti -1c
+.RI "void * \fBmon_publisher\fP"
+.br
+.ti -1c
+.RI "void * \fBalarm_publisher\fP"
+.br
+.ti -1c
+.RI "void * \fBcmd_router\fP"
+.br
+.in -1c
+.SH "Function Documentation"
+.PP 
+.SS "int alarm_json (char * board, char * chip, char * ev_type, int chan, float val, uint64_t timestamp, char * info_type)"
+Parses alarms data into a JSON string and send it to socket
+.PP
+\fBParameters\fP
+.RS 4
+\fIint\fP chan: Number of measured channel, if chan is 99 means channel will not be parsed 
+.br
+\fIfloat\fP val: Measured magnitude value 
+.br
+\fIchar\fP *board: Board that triggered the alarm 
+.br
+\fIchar\fP *chip: Name of the chip that triggered the alarm 
+.br
+\fIchar\fP *ev_type: Type of event that has occurred 
+.br
+\fIuint64_t\fP timestamp: Time when the event occurred 
+.br
+\fIchar\fP *info_type: Determines the reported event type (info: warning or critical)
+.RE
+.PP
+\fBReturns\fP
+.RS 4
+0 or negative integer if validation fails 
+.RE
+.PP
+
+.SS "void atexit_function ()"
+
+.SS "int aurora_down_alarm (int aurora_link, int * flag)"
+Checks from GPIO if Ethernet Links status has changed from up to down and reports it if necessary
+.PP
+\fBParameters\fP
+.RS 4
+\fIint\fP aurora_link: Choose main or backup link of Dig0 or Dig1 (O: Dig0 Main, 1:Dig0 Backup, 2:Dig1 Main, 3:Dig1 Backup) 
+.br
+\fIint\fP flags: indicates current status of the link
+.RE
+.PP
+\fBReturns\fP
+.RS 4
+0 if parameters are OK, if not negative integer 
+.RE
+.PP
+
+.SS "int checksum_check (struct \fBI2cDevice\fP * dev, uint8_t ini_reg, int size)"
+Compares expected SFP checksum to its current value
+.PP
+\fBParameters\fP
+.RS 4
+\fI\fBI2cDevice\fP\fP *dev: SFP of which the checksum is to be checked 
+.br
+\fIuint8_t\fP ini_reg: Register where the checksum count starts 
+.br
+\fIint\fP size: number of registers summed for the checksum
+.RE
+.PP
+\fBReturns\fP
+.RS 4
+Negative integer if checksum is incorrect, and 0 if it is correct 
+.RE
+.PP
+
+.SS "int command_response_json (int msg_id, float val)"
+Parses command response into a JSON string and send it to socket
+.PP
+\fBParameters\fP
+.RS 4
+\fIint\fP msg_id: Message ID 
+.br
+\fIfloat\fP val: read value
+.RE
+.PP
+\fBReturns\fP
+.RS 4
+0 or negative integer if validation fails 
+.RE
+.PP
+
+.SS "int command_status_response_json (int msg_id, int val)"
+Parses command response into a JSON string and send it to socket
+.PP
+\fBParameters\fP
+.RS 4
+\fIint\fP msg_id: Message ID 
+.br
+\fIint\fP val: read value (1 is ON and 0 is OFF), if operation is set val = 99, JSON value field = OK , else is error, JSON value = ERROR
+.RE
+.PP
+\fBReturns\fP
+.RS 4
+0 or negative integer if validation fails 
+.RE
+.PP
+
+.SS "void dig_command_handling (char ** cmd)"
+
+.SS "int dpb_command_handling (struct \fBDPB_I2cSensors\fP * data, char ** cmd, int msg_id)"
+Handles received DPB command
+.PP
+\fBParameters\fP
+.RS 4
+\fI\fBDPB_I2cSensors\fP\fP *data: Struct that contains I2C devices 
+.br
+\fIchar\fP **cmd: Segmented command 
+.br
+\fIint\fP msg_id: Unique identifier of the received JSON command request message
+.RE
+.PP
+\fBReturns\fP
+.RS 4
+0 if parameters OK and reports the event, if not returns negative integer\&. 
+.RE
+.PP
+
+.SS "int eth_down_alarm (char * str, int * flag)"
+Checks from GPIO if Ethernet Links status has changed from up to down and reports it if necessary
+.PP
+\fBParameters\fP
+.RS 4
+\fIchar\fP *str: Name of the Ethernet interface 
+.br
+\fIint\fP flag: value of the Ethernet interface flag, determines if the link was previously up
+.RE
+.PP
+\fBReturns\fP
+.RS 4
+0 if parameters OK and reports the event, if not returns negative integer\&. 
+.RE
+.PP
+
+.SS "int eth_link_status (char * eth_interface, int * status)"
+Checks from GPIO if Ethernet Links status and reports it
+.PP
+\fBParameters\fP
+.RS 4
+\fIchar\fP *eth_interface: Name of the Ethernet interface 
+.br
+\fIint\fP status: value of the Ethernet interface status
+.RE
+.PP
+\fBReturns\fP
+.RS 4
+0 if parameters are OK, if not negative integer 
+.RE
+.PP
+
+.SS "int eth_link_status_config (char * eth_interface, int val)"
+Updates Ethernet interface status to ON/OFF
+.PP
+\fBParameters\fP
+.RS 4
+\fIchar\fP *eth_interface: Name of the Ethernet interface 
+.br
+\fIint\fP val: value of the Ethernet interface status
+.RE
+.PP
+\fBReturns\fP
+.RS 4
+0 if parameters are OK, if not negative integer 
+.RE
+.PP
+
+.SS "int gen_uuid (char * uuid)"
+Generates UUID
+.PP
+\fBParameters\fP
+.RS 4
+\fIchar\fP *uuid: String where UUID is stored
+.RE
+.PP
+\fBReturns\fP
+.RS 4
+0 and stores the UUID generated 
+.RE
+.PP
+
+.SS "int get_GPIO_base_address (int * address)"
+Gets GPIO base address
+.PP
+\fBParameters\fP
+.RS 4
+\fIint\fP *address: pointer where the read GPIO base address plus corresponding offset will be stored
+.RE
+.PP
+\fBReturns\fP
+.RS 4
+0 
+.RE
+.PP
+
+.SS "void hv_command_handling (char ** cmd)"
+
+.SS "int iio_event_monitor_up ()"
+Start IIO EVENT MONITOR to enable Xilinx-AMS events
+.PP
+\fBReturns\fP
+.RS 4
+Negative integer if start fails\&.If not, returns 0 and enables Xilinx-AMS events\&. 
+.RE
+.PP
+
+.SS "int ina3221_critical_interruptions (struct \fBDPB_I2cSensors\fP * data, uint16_t mask, int n)"
+Handles INA3221 Voltage and Current Sensor critical alarm interruptions
+.PP
+\fBParameters\fP
+.RS 4
+\fIstruct\fP \fBDPB_I2cSensors\fP *data: being the corresponding I2C device INA3221 Voltage and Current Sensor 
+.br
+\fIuint16_t\fP mask: contains critical alarm flags 
+.br
+\fIint\fP n: indicate from which of the 3 INA3221 is dealing with
+.RE
+.PP
+\fBReturns\fP
+.RS 4
+0 and handles interruption depending on the active alarms flags 
+.RE
+.PP
+
+.SS "int ina3221_get_current (struct \fBDPB_I2cSensors\fP * data, int n, float * res)"
+Reads INA3221 Voltage and Current Sensor shunt voltage from a resistor in each of its 3 channels, obtains the current dividing the voltage by the resistor value and stores the current values in *res
+.PP
+\fBParameters\fP
+.RS 4
+\fIstruct\fP \fBDPB_I2cSensors\fP *data: being the corresponding I2C device INA3221 Voltage and Current Sensor 
+.br
+\fIint\fP n: indicate from which of the 3 INA3221 is going to be read,float *res where the current values are stored 
+.br
+\fIfloat\fP *res: storage of collected data
+.RE
+.PP
+\fBReturns\fP
+.RS 4
+Negative integer if reading fails\&.If not, returns 0 and the stored values in *res
+.RE
+.PP
+\fBNote\fP
+.RS 4
+The magnitude conversion is based on the datasheet and the resistor value is 0\&.05 Ohm\&. 
+.RE
+.PP
+
+.SS "int ina3221_get_voltage (struct \fBDPB_I2cSensors\fP * data, int n, float * res)"
+Reads INA3221 Voltage and Current Sensor bus voltage from each of its 3 channels and stores the values in *res
+.PP
+\fBParameters\fP
+.RS 4
+\fIstruct\fP \fBDPB_I2cSensors\fP *data: being the corresponding I2C device INA3221 Voltage and Current Sensor 
+.br
+\fIint\fP n: indicate from which of the 3 INA3221 is going to be read,float *res where the voltage values are stored 
+.br
+\fIfloat\fP *res: storage of collected data
+.RE
+.PP
+\fBReturns\fP
+.RS 4
+Negative integer if reading fails\&.If not, returns 0 and the stored values in *res
+.RE
+.PP
+\fBNote\fP
+.RS 4
+The magnitude conversion is based on the datasheet\&. 
+.RE
+.PP
+
+.SS "int ina3221_read_alarms (struct \fBDPB_I2cSensors\fP * data, int n)"
+Reads INA3221 Voltage and Current Sensor warning and critical alarms flags
+.PP
+\fBParameters\fP
+.RS 4
+\fIstruct\fP \fBDPB_I2cSensors\fP *data: being the corresponding I2C device for the INA3221 Voltage and Current Sensor 
+.br
+\fIint\fP n: indicate from which of the 3 INA3221 is going to be read
+.RE
+.PP
+\fBReturns\fP
+.RS 4
+0 and if there is any flag active calls the corresponding function to handle the interruption\&. 
+.RE
+.PP
+
+.SS "int ina3221_set_config (struct \fBDPB_I2cSensors\fP * data, uint8_t * bit_ena, uint8_t * bit_num, int n)"
+Enables or disables configuration register bits of the INA3221 Voltage Sensor
+.PP
+\fBParameters\fP
+.RS 4
+\fIstruct\fP \fBDPB_I2cSensors\fP *data: being the corresponding I2C device for the INA3221 Voltage Sensor 
+.br
+\fIuint8_t\fP *bit_ena: array which should contain the desired bit value (0 o 1) 
+.br
+\fIuint8_t\fP *bit_num: array which should contain the position of the bit/s that will be modified 
+.br
+\fIint\fP n :which of the 3 INA3221 is being dealt with
+.RE
+.PP
+\fBReturns\fP
+.RS 4
+Negative integer if writing fails,array size is mismatching or incorrect value introduced 
+.PP
+0 if everything is okay and modifies the configuration register 
+.RE
+.PP
+
+.SS "int ina3221_set_limits (struct \fBDPB_I2cSensors\fP * data, int n, int ch, int alarm_type, float curr)"
+Set current alarms limits for INA3221 (warning or critical)
+.PP
+\fBParameters\fP
+.RS 4
+\fIstruct\fP \fBDPB_I2cSensors\fP *data: being the corresponding I2C device for the MCP9844 Temperature Sensor 
+.br
+\fIint\fP n: which of the 3 INA3221 is being dealt with 
+.br
+\fIint\fP ch: which of the 3 INA3221 channels is being dealt with 
+.br
+\fIint\fP alarm_type: indicates if the limit to be modifies is for a critical alarm or warning alarm 
+.br
+\fIfloat\fP curr: current value which will be the new limit
+.RE
+.PP
+\fBReturns\fP
+.RS 4
+Negative integer if writing fails or any parameter is incorrect\&. 
+.PP
+0 if everything is okay and modifies the current alarm limit (as shunt voltage limit) 
+.RE
+.PP
+
+.SS "int ina3221_warning_interruptions (struct \fBDPB_I2cSensors\fP * data, uint16_t mask, int n)"
+Handles INA3221 Voltage and Current Sensor warning alarm interruptions
+.PP
+\fBParameters\fP
+.RS 4
+\fIstruct\fP \fBDPB_I2cSensors\fP *data: being the corresponding I2C device INA3221 Voltage and Current Sensor 
+.br
+\fIuint16_t\fP mask: contains warning alarm flags 
+.br
+\fIint\fP n: indicate from which of the 3 INA3221 is dealing with
+.RE
+.PP
+\fBReturns\fP
+.RS 4
+0 and handles interruption depending on the active alarms flags 
+.RE
+.PP
+
+.SS "int init_I2cSensors (struct \fBDPB_I2cSensors\fP * data)"
+Initialize every I2C sensor available
+.PP
+\fBParameters\fP
+.RS 4
+\fI\fBDPB_I2cSensors\fP\fP *data; struct which contains every I2C sensor available
+.RE
+.PP
+\fBReturns\fP
+.RS 4
+0 and every I2C sensor initialized\&. 
+.RE
+.PP
+
+.SS "int init_SFP_A0 (struct \fBI2cDevice\fP * dev)"
+Initialize SFP EEPROM page 1 as an I2C device
+.PP
+\fBParameters\fP
+.RS 4
+\fI\fBI2cDevice\fP\fP *dev: SFP of which EEPROM is to be initialized
+.RE
+.PP
+\fBReturns\fP
+.RS 4
+Negative integer if initialization fails\&.If not, returns 0 and the EEPROM page initialized as I2C device
+.RE
+.PP
+\fBNote\fP
+.RS 4
+This also checks via Physical device, SFP function and the checksum registers that the device is correct and the EEPROM is working properly\&. 
+.RE
+.PP
+
+.SS "int init_SFP_A2 (struct \fBI2cDevice\fP * dev)"
+Initialize SFP EEPROM page 2 as an I2C device
+.PP
+\fBParameters\fP
+.RS 4
+\fI\fBI2cDevice\fP\fP *dev: SFP of which EEPROM is to be initialized
+.RE
+.PP
+\fBReturns\fP
+.RS 4
+Negative integer if initialization fails\&.If not, returns 0 and the EEPROM page initialized as I2C device
+.RE
+.PP
+\fBNote\fP
+.RS 4
+This also checks via the checksum register that the EEPROM is working properly\&. 
+.RE
+.PP
+
+.SS "int init_tempSensor (struct \fBI2cDevice\fP * dev)"
+Initialize MCP9844 Temperature Sensor
+.PP
+\fBParameters\fP
+.RS 4
+\fI\fBI2cDevice\fP\fP *dev: device to be initialized
+.RE
+.PP
+\fBReturns\fP
+.RS 4
+Negative integer if initialization fails\&.If not, returns 0 and the device initialized
+.RE
+.PP
+\fBNote\fP
+.RS 4
+This also checks via Manufacturer and Device ID that the device is correct 
+.RE
+.PP
+
+.SS "int init_voltSensor (struct \fBI2cDevice\fP * dev)"
+Initialize INA3221 Voltage and Current Sensor
+.PP
+\fBParameters\fP
+.RS 4
+\fI\fBI2cDevice\fP\fP *dev: device to be initialized
+.RE
+.PP
+\fBReturns\fP
+.RS 4
+Negative integer if initialization fails\&.If not, returns 0 and the device initialized
+.RE
+.PP
+\fBNote\fP
+.RS 4
+This also checks via Manufacturer and Device ID that the device is correct 
+.RE
+.PP
+
+.SS "int json_schema_validate (char * schema, const char * json_string, char * temp_file)"
+Validates generated JSON string with a validation schema
+.PP
+\fBParameters\fP
+.RS 4
+\fIchar\fP *schema: Name of validation schema file 
+.br
+\fIconst\fP char *json_string: JSON string to be validated 
+.br
+\fIchar\fP *temp_file: Name of Temporal File
+.RE
+.PP
+\fBReturns\fP
+.RS 4
+0 if correct, negative integer if validation failed 
+.RE
+.PP
+
+.SS "void lv_command_handling (char ** cmd)"
+
+.SS "int main ()"
+
+.SS "int mcp9844_interruptions (struct \fBDPB_I2cSensors\fP * data, uint8_t flag_buf)"
+Handles MCP9844 Temperature Sensor interruptions
+.PP
+\fBParameters\fP
+.RS 4
+\fIuint8_t\fP flag_buf: contains alarm flags
+.RE
+.PP
+\fBReturns\fP
+.RS 4
+0 and handles interruption depending on the active flags 
+.RE
+.PP
+
+.SS "int mcp9844_read_alarms (struct \fBDPB_I2cSensors\fP * data)"
+Reads MCP9844 Temperature Sensor alarms flags
+.PP
+\fBParameters\fP
+.RS 4
+\fIstruct\fP \fBDPB_I2cSensors\fP *data: being the corresponding I2C device for the MCP9844 Temperature Sensor
+.RE
+.PP
+\fBReturns\fP
+.RS 4
+0 and if there is any flag active calls the corresponding function to handle the interruption
+.RE
+.PP
+\fBNote\fP
+.RS 4
+It also clear flag bits\&. 
+.RE
+.PP
+
+.SS "int mcp9844_read_temperature (struct \fBDPB_I2cSensors\fP * data, float * res)"
+Reads ambient temperature and stores the value in *res
+.PP
+\fBParameters\fP
+.RS 4
+\fIstruct\fP \fBDPB_I2cSensors\fP *data: being the corresponding I2C device for the MCP9844 Temperature Sensor 
+.br
+\fIfloat\fP *res: where the ambient temperature value is stored
+.RE
+.PP
+\fBReturns\fP
+.RS 4
+Negative integer if reading fails\&.If not, returns 0 and the stored value in *res
+.RE
+.PP
+\fBNote\fP
+.RS 4
+The magnitude conversion depends if the temperature is below 0ºC or above\&. It also clear flag bits\&. 
+.RE
+.PP
+
+.SS "int mcp9844_set_config (struct \fBDPB_I2cSensors\fP * data, uint8_t * bit_ena, uint8_t * bit_num)"
+Enables or disables configuration register bits of the MCP9844 Temperature Sensor
+.PP
+\fBParameters\fP
+.RS 4
+\fIstruct\fP \fBDPB_I2cSensors\fP *data: being the corresponding I2C device for the MCP9844 Temperature Sensor 
+.br
+\fIuint8_t\fP *bit_ena: array which should contain the desired bit value (0 o 1) 
+.br
+\fIuint8_t\fP *bit_num: array which should contain the position of the bit/s that will be modified
+.RE
+.PP
+\fBReturns\fP
+.RS 4
+Negative integer if writing fails,array size is mismatching or incorrect value introduced 
+.PP
+0 if everything is okay and modifies the configuration register 
+.RE
+.PP
+
+.SS "int mcp9844_set_limits (struct \fBDPB_I2cSensors\fP * data, int n, float temp_val)"
+Set alarms limits for Temperature
+.PP
+\fBParameters\fP
+.RS 4
+\fIstruct\fP \fBDPB_I2cSensors\fP *data: being the corresponding I2C device for the MCP9844 Temperature Sensor 
+.br
+\fIint\fP n: which limit is modified 
+.br
+\fIshort\fP temp: value of the limit that is to be set
+.RE
+.PP
+\fBReturns\fP
+.RS 4
+Negative integer if writing fails or limit chosen is incorrect\&. 
+.PP
+0 if everything is okay and modifies the temperature alarm limit 
+.RE
+.PP
+
+.SS "int parsing_mon_sensor_data_into_array (json_object * jarray, float val, char * magnitude, int chan)"
+Parses monitoring data into a JSON array so as to include it in a JSON object
+.PP
+\fBParameters\fP
+.RS 4
+\fIjson_object\fP *jarray: JSON array in which the data will be stored 
+.br
+\fIint\fP chan: Number of measured channel, if chan is 99 means channel will not be parsed 
+.br
+\fIfloat\fP val: Measured magnitude value 
+.br
+\fIchar\fP *magnitude: Name of the measured magnitude
+.RE
+.PP
+\fBReturns\fP
+.RS 4
+0 
+.RE
+.PP
+
+.SS "int parsing_mon_status_data_into_array (json_object * jarray, int status, char * magnitude, int chan)"
+Parses monitoring status data into a JSON array so as to include it in a JSON object
+.PP
+\fBParameters\fP
+.RS 4
+\fIjson_object\fP *jarray: JSON array in which the data will be stored 
+.br
+\fIint\fP status: Value of the status 
+.br
+\fIchar\fP *magnitude: Name of the measured magnitude/interface 
+.br
+\fIint\fP chan: Number of measured channel, if chan is 99 means channel will not be parsed
+.RE
+.PP
+\fBReturns\fP
+.RS 4
+0 
+.RE
+.PP
+
+.SS "int read_GPIO (int address, int * value)"
+Gets GPIO base address
+.PP
+\fBParameters\fP
+.RS 4
+\fIint\fP address: GPIO address where the desired value is stored 
+.br
+\fIint\fP *value: pointer where the read value will be stored
+.RE
+.PP
+\fBReturns\fP
+.RS 4
+0 if worked correctly, if not returns a negative integer\&. 
+.RE
+.PP
+
+.SS "int sfp_avago_alarms_interruptions (struct \fBDPB_I2cSensors\fP * data, uint16_t flags, int n)"
+Handles SFP alarm interruptions
+.PP
+\fBParameters\fP
+.RS 4
+\fIuint16_t\fP flags: contains alarms flags 
+.br
+\fIint\fP n: indicate from which of the 6 SFP is dealing with
+.RE
+.PP
+\fBReturns\fP
+.RS 4
+0 and handles interruption depending on the active alarms flags 
+.RE
+.PP
+
+.SS "int sfp_avago_read_alarms (struct \fBDPB_I2cSensors\fP * data, int n)"
+Reads SFP status and alarms flags
+.PP
+\fBParameters\fP
+.RS 4
+\fIstruct\fP \fBDPB_I2cSensors\fP *data: being the corresponding I2C device for the SFP EEPROM page 2 
+.br
+\fIint\fP n: indicate from which of the 6 SFP is going to be read
+.RE
+.PP
+\fBReturns\fP
+.RS 4
+0 and if there is any flag active calls the corresponding function to handle the interruption\&. 
+.RE
+.PP
+
+.SS "int sfp_avago_read_lbias_current (struct \fBDPB_I2cSensors\fP * data, int n, float * res)"
+Reads SFP laser bias current and stores the value in *res
+.PP
+\fBParameters\fP
+.RS 4
+\fIstruct\fP \fBDPB_I2cSensors\fP *data: I2C devices 
+.br
+\fIint\fP n: indicate from which of the 6 SFP is going to be read 
+.br
+\fIfloat\fP *res: where the magnitude value is stored
+.RE
+.PP
+\fBReturns\fP
+.RS 4
+Negative integer if reading fails\&.If not, returns 0 and the stored value in *res
+.RE
+.PP
+\fBNote\fP
+.RS 4
+The magnitude conversion is based on the datasheet\&. 
+.RE
+.PP
+
+.SS "int sfp_avago_read_rx_av_optical_pwr (struct \fBDPB_I2cSensors\fP * data, int n, float * res)"
+Reads SFP average received optical power and stores the value in *res
+.PP
+\fBParameters\fP
+.RS 4
+\fIstruct\fP \fBDPB_I2cSensors\fP *data: I2C devices 
+.br
+\fIint\fP n: indicate from which of the 6 SFP is going to be read, 
+.br
+\fIfloat\fP *res: where the magnitude value is stored
+.RE
+.PP
+\fBReturns\fP
+.RS 4
+Negative integer if reading fails\&.If not, returns 0 and the stored value in *res
+.RE
+.PP
+\fBNote\fP
+.RS 4
+The magnitude conversion is based on the datasheet\&. 
+.RE
+.PP
+
+.SS "int sfp_avago_read_status (struct \fBDPB_I2cSensors\fP * data, int n, uint8_t * res)"
+HReads SFP current RX_LOS and TX_FAULT status
+.PP
+\fBParameters\fP
+.RS 4
+\fIstruct\fP \fBDPB_I2cSensors\fP *data: I2C devices 
+.br
+\fIint\fP n: indicate from which of the 6 SFP is dealing with 
+.br
+\fIuint8_t\fP * res : stores the current RX_LOS and TX_FAULT status
+.RE
+.PP
+\fBReturns\fP
+.RS 4
+0 if reads properly and stores 0 or 1 depending on the current states (1 if status asserted, 0 if not) 
+.RE
+.PP
+
+.SS "int sfp_avago_read_temperature (struct \fBDPB_I2cSensors\fP * data, int n, float * res)"
+Reads SFP temperature and stores the value in *res
+.PP
+\fBParameters\fP
+.RS 4
+\fIstruct\fP \fBDPB_I2cSensors\fP *data: I2C devices 
+.br
+\fIint\fP n: indicate from which of the 6 SFP is going to be read 
+.br
+\fIfloat\fP *res where the magnitude value is stored
+.RE
+.PP
+\fBReturns\fP
+.RS 4
+Negative integer if reading fails\&.If not, returns 0 and the stored value in *res
+.RE
+.PP
+\fBNote\fP
+.RS 4
+The magnitude conversion is based on the datasheet\&. 
+.RE
+.PP
+
+.SS "int sfp_avago_read_tx_av_optical_pwr (struct \fBDPB_I2cSensors\fP * data, int n, float * res)"
+Reads SFP average transmitted optical power and stores the value in *res
+.PP
+\fBParameters\fP
+.RS 4
+\fIstruct\fP \fBDPB_I2cSensors\fP *data: I2C devices 
+.br
+\fIint\fP n: indicate from which of the 6 SFP is going to be read 
+.br
+\fIfloat\fP *res: where the magnitude value is stored
+.RE
+.PP
+\fBReturns\fP
+.RS 4
+Negative integer if reading fails\&.If not, returns 0 and the stored value in *res
+.RE
+.PP
+\fBNote\fP
+.RS 4
+The magnitude conversion is based on the datasheet\&. 
+.RE
+.PP
+
+.SS "int sfp_avago_read_voltage (struct \fBDPB_I2cSensors\fP * data, int n, float * res)"
+Reads SFP voltage supply and stores the value in *res
+.PP
+\fBParameters\fP
+.RS 4
+\fIstruct\fP \fBDPB_I2cSensors\fP *data: I2C devices 
+.br
+\fIint\fP n: indicate from which of the 6 SFP is going to be read 
+.br
+\fIfloat\fP *res: where the magnitude value is stored
+.RE
+.PP
+\fBReturns\fP
+.RS 4
+Negative integer if reading fails\&.If not, returns 0 and the stored value in *res
+.RE
+.PP
+\fBNote\fP
+.RS 4
+The magnitude conversion is based on the datasheet\&. 
+.RE
+.PP
+
+.SS "int sfp_avago_status_interruptions (uint8_t status, int n)"
+Handles SFP status interruptions
+.PP
+\fBParameters\fP
+.RS 4
+\fIuint16_t\fP flags: contains alarms flags 
+.br
+\fIint\fP n: indicate from which of the 6 SFP is dealing with
+.RE
+.PP
+\fBReturns\fP
+.RS 4
+0 and handles interruption depending on the active status flags 
+.RE
+.PP
+
+.SS "void sighandler (int signum)"
+Closes ZMQ sockets and GPIOs when exiting\&. Handles termination signals, kills every subprocess
+.PP
+\fBParameters\fP
+.RS 4
+\fIint\fP signum: Signal ID
+.RE
+.PP
+\fBReturns\fP
+.RS 4
+NULL 
+.RE
+.PP
+
+.SS "int status_alarm_json (char * board, char * chip, int chan, uint64_t timestamp, char * info_type)"
+Parses alarms data into a JSON string and send it to socket
+.PP
+\fBParameters\fP
+.RS 4
+\fIint\fP chan: Number of measured channel, if chan is 99 means channel will not be parsed (also indicates it is not SFP related) 
+.br
+\fIchar\fP *chip: Name of the chip that triggered the alarm 
+.br
+\fIchar\fP *board: Name of the board where the alarm is asserted 
+.br
+\fIuint64_t\fP timestamp: Time when the event occurred 
+.br
+\fIchar\fP *info_type: Determines the reported event type (inof,warning or critical)
+.RE
+.PP
+\fBReturns\fP
+.RS 4
+0 or negative integer if validation fails 
+.RE
+.PP
+
+.SS "int stop_I2cSensors (struct \fBDPB_I2cSensors\fP * data)"
+Stops every I2C Sensors
+.PP
+\fBParameters\fP
+.RS 4
+\fI\fBDPB_I2cSensors\fP\fP *data: struct which contains every I2C sensor available
+.RE
+.PP
+\fBReturns\fP
+.RS 4
+0\&. 
+.RE
+.PP
+
+.SS "void unexport_GPIO ()"
+Unexport possible remaining GPIO files when terminating app
+.PP
+\fBReturns\fP
+.RS 4
+NULL 
+.RE
+.PP
+
+.SS "int write_GPIO (int address, int value)"
+Writes into a given GPIO address
+.PP
+\fBParameters\fP
+.RS 4
+\fIint\fP address: GPIO address where the value is going to be written 
+.br
+\fIint\fP value: value which will be written (0 o 1)
+.RE
+.PP
+\fBReturns\fP
+.RS 4
+0 if worked correctly, if not returns a negative integer\&. 
+.RE
+.PP
+
+.SS "int xlnx_ams_read_temp (int * chan, int n, float * res)"
+Reads temperature of n channels (channels specified in *chan) and stores the values in *res
+.PP
+\fBParameters\fP
+.RS 4
+\fIint\fP *chan: array which contain channels to measure 
+.br
+\fIint\fP n: number of channels to measure 
+.br
+\fIfloat\fP *res: array where results are stored in
+.RE
+.PP
+\fBReturns\fP
+.RS 4
+Negative integer if reading fails\&.If not, returns 0 and the stored values in *res
+.RE
+.PP
+\fBNote\fP
+.RS 4
+The resulting magnitude is obtained by applying the ADC conversion specified by Xilinx 
+.RE
+.PP
+
+.SS "int xlnx_ams_read_volt (int * chan, int n, float * res)"
+Reads voltage of n channels (channels specified in *chan) and stores the values in *res
+.PP
+\fBParameters\fP
+.RS 4
+\fIint\fP *chan: array which contain channels to measure 
+.br
+\fIint\fP n: number of channels to measure 
+.br
+\fIfloat\fP *res: array where results are stored in
+.RE
+.PP
+\fBReturns\fP
+.RS 4
+Negative integer if reading fails\&.If not, returns 0 and the stored values in *res
+.RE
+.PP
+\fBNote\fP
+.RS 4
+The resulting magnitude is obtained by applying the ADC conversion specified by Xilinx 
+.RE
+.PP
+
+.SS "int xlnx_ams_set_limits (int chan, char * ev_type, char * ch_type, float val)"
+Determines the new limit of the alarm of the channel n
+.PP
+\fBParameters\fP
+.RS 4
+\fIint\fP chan: channel whose alarm limit will be changed 
+.br
+\fIchar\fP *ev_type: string that determines the type of the event 
+.br
+\fIchar\fP *ch_type: string that determines the type of the channel 
+.br
+\fIfloat\fP val: value of the new limit
+.RE
+.PP
+\fBReturns\fP
+.RS 4
+Negative integer if setting fails, any file could not be opened or invalid argument\&.If not, returns 0 and the modifies the specified limit 
+.RE
+.PP
+
+.SS "int zmq_socket_init ()"
+Initializes ZMQ monitoring, command and alarms sockets
+.PP
+\fBReturns\fP
+.RS 4
+0 if parameters OK and reports the event\&. If not returns negative integer\&. 
+.RE
+.PP
+
+.SH "Variable Documentation"
+.PP 
+.SS "void* alarm_publisher"
+
+.SS "void* cmd_router"
+
+.SS "void* mon_publisher"
+
+.SS "void* zmq_context"
+
+.SH "Author"
+.PP 
+Generated automatically by Doxygen for DPB2 App Documentation from the source code\&.

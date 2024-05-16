@@ -24,7 +24,7 @@
 */
 var NAVTREE =
 [
-  [ "DPB2 SlowControl App", "index.html", [
+  [ "DPB2 App Documentation", "index.html", [
     [ "Topics", "topics.html", "topics" ],
     [ "Data Structures", "annotated.html", [
       [ "Data Structures", "annotated.html", "annotated_dup" ],
@@ -49,7 +49,7 @@ var NAVTREE =
 var NAVTREEINDEX =
 [
 "annotated.html",
-"main_8c.html#a5a98c6444c1373ca108da794f8609a4d"
+"main_8c.html#a5e5fa1b54341fcff49c3c2e91fbfcc1a"
 ];
 
 var SYNCONMSG = 'click to disable panel synchronisation';
