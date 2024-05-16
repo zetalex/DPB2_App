@@ -311,16 +311,34 @@ class DPB2scLibrary(object):
         float_ptr = ctypes.cast(float_array, FloatPointer)
         if chip == "SFP0":
             c_chip = c_int(0)
+            sfp_connected = c_int.in_dll(self.dpb2sc, "sfp0_connected")
+            if sfp_connected.value != 1:
+                raise AssertionError('SFP%s not available = %s' % (0))
         elif chip == "SFP1": 
             c_chip = c_int(1)
+            sfp_connected = c_int.in_dll(self.dpb2sc, "sfp1_connected")
+            if sfp_connected.value != 1:
+                raise AssertionError('SFP%s not available = %s' % (1))
         elif chip == "SFP2": 
             c_chip = c_int(2)
+            sfp_connected = c_int.in_dll(self.dpb2sc, "sfp2_connected")
+            if sfp_connected.value != 1:
+                raise AssertionError('SFP%s not available = %s' % (2))
         elif chip == "SFP3": 
             c_chip = c_int(3)
+            sfp_connected = c_int.in_dll(self.dpb2sc, "sfp3_connected")
+            if sfp_connected.value != 1:
+                raise AssertionError('SFP%s not available = %s' % (3))
         elif chip == "SFP4": 
             c_chip = c_int(4)
+            sfp_connected = c_int.in_dll(self.dpb2sc, "sfp4_connected")
+            if sfp_connected.value != 1:
+                raise AssertionError('SFP%s not available = %s' % (4))
         elif chip == "SFP5": 
             c_chip = c_int(5)
+            sfp_connected = c_int.in_dll(self.dpb2sc, "sfp5_connected")
+            if sfp_connected.value != 1:
+                raise AssertionError('SFP%s not available = %s' % (5))
         self.dpb2sc.sfp_avago_read_tx_av_optical_pwr(byref(self.structure_i2c),c_chip,float_ptr)
         self._result = float_array[0]
 
@@ -336,16 +354,34 @@ class DPB2scLibrary(object):
         float_ptr = ctypes.cast(float_array, FloatPointer)
         if chip == "SFP0":
             c_chip = c_int(0)
+            sfp_connected = c_int.in_dll(self.dpb2sc, "sfp0_connected")
+            if sfp_connected.value != 1:
+                raise AssertionError('SFP%s not available = %s' % (0))
         elif chip == "SFP1": 
             c_chip = c_int(1)
+            sfp_connected = c_int.in_dll(self.dpb2sc, "sfp1_connected")
+            if sfp_connected.value != 1:
+                raise AssertionError('SFP%s not available = %s' % (1))
         elif chip == "SFP2": 
             c_chip = c_int(2)
+            sfp_connected = c_int.in_dll(self.dpb2sc, "sfp2_connected")
+            if sfp_connected.value != 1:
+                raise AssertionError('SFP%s not available = %s' % (2))
         elif chip == "SFP3": 
             c_chip = c_int(3)
+            sfp_connected = c_int.in_dll(self.dpb2sc, "sfp3_connected")
+            if sfp_connected.value != 1:
+                raise AssertionError('SFP%s not available = %s' % (3))
         elif chip == "SFP4": 
             c_chip = c_int(4)
+            sfp_connected = c_int.in_dll(self.dpb2sc, "sfp4_connected")
+            if sfp_connected.value != 1:
+                raise AssertionError('SFP%s not available = %s' % (4))
         elif chip == "SFP5": 
             c_chip = c_int(5)
+            sfp_connected = c_int.in_dll(self.dpb2sc, "sfp5_connected")
+            if sfp_connected.value != 1:
+                raise AssertionError('SFP%s not available = %s' % (5))
         self.dpb2sc.sfp_avago_read_rx_av_optical_pwr(byref(self.structure_i2c),c_chip,float_ptr)
         self._result = float_array[0]
 
