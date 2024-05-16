@@ -101,7 +101,7 @@ class DPB2scLibrary(object):
                         }
         fp.close()
 
-    def __del__(self):
+    def library_teardown(self):
         """Destroys class
         """ 
         self.dpb2sc.sighandler(ctypes.c_int(15))
@@ -204,7 +204,7 @@ class DPB2scLibrary(object):
 
         """
         FloatPointer = ctypes.POINTER(ctypes.c_float)
-        float_array = (ctypes.c_float * 3)
+        float_array = (ctypes.c_float * 3)(0,0,0)
         float_ptr = ctypes.cast(float_array, FloatPointer)
         if chip == "SFP0":
             c_chip = c_int(0)
@@ -234,7 +234,7 @@ class DPB2scLibrary(object):
             c_chip = c_int(2)
             channel = 2
         self.dpb2sc.ina3221_get_voltage(byref(self.structure_i2c),c_chip,float_ptr)
-        self._result = float_array[channel].value
+        self._result = float_array[channel]
 
     def get_bus_current (self,chip):
         """Get Bus Current
@@ -244,7 +244,7 @@ class DPB2scLibrary(object):
 
         """
         FloatPointer = ctypes.POINTER(ctypes.c_float)
-        float_array = (ctypes.c_float * 3)
+        float_array = (ctypes.c_float * 3)(0,0,0)
         float_ptr = ctypes.cast(float_array, FloatPointer)
         if chip == "SFP0":
             c_chip = c_int(0)
@@ -274,7 +274,7 @@ class DPB2scLibrary(object):
             c_chip = c_int(2)
             channel = 2
         self.dpb2sc.ina3221_get_current(byref(self.structure_i2c),c_chip,float_ptr)
-        self._result = float_array[channel].value
+        self._result = float_array[channel]
 
 
     #########################################################
@@ -288,7 +288,7 @@ class DPB2scLibrary(object):
 
         """
         FloatPointer = ctypes.POINTER(ctypes.c_float)
-        float_array = (ctypes.c_float * 1)
+        float_array = (ctypes.c_float * 1)(0)
         float_ptr = ctypes.cast(float_array, FloatPointer)
         if chip == "SFP0":
             c_chip = c_int(0)
@@ -303,7 +303,7 @@ class DPB2scLibrary(object):
         elif chip == "SFP5": 
             c_chip = c_int(5)
         self.dpb2sc.sfp_avago_read_tx_av_optical_pwr(byref(self.structure_i2c),c_chip,float_ptr)
-        self._result = float_array[0].value
+        self._result = float_array[0]
 
     def sfp_rx_power (self,chip):
         """Get SFP RX Power
@@ -313,7 +313,7 @@ class DPB2scLibrary(object):
 
         """
         FloatPointer = ctypes.POINTER(ctypes.c_float)
-        float_array = (ctypes.c_float * 1)
+        float_array = (ctypes.c_float * 1)(0)
         float_ptr = ctypes.cast(float_array, FloatPointer)
         if chip == "SFP0":
             c_chip = c_int(0)
@@ -328,7 +328,7 @@ class DPB2scLibrary(object):
         elif chip == "SFP5": 
             c_chip = c_int(5)
         self.dpb2sc.sfp_avago_read_rx_av_optical_pwr(byref(self.structure_i2c),c_chip,float_ptr)
-        self._result = float_array[0].value
+        self._result = float_array[0]
 
     #########################################################
     #GPIO functions
@@ -342,12 +342,12 @@ class DPB2scLibrary(object):
 
         """
         Int_pointer = POINTER(c_int)
-        int_array = (ctypes.c_int * 1)
+        int_array = (ctypes.c_int * 1) (0)
         int_ptr = ctypes.cast(int_array, Int_pointer)
 
         c_pin_num = c_int(pin_num)
         self.dpb2sc.read_GPIO(c_pin_num,int_ptr)
-        self._result = int_array[0].value
+        self._result = int_array[0]
     
     def write_gpio (self, pin_num, value):
         """Write GPIO
@@ -380,7 +380,7 @@ class DPB2scLibrary(object):
 
         """
         FloatPointer = ctypes.POINTER(ctypes.c_float)
-        float_array = (ctypes.c_float * 1)
+        float_array = (ctypes.c_float * 1)(0)
         float_ptr = ctypes.cast(float_array, FloatPointer)
 
         IntPointer = ctypes.POINTER(ctypes.c_int)
@@ -388,7 +388,7 @@ class DPB2scLibrary(object):
         int_ptr = ctypes.cast(int_array, IntPointer)
 
         self.dpb2sc.xlnx_ams_read_volt(int_ptr,c_int(1),float_ptr)
-        self._result = float_array[0].value
+        self._result = float_array[0]
 
     def set_ams_alarms_limit (self,magnitude,ev_dir,channel,value):
         """Set AMS alarm limit
@@ -435,7 +435,7 @@ class DPB2scLibrary(object):
         palabras = command.split()
         self.socket.send_string("Hola")
     
-        char_array = (ctypes.c_char_p * len(palabras))()
+        char_array = (ctypes.c_char_p * len(palabras))('')
         
         for i, palabra in enumerate(palabras):
             char_array[i] = ctypes.c_char_p(palabra.encode())
@@ -603,7 +603,7 @@ class DPB2scLibrary(object):
             raise AssertionError(f"The expected alarm was not detected by IIO Event Monitor")
         
     def check_sfp_presence(self):
-        """Check all 6 SFPs presence
+        """Check all 6 SFPs presence by reading MOD ABS pin of each one
 
         """
         missing_sfps = []
@@ -646,7 +646,7 @@ class DPB2scLibrary(object):
 
         """
         IntPointer = ctypes.POINTER(ctypes.c_int)
-        int_array = (ctypes.c_int * 2)
+        int_array = (ctypes.c_int * 2) (0,0)
         int_ptr = ctypes.cast(int_array, IntPointer)
         if chip == "SFP0":
             c_chip = c_int(0)
