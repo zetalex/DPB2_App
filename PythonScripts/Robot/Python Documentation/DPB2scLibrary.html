@@ -71,6 +71,7 @@
 <li><a class="reference internal" href="#DPB2scLibrary.DPB2scLibrary.initialize_iio_event_monitor"><code class="docutils literal notranslate"><span class="pre">DPB2scLibrary.initialize_iio_event_monitor()</span></code></a></li>
 <li><a class="reference internal" href="#DPB2scLibrary.DPB2scLibrary.initialize_zmq_ethernet_sockets"><code class="docutils literal notranslate"><span class="pre">DPB2scLibrary.initialize_zmq_ethernet_sockets()</span></code></a></li>
 <li><a class="reference internal" href="#DPB2scLibrary.DPB2scLibrary.library_directory"><code class="docutils literal notranslate"><span class="pre">DPB2scLibrary.library_directory</span></code></a></li>
+<li><a class="reference internal" href="#DPB2scLibrary.DPB2scLibrary.library_teardown"><code class="docutils literal notranslate"><span class="pre">DPB2scLibrary.library_teardown()</span></code></a></li>
 <li><a class="reference internal" href="#DPB2scLibrary.DPB2scLibrary.read_gpio"><code class="docutils literal notranslate"><span class="pre">DPB2scLibrary.read_gpio()</span></code></a></li>
 <li><a class="reference internal" href="#DPB2scLibrary.DPB2scLibrary.result_matches_rx_power_ranges"><code class="docutils literal notranslate"><span class="pre">DPB2scLibrary.result_matches_rx_power_ranges()</span></code></a></li>
 <li><a class="reference internal" href="#DPB2scLibrary.DPB2scLibrary.result_matches_tx_power_ranges"><code class="docutils literal notranslate"><span class="pre">DPB2scLibrary.result_matches_tx_power_ranges()</span></code></a></li>
@@ -181,7 +182,7 @@ chip(string): SFP to be validated.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="DPB2scLibrary.DPB2scLibrary.check_sfp_presence">
 <span class="sig-name descname"><span class="pre">check_sfp_presence</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/DPB2scLibrary.html#DPB2scLibrary.check_sfp_presence"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#DPB2scLibrary.DPB2scLibrary.check_sfp_presence" title="Permalink to this definition"></a></dt>
-<dd><p>Check all 6 SFPs presence</p>
+<dd><p>Check all 6 SFPs presence by reading MOD ABS pin of each one</p>
 </dd></dl>
 
 <dl class="py method">
@@ -282,6 +283,12 @@ chip (string): Desired voltage chip.</p>
 <dt class="sig sig-object py" id="DPB2scLibrary.DPB2scLibrary.library_directory">
 <span class="sig-name descname"><span class="pre">library_directory</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'/usr/lib'</span></em><a class="headerlink" href="#DPB2scLibrary.DPB2scLibrary.library_directory" title="Permalink to this definition"></a></dt>
 <dd><p>Libraries directory</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="DPB2scLibrary.DPB2scLibrary.library_teardown">
+<span class="sig-name descname"><span class="pre">library_teardown</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/DPB2scLibrary.html#DPB2scLibrary.library_teardown"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#DPB2scLibrary.DPB2scLibrary.library_teardown" title="Permalink to this definition"></a></dt>
+<dd><p>Destroys class</p>
 </dd></dl>
 
 <dl class="py method">
