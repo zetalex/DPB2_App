@@ -675,13 +675,14 @@ class DPB2scLibrary(object):
         channel(int): Channel that is supposed to trigger the alarm.
 
         """
+        chann = c_int(0)
+        ev_buffer = ctypes.create_string_buffer(32)
+        ev_buffer.value = b""
+        ch_buffer = ctypes.create_string_buffer(32)
+        ch_buffer.value = b""
 
-        memory = Wrapper.in_dll(self.dpb2sc,"memory")
-
-        ev_type_str = memory.ev_type
-        ch_type_str = memory.ch_type
-        chann = memory.chn
-        if not ((ev_type_str == "either") and (ch_type_str == "temp") and (chann == int(channel))):
+        self.dpb2sc.read_shm(byref(channel),ev_buffer,ch_buffer)
+        if not ((ev_buffer.value == "either") and (ch_buffer.value == "voltage") and (chann.value == int(channel))):
             raise AssertionError(f"The expected alarm was not detected by IIO Event Monitor")
         
     def check_sfp_presence(self):
