@@ -476,7 +476,7 @@ class DPB2scLibrary(object):
         elif ev_dir == "Lower": 
             c_ev_dir = c_char_p(b"falling")
 
-        self.dpb2sc.xlnx_ams_set_limits(c_int(int(channel)),byref(c_ev_dir),byref(c_magnitude),c_float(value))
+        self.dpb2sc.xlnx_ams_set_limits(c_int(int(channel)),byref(c_ev_dir),byref(c_magnitude),c_float(float(value)))
 
     #########################################################
     #Command functions
