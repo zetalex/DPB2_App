@@ -476,7 +476,7 @@ class DPB2scLibrary(object):
         elif ev_dir == "Lower": 
             c_ev_dir = c_char_p(b"falling")
 
-        self.dpb2sc.xlnx_ams_set_limits(c_int(int(channel)),byref(c_ev_dir),byref(c_magnitude),c_float(float(value)))
+        self.dpb2sc.xlnx_ams_set_limits(c_int(int(channel)),c_ev_dir,c_magnitude,c_float(float(value)))
 
     #########################################################
     #Command functions
@@ -682,12 +682,11 @@ class DPB2scLibrary(object):
         """
 
         memory = Wrapper.in_dll(self.dpb2sc,"memory")
-        memory_pointer = POINTER(memory)
 
-        ev_type_str = memory_pointer.contents.ev_type.decode("utf-8")
-        ch_type_str = memory_pointer.contents.ch_type.decode("utf-8")
-        chann = memory_pointer.contents.chn
-        if not (ev_type_str == "either") and (ch_type_str == "temp") and (chann == int(channel)):
+        ev_type_str = memory.ev_type
+        ch_type_str = memory.ch_type
+        chann = memory.chn
+        if not ((ev_type_str == "either") and (ch_type_str == "temp") and (chann == int(channel))):
             raise AssertionError(f"The expected alarm was not detected by IIO Event Monitor")
         
     def check_sfp_presence(self):
