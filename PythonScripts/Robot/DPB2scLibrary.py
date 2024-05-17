@@ -180,10 +180,9 @@ class DPB2scLibrary(object):
             os.system(cmd)
             with open(r'/home/petalinux/temp.txt', 'r') as fp:
                 eth_int = fp.read()
-                eth_int.strip('/n')
             fp.close()
             os.system(rm_cmd)
-            if not eth_int == b"eth0":
+            if not re.search(r'\beth0\b', eth_int, re.IGNORECASE):
                 raise AssertionError("Active Ethernet interface selection failed")
         elif eth_interface == "Backup":
             os.write(fd,b"eth1")
@@ -192,10 +191,9 @@ class DPB2scLibrary(object):
             os.system(cmd)
             with open(r'/home/petalinux/temp.txt', 'r') as fp:
                 eth_int = fp.read()
-                eth_int.strip('/n')
             fp.close()
             os.system(rm_cmd)
-            if not eth_int == b"eth1":
+            if not re.search(r'\beth1\b', eth_int, re.IGNORECASE):
                 raise AssertionError("Active Ethernet interface selection failed")
         
     
@@ -628,7 +626,7 @@ class DPB2scLibrary(object):
             os.system("ethtool eth1 | grep 'Link detected' >> /home/petalinux/eth_temp.txt")
         with open(r'/home/petalinux/eth_temp.txt', 'r') as fp:
             eth_status = fp.read()
-        fp.close
+        fp.close()
         os.system("rm /home/petalinux/eth_temp.txt")
         print(type(eth_status))
         if re.search(r'\byes\b', eth_status, re.IGNORECASE):
