@@ -476,7 +476,7 @@ class DPB2scLibrary(object):
         elif ev_dir == "Lower": 
             c_ev_dir = c_char_p(b"falling")
 
-        self.dpb2sc.xlnx_ams_set_limits(c_int(channel),byref(c_ev_dir),byref(c_magnitude),c_float(value))
+        self.dpb2sc.xlnx_ams_set_limits(c_int(int(channel)),byref(c_ev_dir),byref(c_magnitude),c_float(value))
 
     #########################################################
     #Command functions
@@ -530,6 +530,8 @@ class DPB2scLibrary(object):
 
         if not (lower_bound <= self._result <= upper_bound):
             raise AssertionError('%s is not within the range [%s, %s]' % (self._result, lower_bound, upper_bound))
+        else:
+            print('%s is within the range [%s, %s]' % (self._result, lower_bound, upper_bound))
         
     def result_should_be(self, expected):
         """Check if value matches
@@ -540,6 +542,8 @@ class DPB2scLibrary(object):
         """
         if self._result != float(expected):
             raise AssertionError('%s != %s' % (self._result, expected))
+        else:
+            print('%s == %s' % (self._result, expected))
         
     def check_zmq_initialization(self):
         """Check ZMQ sockets intialization
@@ -680,7 +684,7 @@ class DPB2scLibrary(object):
         ev_type_str = memory_pointer.contents.ev_type.decode("utf-8")
         ch_type_str = memory_pointer.contents.ch_type.decode("utf-8")
         chann = memory_pointer.contents.chn
-        if not (ev_type_str == "either") and (ch_type_str == "temp") and (chann == channel):
+        if not (ev_type_str == "either") and (ch_type_str == "temp") and (chann == int(channel)):
             raise AssertionError(f"The expected alarm was not detected by IIO Event Monitor")
         
     def check_sfp_presence(self):
