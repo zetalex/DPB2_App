@@ -489,25 +489,20 @@ class DPB2scLibrary(object):
         command(string): DPB command.
 
         """
-        self.context = zmq.Context()
-        self.socket = self.context.socket(zmq.REQ)
-        self.socket.connect("tcp://127.0.0.1:5557")
         palabras = command.split()
-        self.socket.send_string("Hola")
+        buffer = ctypes.create_string_buffer(256)
+        buffer.value = b""
     
         char_array = (ctypes.c_char_p * len(palabras))('')
         
         for i, palabra in enumerate(palabras):
             char_array[i] = ctypes.c_char_p(palabra.encode())
         
-        ptr_ptr_char = ctypes.cast(char_array, ctypes.POINTER(ctypes.c_char_p))
+        ptr_ptr_char = ctypes.cast(char_array, ctypes.POINTER(ctypes.c_char_p),buffer)
 
         self.dpb2sc.dpb_command_handling(byref(self.structure_i2c),ptr_ptr_char, c_int(33))
-        cmd_reply = self.socket.recv_string()
-        mensaje_json = json.loads(cmd_reply)
+        mensaje_json = json.loads(buffer.value)
         self.cmd_msg_value = mensaje_json.get('msg_value')
-        self.socket.close()
-        self.context.term()
 
     #########################################################
     #Check functions
