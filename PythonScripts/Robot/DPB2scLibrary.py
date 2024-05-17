@@ -176,7 +176,6 @@ class DPB2scLibrary(object):
         if eth_interface == "Main":
             os.write(fd,b"eth0")
             os.close(fd)
-            time.sleep(1)
             os.system(cmd)
             with open(r'/home/petalinux/temp.txt', 'r') as fp:
                 eth_int = fp.read()
@@ -187,7 +186,6 @@ class DPB2scLibrary(object):
         elif eth_interface == "Backup":
             os.write(fd,b"eth1")
             os.close(fd)
-            time.sleep(1)
             os.system(cmd)
             with open(r'/home/petalinux/temp.txt', 'r') as fp:
                 eth_int = fp.read()
@@ -209,7 +207,7 @@ class DPB2scLibrary(object):
 
         """
         if eth_interface == "Main":
-            c_eth_interface = c_char_p(b"eth0")
+            c_eth_interface = c_char_p(b"ETH0")
         elif eth_interface == "Backup": 
             c_eth_interface = c_char_p(b"eth1")
         if value == "ON":
