@@ -162,6 +162,7 @@ class DPB2scLibrary(object):
         elif aux == 1:
             print(file_str)
 
+            
     def select_active_ethernet_interface(self,eth_interface):
         """Select active Ethernet interface
 
@@ -170,18 +171,30 @@ class DPB2scLibrary(object):
 
         """
         fd = os.open("/sys/devices/virtual/net/daq-bond/bonding/active_slave", os.O_RDWR)
+        cmd = "cat /sys/devices/virtual/net/daq-bond/bonding/active_slave > /home/petalinux/temp.txt"
+        rm_cmd = "rm /home/petalinux/temp.txt"
         if eth_interface == "Main":
-            os.write(b"eth0")
-            f_size = os.path.getsize("/sys/devices/virtual/net/daq-bond/bonding/active_slave")	
-            eth_int = os.read(fd, f_size) 
+            os.write(fd,b"eth0")
             os.close(fd)
+            time.sleep(1)
+            os.system(cmd)
+            with open(r'/home/petalinux/temp.txt', 'r') as fp:
+                eth_int = fp.read()
+                eth_int.strip('/n')
+            fp.close()
+            os.system(rm_cmd)
             if not eth_int == b"eth0":
                 raise AssertionError("Active Ethernet interface selection failed")
         elif eth_interface == "Backup":
-            os.write(b"eth1")
-            f_size = os.path.getsize("/sys/devices/virtual/net/daq-bond/bonding/active_slave")	
-            eth_int = os.read(fd, f_size) 
+            os.write(fd,b"eth1")
             os.close(fd)
+            time.sleep(1)
+            os.system(cmd)
+            with open(r'/home/petalinux/temp.txt', 'r') as fp:
+                eth_int = fp.read()
+                eth_int.strip('/n')
+            fp.close()
+            os.system(rm_cmd)
             if not eth_int == b"eth1":
                 raise AssertionError("Active Ethernet interface selection failed")
         
