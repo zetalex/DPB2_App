@@ -444,7 +444,7 @@ class DPB2scLibrary(object):
         float_ptr = ctypes.cast(float_array, FloatPointer)
 
         IntPointer = ctypes.POINTER(ctypes.c_int)
-        int_array = (ctypes.c_int * 1) (channel)
+        int_array = (ctypes.c_int * 1) (int(channel))
         int_ptr = ctypes.cast(int_array, IntPointer)
 
         self.dpb2sc.xlnx_ams_read_volt(int_ptr,c_int(1),float_ptr)
@@ -732,21 +732,39 @@ class DPB2scLibrary(object):
         if chip == "SFP0":
             c_chip = c_int(0)
             i = 0
+            sfp_connected = c_int.in_dll(self.dpb2sc, "sfp0_connected")
+            if sfp_connected.value != 1:
+                raise AssertionError('SFP%s not available' % (0))
         elif chip == "SFP1": 
             c_chip = c_int(1)
             i = 1
+            sfp_connected = c_int.in_dll(self.dpb2sc, "sfp1_connected")
+            if sfp_connected.value != 1:
+                raise AssertionError('SFP%s not available' % (1))
         elif chip == "SFP2": 
             c_chip = c_int(2)
             i = 2
+            sfp_connected = c_int.in_dll(self.dpb2sc, "sfp2_connected")
+            if sfp_connected.value != 1:
+                raise AssertionError('SFP%s not available' % (2))
         elif chip == "SFP3": 
             c_chip = c_int(3)
             i = 3
+            sfp_connected = c_int.in_dll(self.dpb2sc, "sfp3_connected")
+            if sfp_connected.value != 1:
+                raise AssertionError('SFP%s not available' % (3))
         elif chip == "SFP4": 
             c_chip = c_int(4)
             i = 4
+            sfp_connected = c_int.in_dll(self.dpb2sc, "sfp4_connected")
+            if sfp_connected.value != 1:
+                raise AssertionError('SFP%s not available' % (4))
         elif chip == "SFP5": 
             c_chip = c_int(5)
             i = 5
+            sfp_connected = c_int.in_dll(self.dpb2sc, "sfp5_connected")
+            if sfp_connected.value != 1:
+                raise AssertionError('SFP%s not available' % (5))
         status = self.dpb2sc.sfp_avago_read_status(byref(self.structure_i2c),c_chip,int_ptr)
         self.read_gpio(14+(i*4))
         if (status & 0x02) and (self._result != 1):
