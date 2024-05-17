@@ -635,7 +635,15 @@ class DPB2scLibrary(object):
             return b"ON"
         else:
             return b"OFF"
+    def connect_to_zmq_alarm_socket(self):
+        """Connects to ZMQ alarm socket
         
+        """
+        self.context = zmq.Context()
+        self.socket = self.context.socket(zmq.SUB)
+        self.socket.connect("tcp://127.0.0.1:5556")
+        self.socket.setsockopt_string(zmq.SUBSCRIBE, "")
+
     def check_ethernet_alarm(self,eth_interface):
         """Forces and check Ethernet alarm triggered
 
@@ -643,11 +651,6 @@ class DPB2scLibrary(object):
         eth_interface(string): Ethernet interface used to force alarm.
 
         """
-        self.context = zmq.Context()
-        self.socket = self.context.socket(zmq.SUB)
-        self.socket.connect("tcp://127.0.0.1:5556")
-        self.socket.setsockopt_string(zmq.SUBSCRIBE, "")
-
         if eth_interface == "Main" :
             c_interface = c_char_p(b"eth0")
             c_flag = "eth0_flag"
@@ -656,19 +659,19 @@ class DPB2scLibrary(object):
             c_flag = "eth1_flag"
 
         ethernet_flag = c_int.in_dll(self.dpb2sc, c_flag)
-        self.set_ethernet_link_status(eth_interface,"ON")
-        self.dpb2sc.eth_down_alarm(c_interface ,byref(ethernet_flag))
-        self.set_ethernet_link_status(eth_interface,"OFF")
         self.dpb2sc.eth_down_alarm(c_interface ,byref(ethernet_flag))
 
-        mensaje = self.socket.recv_string(flags=zmq.NOBLOCK)
+        mensaje = self.socket.recv_string()
         mensaje_json = json.loads(mensaje)
         magnitudename = mensaje_json.get('magnitudename')
-        self.set_ethernet_link_status(c_interface ,"ON")
+        self.set_ethernet_link_status(eth_interface ,"ON")
+        self.dpb2sc.eth_down_alarm(c_interface ,byref(ethernet_flag))
         self.socket.close()
         self.context.term()
-        if re.search(r'\bBackup Ethernet Link Status\b', magnitudename, re.IGNORECASE):
+        if not re.search(r'\bBackup Ethernet Link Status\b', magnitudename, re.IGNORECASE):
             raise AssertionError(f"The expected alarm was not found in alarm socket, found this: {magnitudename}")
+        else:
+            print(magnitudename)
         
     def check_ams_voltage_alarm(self,channel):
         """Check AMS voltage alarm triggered after forcing it
