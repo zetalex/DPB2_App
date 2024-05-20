@@ -599,7 +599,8 @@ class DPB2scLibrary(object):
         """Check command is valid
 
         """
-        if re.search(r'\bERROR\b', self.cmd_msg_value, re.IGNORECASE):
+        self._result = float(self.cmd_msg_value)
+        if re.search(r'\bERROR\b', str(self.cmd_msg_value), re.IGNORECASE):
             raise AssertionError(f"An unexpected error was found in the command reply: {self.cmd_msg_value}")
     def check_set_command_error(self):
         """Check SET command error reply is correct
