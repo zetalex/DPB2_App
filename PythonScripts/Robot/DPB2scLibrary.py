@@ -703,7 +703,7 @@ class DPB2scLibrary(object):
         missing_sfps = []
         for i in range(6):
             self.read_gpio(13+(4*i)) 
-            if self._result != 1:
+            if self._result == 1:
                 missing_sfps.append(i)
         if missing_sfps:
             mensaje_error = "The presence of the following SFPs has not been detected: "
