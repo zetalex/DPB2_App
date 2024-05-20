@@ -419,13 +419,14 @@ class DPB2scLibrary(object):
         value (int): Value to write.
 
         """
-        if (self._result < 0 or self._result > 11) and (self._result < 48 or self._result > 65):
+        pin = int(pin_num)
+        if (pin < 0 or pin > 11) and (pin < 48 or pin > 65):
             raise AssertionError('Pin number not in valid range. Pin number = %s' % (self._result))
         if value == "ON":
             c_value = c_int(1)
         elif value == "OFF": 
             c_value = c_int(0)
-        c_pin_num = c_int(pin_num)
+        c_pin_num = c_int(pin)
         self.dpb2sc.write_GPIO(c_pin_num,c_value)
 
     #########################################################
@@ -492,17 +493,26 @@ class DPB2scLibrary(object):
         palabras = command.split()
         buffer = ctypes.create_string_buffer(256)
         buffer.value = b""
+        vacio = ''
+        while len(palabras) < 4:
+            palabras.append("")
     
-        char_array = (ctypes.c_char_p * len(palabras))('')
+        char_array = (ctypes.c_char_p * len(palabras))(vacio.encode("utf-8"))
         
         for i, palabra in enumerate(palabras):
-            char_array[i] = ctypes.c_char_p(palabra.encode())
+            char_array[i] = ctypes.c_char_p(palabra.encode("utf-8"))
         
-        ptr_ptr_char = ctypes.cast(char_array, ctypes.POINTER(ctypes.c_char_p),buffer)
+        ptr_ptr_char = ctypes.cast(char_array, ctypes.POINTER(ctypes.c_char_p))
 
-        self.dpb2sc.dpb_command_handling(byref(self.structure_i2c),ptr_ptr_char, c_int(33))
+        self.dpb2sc.dpb_command_handling(byref(self.structure_i2c),ptr_ptr_char, c_int(33),buffer)
+        print(buffer.value)
         mensaje_json = json.loads(buffer.value)
         self.cmd_msg_value = mensaje_json.get('msg_value')
+    def get_command_result (self):
+        """Gets numeric value of command result
+
+        """
+        self.result = float(self.cmd_msg_value)
 
     #########################################################
     #Check functions
@@ -681,7 +691,7 @@ class DPB2scLibrary(object):
         ch_buffer = ctypes.create_string_buffer(32)
         ch_buffer.value = b""
 
-        self.dpb2sc.read_shm(byref(channel),ev_buffer,ch_buffer)
+        self.dpb2sc.read_shm(byref(chann),ev_buffer,ch_buffer)
         if not ((ev_buffer.value == "either") and (ch_buffer.value == "voltage") and (chann.value == int(channel))):
             raise AssertionError(f"The expected alarm was not detected by IIO Event Monitor")
         
