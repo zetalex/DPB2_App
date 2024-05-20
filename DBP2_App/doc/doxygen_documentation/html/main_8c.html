@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.10.0"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>DPB2 App Documentation: main.c File Reference</title>
+<title>DPB2 App Documentation: src/main.c File Reference</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -27,7 +27,7 @@
  <tbody>
  <tr id="projectrow">
   <td id="projectalign">
-   <div id="projectname">DPB2 App Documentation<span id="projectnumber">&#160;1.0.0</span>
+   <div id="projectname">DPB2 App Documentation<span id="projectnumber">&#160;1.0.1</span>
    </div>
   </td>
  </tr>
@@ -120,7 +120,7 @@ $(function(){initNavTree('main_8c.html',''); initResizable(); });
 </div><div class="textblock"><div class="dynheader">
 Include dependency graph for main.c:</div>
 <div class="dyncontent">
-<div class="center"><img src="main_8c__incl.png" border="0" usemap="#amain_8c" alt=""/></div>
+<div class="center"><img src="main_8c__incl.png" border="0" usemap="#asrc_2main_8c" alt=""/></div>
 </div>
 </div><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="nested-classes" name="nested-classes"></a>
@@ -202,10 +202,10 @@ Functions</h2></td></tr>
 <tr class="separator:afa69f048a25258ccb54cf53eb5f8ccc0"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aee8086925db01f5db30db4fe5399e6ac" id="r_aee8086925db01f5db30db4fe5399e6ac"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#aee8086925db01f5db30db4fe5399e6ac">status_alarm_json</a> (char *, char *, int, uint64_t, char *)</td></tr>
 <tr class="separator:aee8086925db01f5db30db4fe5399e6ac"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a1b030af008a537568f4512d57411e9bb" id="r_a1b030af008a537568f4512d57411e9bb"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a1b030af008a537568f4512d57411e9bb">command_response_json</a> (int, float)</td></tr>
-<tr class="separator:a1b030af008a537568f4512d57411e9bb"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a3f255a74ab6d7a36c273904666ef1368" id="r_a3f255a74ab6d7a36c273904666ef1368"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a3f255a74ab6d7a36c273904666ef1368">command_status_response_json</a> (int, int)</td></tr>
-<tr class="separator:a3f255a74ab6d7a36c273904666ef1368"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a739c11ca34b8482acbf579efb43425d3" id="r_a739c11ca34b8482acbf579efb43425d3"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a739c11ca34b8482acbf579efb43425d3">command_response_json</a> (int, float, char *)</td></tr>
+<tr class="separator:a739c11ca34b8482acbf579efb43425d3"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a34018ed0b0c7dc52da171eec914c6992" id="r_a34018ed0b0c7dc52da171eec914c6992"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a34018ed0b0c7dc52da171eec914c6992">command_status_response_json</a> (int, int, char *)</td></tr>
+<tr class="separator:a34018ed0b0c7dc52da171eec914c6992"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ac1bae33fb76086f00eb915f1477c15ee" id="r_ac1bae33fb76086f00eb915f1477c15ee"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ac1bae33fb76086f00eb915f1477c15ee">json_schema_validate</a> (char *, const char *, char *)</td></tr>
 <tr class="separator:ac1bae33fb76086f00eb915f1477c15ee"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a52a0fb3b674daae49dcc57dd6d7e0a18" id="r_a52a0fb3b674daae49dcc57dd6d7e0a18"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a52a0fb3b674daae49dcc57dd6d7e0a18">get_GPIO_base_address</a> (int *)</td></tr>
@@ -226,8 +226,8 @@ Functions</h2></td></tr>
 <tr class="separator:a3ab8810c7a9f27237b8da1f43d1d1039"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a017c111b6b069aff7fb3d5cc6091575c" id="r_a017c111b6b069aff7fb3d5cc6091575c"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a017c111b6b069aff7fb3d5cc6091575c">zmq_socket_init</a> ()</td></tr>
 <tr class="separator:a017c111b6b069aff7fb3d5cc6091575c"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:acbb749d081a4ce144ddffd2fe8274d01" id="r_acbb749d081a4ce144ddffd2fe8274d01"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#acbb749d081a4ce144ddffd2fe8274d01">dpb_command_handling</a> (struct <a class="el" href="struct_d_p_b___i2c_sensors.html">DPB_I2cSensors</a> *, char **, int)</td></tr>
-<tr class="separator:acbb749d081a4ce144ddffd2fe8274d01"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ae7a88328289bc28c155d26c1c5557b95" id="r_ae7a88328289bc28c155d26c1c5557b95"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ae7a88328289bc28c155d26c1c5557b95">dpb_command_handling</a> (struct <a class="el" href="struct_d_p_b___i2c_sensors.html">DPB_I2cSensors</a> *, char **, int, char *)</td></tr>
+<tr class="separator:ae7a88328289bc28c155d26c1c5557b95"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a84634466dbde056f23c967b97f949f85" id="r_a84634466dbde056f23c967b97f949f85"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a84634466dbde056f23c967b97f949f85">dig_command_handling</a> (char **)</td></tr>
 <tr class="separator:a84634466dbde056f23c967b97f949f85"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a241ce24ee6cbb73e2a358170f01a981b" id="r_a241ce24ee6cbb73e2a358170f01a981b"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a241ce24ee6cbb73e2a358170f01a981b">hv_command_handling</a> (char **)</td></tr>
@@ -428,8 +428,8 @@ Variables</h2></td></tr>
 
 </div>
 </div>
-<a id="a1b030af008a537568f4512d57411e9bb" name="a1b030af008a537568f4512d57411e9bb"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a1b030af008a537568f4512d57411e9bb">&#9670;&#160;</a></span>command_response_json()</h2>
+<a id="a739c11ca34b8482acbf579efb43425d3" name="a739c11ca34b8482acbf579efb43425d3"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a739c11ca34b8482acbf579efb43425d3">&#9670;&#160;</a></span>command_response_json()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -442,7 +442,12 @@ Variables</h2></td></tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">float</td>          <td class="paramname"><span class="paramname"><em>val</em></span>&#160;)</td>
+          <td class="paramtype">float</td>          <td class="paramname"><span class="paramname"><em>val</em>, </span></td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">char *</td>          <td class="paramname"><span class="paramname"><em>cmd_reply</em></span>&#160;)</td>
         </tr>
       </table>
 </div><div class="memdoc">
@@ -450,7 +455,8 @@ Variables</h2></td></tr>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">int</td><td>msg_id: Message ID </td></tr>
-    <tr><td class="paramname">float</td><td>val: read value</td></tr>
+    <tr><td class="paramname">float</td><td>val: read value </td></tr>
+    <tr><td class="paramname">char*</td><td>cmd_reply: Stores CMD JSON reply to send it</td></tr>
   </table>
   </dd>
 </dl>
@@ -458,8 +464,8 @@ Variables</h2></td></tr>
 
 </div>
 </div>
-<a id="a3f255a74ab6d7a36c273904666ef1368" name="a3f255a74ab6d7a36c273904666ef1368"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a3f255a74ab6d7a36c273904666ef1368">&#9670;&#160;</a></span>command_status_response_json()</h2>
+<a id="a34018ed0b0c7dc52da171eec914c6992" name="a34018ed0b0c7dc52da171eec914c6992"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a34018ed0b0c7dc52da171eec914c6992">&#9670;&#160;</a></span>command_status_response_json()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -472,7 +478,12 @@ Variables</h2></td></tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">int</td>          <td class="paramname"><span class="paramname"><em>val</em></span>&#160;)</td>
+          <td class="paramtype">int</td>          <td class="paramname"><span class="paramname"><em>val</em>, </span></td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">char *</td>          <td class="paramname"><span class="paramname"><em>cmd_reply</em></span>&#160;)</td>
         </tr>
       </table>
 </div><div class="memdoc">
@@ -480,7 +491,8 @@ Variables</h2></td></tr>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">int</td><td>msg_id: Message ID </td></tr>
-    <tr><td class="paramname">int</td><td>val: read value (1 is ON and 0 is OFF), if operation is set val = 99, JSON value field = OK , else is error, JSON value = ERROR</td></tr>
+    <tr><td class="paramname">int</td><td>val: read value (1 is ON and 0 is OFF), if operation is set val = 99, JSON value field = OK , else is error, JSON value = ERROR </td></tr>
+    <tr><td class="paramname">char*</td><td>cmd_reply: Stores CMD JSON reply to send it</td></tr>
   </table>
   </dd>
 </dl>
@@ -505,8 +517,8 @@ Variables</h2></td></tr>
 
 </div>
 </div>
-<a id="acbb749d081a4ce144ddffd2fe8274d01" name="acbb749d081a4ce144ddffd2fe8274d01"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#acbb749d081a4ce144ddffd2fe8274d01">&#9670;&#160;</a></span>dpb_command_handling()</h2>
+<a id="ae7a88328289bc28c155d26c1c5557b95" name="ae7a88328289bc28c155d26c1c5557b95"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ae7a88328289bc28c155d26c1c5557b95">&#9670;&#160;</a></span>dpb_command_handling()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -524,7 +536,12 @@ Variables</h2></td></tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">int</td>          <td class="paramname"><span class="paramname"><em>msg_id</em></span>&#160;)</td>
+          <td class="paramtype">int</td>          <td class="paramname"><span class="paramname"><em>msg_id</em>, </span></td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">char *</td>          <td class="paramname"><span class="paramname"><em>cmd_reply</em></span>&#160;)</td>
         </tr>
       </table>
 </div><div class="memdoc">
@@ -533,7 +550,8 @@ Variables</h2></td></tr>
   <table class="params">
     <tr><td class="paramname"><a class="el" href="struct_d_p_b___i2c_sensors.html">DPB_I2cSensors</a></td><td>*data: Struct that contains I2C devices </td></tr>
     <tr><td class="paramname">char</td><td>**cmd: Segmented command </td></tr>
-    <tr><td class="paramname">int</td><td>msg_id: Unique identifier of the received JSON command request message</td></tr>
+    <tr><td class="paramname">int</td><td>msg_id: Unique identifier of the received JSON command request message </td></tr>
+    <tr><td class="paramname">char</td><td>*cmd_reply: Stores command JSON reply to send it</td></tr>
   </table>
   </dd>
 </dl>
@@ -2122,7 +2140,7 @@ Variables</h2></td></tr>
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="navelem"><a class="el" href="main_8c.html">main.c</a></li>
+    <li class="navelem"><a class="el" href="dir_68267d1309a1af8e8297ef4c3efbcdba.html">src</a></li><li class="navelem"><a class="el" href="main_8c.html">main.c</a></li>
     <li class="footer">Generated by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.10.0 </li>
   </ul>
 </div>

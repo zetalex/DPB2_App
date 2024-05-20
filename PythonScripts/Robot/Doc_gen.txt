@@ -1,0 +1,2 @@
+1. -> sphinx-apidoc -o ./docs/source ./
+2. -> sphinx-build ./docs/source ./Python\ Documentation/

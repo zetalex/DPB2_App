@@ -6,8 +6,8 @@ var searchData=
   ['child_5fpid_3',['child_pid',['../group__pth.html#gafef115d1ca4038a95c54388151f24a30',1,'main.c']]],
   ['chn_4',['chn',['../structwrapper.html#a834cb2f99c772a9508188ea1a5cf3469',1,'wrapper']]],
   ['cmd_5frouter_5',['cmd_router',['../main_8c.html#a5e5fa1b54341fcff49c3c2e91fbfcc1a',1,'main.c']]],
-  ['command_5fresponse_5fjson_6',['command_response_json',['../main_8c.html#a1b030af008a537568f4512d57411e9bb',1,'main.c']]],
-  ['command_5fstatus_5fresponse_5fjson_7',['command_status_response_json',['../main_8c.html#a3f255a74ab6d7a36c273904666ef1368',1,'main.c']]],
+  ['command_5fresponse_5fjson_6',['command_response_json',['../main_8c.html#a739c11ca34b8482acbf579efb43425d3',1,'main.c']]],
+  ['command_5fstatus_5fresponse_5fjson_7',['command_status_response_json',['../main_8c.html#a34018ed0b0c7dc52da171eec914c6992',1,'main.c']]],
   ['command_5fthread_5fperiod_8',['COMMAND_THREAD_PERIOD',['../constants_8h.html#a76e1ca696e625931c5e7d7a6d94aef81',1,'constants.h']]],
   ['constants_2eh_9',['constants.h',['../constants_8h.html',1,'']]],
   ['custom_20error_20flags_10',['Custom Error Flags',['../group__err.html',1,'']]]

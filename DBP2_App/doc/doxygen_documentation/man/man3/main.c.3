@@ -1,8 +1,8 @@
-.TH "main.c" 3 "Version 1.0.0" "DPB2 App Documentation" \" -*- nroff -*-
+.TH "src/main.c" 3 "Version 1.0.1" "DPB2 App Documentation" \" -*- nroff -*-
 .ad l
 .nh
 .SH NAME
-main.c
+src/main.c
 .SH SYNOPSIS
 .br
 .PP
@@ -164,10 +164,10 @@ main.c
 .RI "int \fBstatus_alarm_json\fP (char *, char *, int, uint64_t, char *)"
 .br
 .ti -1c
-.RI "int \fBcommand_response_json\fP (int, float)"
+.RI "int \fBcommand_response_json\fP (int, float, char *)"
 .br
 .ti -1c
-.RI "int \fBcommand_status_response_json\fP (int, int)"
+.RI "int \fBcommand_status_response_json\fP (int, int, char *)"
 .br
 .ti -1c
 .RI "int \fBjson_schema_validate\fP (char *, const char *, char *)"
@@ -200,7 +200,7 @@ main.c
 .RI "int \fBzmq_socket_init\fP ()"
 .br
 .ti -1c
-.RI "int \fBdpb_command_handling\fP (struct \fBDPB_I2cSensors\fP *, char **, int)"
+.RI "int \fBdpb_command_handling\fP (struct \fBDPB_I2cSensors\fP *, char **, int, char *)"
 .br
 .ti -1c
 .RI "void \fBdig_command_handling\fP (char **)"
@@ -344,14 +344,16 @@ Negative integer if checksum is incorrect, and 0 if it is correct
 .RE
 .PP
 
-.SS "int command_response_json (int msg_id, float val)"
+.SS "int command_response_json (int msg_id, float val, char * cmd_reply)"
 Parses command response into a JSON string and send it to socket
 .PP
 \fBParameters\fP
 .RS 4
 \fIint\fP msg_id: Message ID 
 .br
-\fIfloat\fP val: read value
+\fIfloat\fP val: read value 
+.br
+\fIchar*\fP cmd_reply: Stores CMD JSON reply to send it
 .RE
 .PP
 \fBReturns\fP
@@ -360,14 +362,16 @@ Parses command response into a JSON string and send it to socket
 .RE
 .PP
 
-.SS "int command_status_response_json (int msg_id, int val)"
+.SS "int command_status_response_json (int msg_id, int val, char * cmd_reply)"
 Parses command response into a JSON string and send it to socket
 .PP
 \fBParameters\fP
 .RS 4
 \fIint\fP msg_id: Message ID 
 .br
-\fIint\fP val: read value (1 is ON and 0 is OFF), if operation is set val = 99, JSON value field = OK , else is error, JSON value = ERROR
+\fIint\fP val: read value (1 is ON and 0 is OFF), if operation is set val = 99, JSON value field = OK , else is error, JSON value = ERROR 
+.br
+\fIchar*\fP cmd_reply: Stores CMD JSON reply to send it
 .RE
 .PP
 \fBReturns\fP
@@ -378,7 +382,7 @@ Parses command response into a JSON string and send it to socket
 
 .SS "void dig_command_handling (char ** cmd)"
 
-.SS "int dpb_command_handling (struct \fBDPB_I2cSensors\fP * data, char ** cmd, int msg_id)"
+.SS "int dpb_command_handling (struct \fBDPB_I2cSensors\fP * data, char ** cmd, int msg_id, char * cmd_reply)"
 Handles received DPB command
 .PP
 \fBParameters\fP
@@ -387,7 +391,9 @@ Handles received DPB command
 .br
 \fIchar\fP **cmd: Segmented command 
 .br
-\fIint\fP msg_id: Unique identifier of the received JSON command request message
+\fIint\fP msg_id: Unique identifier of the received JSON command request message 
+.br
+\fIchar\fP *cmd_reply: Stores command JSON reply to send it
 .RE
 .PP
 \fBReturns\fP

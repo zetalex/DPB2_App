@@ -34,6 +34,6 @@ var searchData=
   ['dig1_5fmain_5faurora_5flink_31',['DIG1_MAIN_AURORA_LINK',['../group___g_p_i_o.html#gaceaa0edf66b6e96e923c41acc07b75ed',1,'constants.h']]],
   ['dig1_5fmain_5fflag_32',['dig1_main_flag',['../constants_8h.html#a3033bf36a1c0c947d63176cb6637abb0',1,'constants.h']]],
   ['dig_5fcommand_5fhandling_33',['dig_command_handling',['../main_8c.html#a84634466dbde056f23c967b97f949f85',1,'main.c']]],
-  ['dpb_5fcommand_5fhandling_34',['dpb_command_handling',['../main_8c.html#acbb749d081a4ce144ddffd2fe8274d01',1,'main.c']]],
+  ['dpb_5fcommand_5fhandling_34',['dpb_command_handling',['../main_8c.html#ae7a88328289bc28c155d26c1c5557b95',1,'main.c']]],
   ['dpb_5fi2csensors_35',['DPB_I2cSensors',['../struct_d_p_b___i2c_sensors.html',1,'']]]
 ];
