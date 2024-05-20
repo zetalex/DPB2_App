@@ -508,11 +508,6 @@ class DPB2scLibrary(object):
         print(buffer.value)
         mensaje_json = json.loads(buffer.value)
         self.cmd_msg_value = mensaje_json.get('msg_value')
-    def get_command_result (self):
-        """Gets numeric value of command result
-
-        """
-        self.result = float(self.cmd_msg_value)
 
     #########################################################
     #Check functions
