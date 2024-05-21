@@ -4264,7 +4264,7 @@ waitmsg:
 int main(){
 
 	//atexit(atexit_function);
-
+	setbuf(stdout, NULL);
 	sigset_t alarm_sig;
 	int i;
 
