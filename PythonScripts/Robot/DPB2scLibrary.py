@@ -43,6 +43,28 @@ class DPB2scLibrary(object):
     structure_i2c = DPB_I2cSensors()
     """ I2C Devices Structure
     """ 
+    
+    ams_voltage_alarm_upper_defaults = {
+    "9"  :  "1.2",         
+    "10" :  "1.2",        
+    "11" :  "2.5",          
+    "12" :  "1.5", 
+    "13" :  "3.5",
+    "14" :  "2.5",
+    "15" :  "3.5",
+    "16" :  "2.5",
+    "17" :  "1",
+    "18" :  "2",
+    "19" :  "2",
+    "21" :  "1",
+    "22" :  "2",
+    "25" :  "1",
+    "26" :  "1",
+    "27" :  "1",
+    "28" :  "2",
+    "29" :  "2"
+    }
+    
     #########################################################
     # Initialization functions
     #########################################################
@@ -106,10 +128,17 @@ class DPB2scLibrary(object):
     def library_teardown(self):
         """Destroys class
         """ 
+        # Send termination signal to the libdpb2sc library
         self.dpb2sc.sighandler(ctypes.c_int(15))
+        # Close iio_monitor
         os.killpg(os.getpgid(self.iio_command.pid), signal.SIGTERM)
+        # Set all ethernet interfaces to ON
         self.set_ethernet_link_status("Main","ON")
         self.set_ethernet_link_status("Backup","ON")
+        # Set to a default value the AMS voltage alarms
+        for chan in self.ams_voltage_alarm_upper_defaults:
+            self.set_ams_alarms_limit ("Voltage","Upper",chan,self.ams_voltage_alarm_upper_defaults[chan])
+            self.set_ams_alarms_limit ("Voltage","Lower",chan,0)
 
     def initialize_zmq_ethernet_sockets (self):
         """Initializes DPB ZMQ sockets.
