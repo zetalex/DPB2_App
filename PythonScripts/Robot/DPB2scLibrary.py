@@ -3,6 +3,7 @@ from ctypesdata import *
 import ctypes
 import re
 import os
+import signal
 import zmq
 import sys
 import json
@@ -106,6 +107,7 @@ class DPB2scLibrary(object):
         """Destroys class
         """ 
         self.dpb2sc.sighandler(ctypes.c_int(15))
+        os.killpg(os.getpgid(self.iio_command.pid), signal.SIGTERM)
         self.set_ethernet_link_status("Main","ON")
         self.set_ethernet_link_status("Backup","ON")
 
@@ -124,7 +126,8 @@ class DPB2scLibrary(object):
     def initialize_iio_event_monitor (self):
         """Initializes DPB IIO Event Monitor.
         """ 
-        self.dpb2sc.iio_event_monitor_up()
+        self.dpb2sc.init_shared_memory()
+        self.iio_command = subprocess.Popen('IIO_MONITOR -a /dev/iio:device0',shell=True, preexec_fn=os.setsid)
     def get_gpio_base_address (self):
         """Gets DPB GPIO Base Address.
         """ 
@@ -688,7 +691,11 @@ class DPB2scLibrary(object):
         ch_buffer.value = b""
 
         self.dpb2sc.read_shm(byref(chann),ev_buffer,ch_buffer)
-        if not ((ev_buffer.value == "either") and (ch_buffer.value == "voltage") and (chann.value == int(channel))):
+        print("Detected Alarm:")
+        print("Channel Number: " + str(chann.value))
+        print("Channel Magnitude: " + str(ch_buffer.value))
+        print("Event Direction: " + str(ev_buffer.value))
+        if not ((ev_buffer.value == b"either") and (ch_buffer.value == b"voltage") and (chann.value == int(channel))):
             raise AssertionError(f"The expected alarm was not detected by IIO Event Monitor")
         
     def check_sfp_presence(self):
@@ -791,8 +798,8 @@ class DPB2scLibrary(object):
             if not re.search(r'IIO_MONITOR -a /dev/iio:device0', output):
                 raise AssertionError('Failed to run IIO Event Monitor')
 
-        except Exception as e:
-            print(f"Failed to execute command {e}")
+        except subprocess.SubprocessError as e:
+            raise AssertionError('Failed opening subprocess')
             return 0
         
 if __name__ == '__main__':
