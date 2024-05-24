@@ -74,7 +74,7 @@ class DPB2scLibrary(object):
         """ 
         self.find_and_load_library(r'^libjson-c\.so', self.library_directory)
         self.find_and_load_library(r'^libzmq\.so', self.library_directory)
-        self.dpb2sc = ctypes.CDLL("libdpb2sc.so")
+        self.dpb2sc = ctypes.CDLL("libdpb2sc.so.1.0.1")
         start_line = 0
         end_line = 0
 
@@ -129,7 +129,7 @@ class DPB2scLibrary(object):
         """Destroys class
         """ 
         # Send termination signal to the libdpb2sc library
-        self.dpb2sc.sighandler(ctypes.c_int(15))
+        self.dpb2sc.lib_close(ctypes.c_int(15))
         # Close iio_monitor
         os.killpg(os.getpgid(self.iio_command.pid), signal.SIGTERM)
         # Set all ethernet interfaces to ON
@@ -143,6 +143,7 @@ class DPB2scLibrary(object):
     def initialize_zmq_ethernet_sockets (self):
         """Initializes DPB ZMQ sockets.
         """ 
+        self.dpb2sc.init_semaphores()
         self._zmq_rc = self.dpb2sc.zmq_socket_init()
     def initialize_i2c_devices (self):
         """Initializes DPB I2C Devices.
