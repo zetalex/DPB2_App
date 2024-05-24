@@ -10,20 +10,16 @@
 #include <pthread.h> 
 #include <stdlib.h>
 #include <string.h>
-#include "timer.h"
 #include <semaphore.h>
 #include <sys/shm.h>
 #include <fcntl.h>
 #include <time.h>
-#include <zmq.h>
-#include "json-c/json.h"
 #include <math.h>
 #include <dirent.h>
 #include <signal.h>
 #include <regex.h>
-
-#include "i2c.h"
 #include "linux/errno.h"
+
 #include <dpb2sc.h>
 
 /******************************************************************************

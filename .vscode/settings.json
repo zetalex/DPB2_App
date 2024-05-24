@@ -2,7 +2,8 @@
     "files.associations": {
         "i2c-dev.h": "c",
         "i2c.h": "c",
-        "shm.h": "c"
+        "shm.h": "c",
+        "dpb2sc.h": "c"
     },
     "cSpell.language": "en-GB",
     "cSpell.words": [
