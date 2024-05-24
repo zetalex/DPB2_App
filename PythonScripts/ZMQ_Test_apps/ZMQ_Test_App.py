@@ -33,7 +33,7 @@ def main():
     socket = context.socket(zmq.SUB)
     
     socket.setsockopt_string(zmq.SUBSCRIBE, "")
-    socket.connect("tcp://20.0.0.33:5555")
+    socket.connect("tcp://20.0.0.30:5555")
     
     
     for i in range(0, 20):

@@ -101,6 +101,8 @@
                                     									
                                     <listOptionValue builtIn="false" value="json-c"/>
                                     									
+                                    <listOptionValue builtIn="false" value="dpb2sc"/>
+                                    									
                                     <listOptionValue builtIn="false" value="sodium"/>
                                     									
                                     <listOptionValue builtIn="false" value="zmq"/>
@@ -274,6 +276,8 @@
                                 <option id="xilinx.gnu.c.link.option.libs.309831043" name="Libraries (-l)" superClass="xilinx.gnu.c.link.option.libs" useByScannerDiscovery="false" valueType="libs">
                                     									
                                     <listOptionValue builtIn="false" value="json-c"/>
+                                    									
+                                    <listOptionValue builtIn="false" value="dpb2sc"/>
                                     									
                                     <listOptionValue builtIn="false" value="sodium"/>
                                     									

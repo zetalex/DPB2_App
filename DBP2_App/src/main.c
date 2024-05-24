@@ -1022,6 +1022,11 @@ int main(){
 
 	int rc;
 	struct DPB_I2cSensors data;
+
+	rc = init_semaphores();
+	if(rc)
+		exit(1);
+
 	get_GPIO_base_address(&GPIO_BASE_ADDRESS);
 
 	key_t sharedMemoryKey = MEMORY_KEY;
