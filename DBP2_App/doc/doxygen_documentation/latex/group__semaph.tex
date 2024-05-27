@@ -1,0 +1,161 @@
+\hypertarget{group__semaph}{}\doxysection{Local Semaphores}
+\label{group__semaph}\index{Local Semaphores@{Local Semaphores}}
+Collaboration diagram for Local Semaphores\+:
+\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{group__semaph}
+\end{center}
+\end{figure}
+\doxysubsection*{Modules}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\hyperlink{group__pth}{Child process and threads}}
+\end{DoxyCompactItemize}
+\doxysubsection*{Macros}
+\begin{DoxyCompactItemize}
+\item 
+\#define \mbox{\hyperlink{group__semaph_gab0f3a36b2db5661a60346a996eedbb4a}{MONIT\+\_\+\+THREAD\+\_\+\+PERIOD}}~5000000
+\item 
+\#define \mbox{\hyperlink{group__semaph_ga0ebb54fa07bfc78ad22c752262d15317}{ALARMS\+\_\+\+THREAD\+\_\+\+PERIOD}}~100
+\item 
+\#define \mbox{\hyperlink{group__semaph_ga20711868506e73e09260e61d685f160b}{AMS\+\_\+\+ALARMS\+\_\+\+THREAD\+\_\+\+PERIOD}}~100
+\item 
+\#define \mbox{\hyperlink{group__semaph_ga76e1ca696e625931c5e7d7a6d94aef81}{COMMAND\+\_\+\+THREAD\+\_\+\+PERIOD}}~50
+\end{DoxyCompactItemize}
+\doxysubsection*{Functions}
+\begin{DoxyCompactItemize}
+\item 
+int \mbox{\hyperlink{group__semaph_gaf3ae575266127cb29b706732acda1731}{iio\+\_\+event\+\_\+monitor\+\_\+up}} ()
+\item 
+void \mbox{\hyperlink{group__semaph_ga4bbdbc434dbf29d4b09821dbfb477100}{sighandler}} (int)
+\item 
+int \mbox{\hyperlink{group__semaph_gae66f6b31b5ad750f1fe042a706a4e3d4}{main}} ()
+\end{DoxyCompactItemize}
+\doxysubsection*{Variables}
+\begin{DoxyCompactItemize}
+\item 
+sem\+\_\+t \mbox{\hyperlink{group__semaph_ga4e56da6bdcd1fe995892ac706b3f6914}{thread\+\_\+sync}}
+\begin{DoxyCompactList}\small\item\em Semaphore to synchronize thread creation. \end{DoxyCompactList}\end{DoxyCompactItemize}
+
+
+\doxysubsection{Detailed Description}
+Semaphores needed to synchronize the application execution and avoid race conditions 
+
+\doxysubsection{Macro Definition Documentation}
+\mbox{\Hypertarget{group__semaph_ga0ebb54fa07bfc78ad22c752262d15317}\label{group__semaph_ga0ebb54fa07bfc78ad22c752262d15317}} 
+\index{Local Semaphores@{Local Semaphores}!ALARMS\_THREAD\_PERIOD@{ALARMS\_THREAD\_PERIOD}}
+\index{ALARMS\_THREAD\_PERIOD@{ALARMS\_THREAD\_PERIOD}!Local Semaphores@{Local Semaphores}}
+\doxysubsubsection{\texorpdfstring{ALARMS\_THREAD\_PERIOD}{ALARMS\_THREAD\_PERIOD}}
+{\footnotesize\ttfamily \#define ALARMS\+\_\+\+THREAD\+\_\+\+PERIOD~100}
+
+
+
+Definition at line 59 of file main.\+c.
+
+\mbox{\Hypertarget{group__semaph_ga20711868506e73e09260e61d685f160b}\label{group__semaph_ga20711868506e73e09260e61d685f160b}} 
+\index{Local Semaphores@{Local Semaphores}!AMS\_ALARMS\_THREAD\_PERIOD@{AMS\_ALARMS\_THREAD\_PERIOD}}
+\index{AMS\_ALARMS\_THREAD\_PERIOD@{AMS\_ALARMS\_THREAD\_PERIOD}!Local Semaphores@{Local Semaphores}}
+\doxysubsubsection{\texorpdfstring{AMS\_ALARMS\_THREAD\_PERIOD}{AMS\_ALARMS\_THREAD\_PERIOD}}
+{\footnotesize\ttfamily \#define AMS\+\_\+\+ALARMS\+\_\+\+THREAD\+\_\+\+PERIOD~100}
+
+
+
+Definition at line 60 of file main.\+c.
+
+\mbox{\Hypertarget{group__semaph_ga76e1ca696e625931c5e7d7a6d94aef81}\label{group__semaph_ga76e1ca696e625931c5e7d7a6d94aef81}} 
+\index{Local Semaphores@{Local Semaphores}!COMMAND\_THREAD\_PERIOD@{COMMAND\_THREAD\_PERIOD}}
+\index{COMMAND\_THREAD\_PERIOD@{COMMAND\_THREAD\_PERIOD}!Local Semaphores@{Local Semaphores}}
+\doxysubsubsection{\texorpdfstring{COMMAND\_THREAD\_PERIOD}{COMMAND\_THREAD\_PERIOD}}
+{\footnotesize\ttfamily \#define COMMAND\+\_\+\+THREAD\+\_\+\+PERIOD~50}
+
+
+
+Definition at line 61 of file main.\+c.
+
+\mbox{\Hypertarget{group__semaph_gab0f3a36b2db5661a60346a996eedbb4a}\label{group__semaph_gab0f3a36b2db5661a60346a996eedbb4a}} 
+\index{Local Semaphores@{Local Semaphores}!MONIT\_THREAD\_PERIOD@{MONIT\_THREAD\_PERIOD}}
+\index{MONIT\_THREAD\_PERIOD@{MONIT\_THREAD\_PERIOD}!Local Semaphores@{Local Semaphores}}
+\doxysubsubsection{\texorpdfstring{MONIT\_THREAD\_PERIOD}{MONIT\_THREAD\_PERIOD}}
+{\footnotesize\ttfamily \#define MONIT\+\_\+\+THREAD\+\_\+\+PERIOD~5000000}
+
+
+
+Definition at line 58 of file main.\+c.
+
+
+
+\doxysubsection{Function Documentation}
+\mbox{\Hypertarget{group__semaph_gaf3ae575266127cb29b706732acda1731}\label{group__semaph_gaf3ae575266127cb29b706732acda1731}} 
+\index{Local Semaphores@{Local Semaphores}!iio\_event\_monitor\_up@{iio\_event\_monitor\_up}}
+\index{iio\_event\_monitor\_up@{iio\_event\_monitor\_up}!Local Semaphores@{Local Semaphores}}
+\doxysubsubsection{\texorpdfstring{iio\_event\_monitor\_up()}{iio\_event\_monitor\_up()}}
+{\footnotesize\ttfamily int iio\+\_\+event\+\_\+monitor\+\_\+up (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})}
+
+Start IIO EVENT MONITOR to enable Xilinx-\/\+AMS events
+
+\begin{DoxyReturn}{Returns}
+Negative integer if start fails.\+If not, returns 0 and enables Xilinx-\/\+AMS events. 
+\end{DoxyReturn}
+
+
+Definition at line 80 of file main.\+c.
+
+\mbox{\Hypertarget{group__semaph_gae66f6b31b5ad750f1fe042a706a4e3d4}\label{group__semaph_gae66f6b31b5ad750f1fe042a706a4e3d4}} 
+\index{Local Semaphores@{Local Semaphores}!main@{main}}
+\index{main@{main}!Local Semaphores@{Local Semaphores}}
+\doxysubsubsection{\texorpdfstring{main()}{main()}}
+{\footnotesize\ttfamily int main (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})}
+
+
+
+Definition at line 1016 of file main.\+c.
+
+\mbox{\Hypertarget{group__semaph_ga4bbdbc434dbf29d4b09821dbfb477100}\label{group__semaph_ga4bbdbc434dbf29d4b09821dbfb477100}} 
+\index{Local Semaphores@{Local Semaphores}!sighandler@{sighandler}}
+\index{sighandler@{sighandler}!Local Semaphores@{Local Semaphores}}
+\doxysubsubsection{\texorpdfstring{sighandler()}{sighandler()}}
+{\footnotesize\ttfamily void sighandler (\begin{DoxyParamCaption}\item[{int}]{signum }\end{DoxyParamCaption})}
+
+Checks from GPIO if Ethernet Links status and reports it
+
+
+\begin{DoxyParams}{Parameters}
+{\em char} & $\ast$eth\+\_\+interface\+: Name of the Ethernet interface \\
+\hline
+{\em int} & status\+: value of the Ethernet interface status\\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+0 if parameters are OK, if not negative integer Handles termination signals, kills every subprocess
+\end{DoxyReturn}
+
+\begin{DoxyParams}{Parameters}
+{\em int} & signum\+: Signal ID\\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+void 
+\end{DoxyReturn}
+
+
+Definition at line 195 of file main.\+c.
+
+
+
+\doxysubsection{Variable Documentation}
+\mbox{\Hypertarget{group__semaph_ga4e56da6bdcd1fe995892ac706b3f6914}\label{group__semaph_ga4e56da6bdcd1fe995892ac706b3f6914}} 
+\index{Local Semaphores@{Local Semaphores}!thread\_sync@{thread\_sync}}
+\index{thread\_sync@{thread\_sync}!Local Semaphores@{Local Semaphores}}
+\doxysubsubsection{\texorpdfstring{thread\_sync}{thread\_sync}}
+{\footnotesize\ttfamily sem\+\_\+t thread\+\_\+sync}
+
+
+
+Semaphore to synchronize thread creation. 
+
+
+
+Definition at line 34 of file main.\+c.
+

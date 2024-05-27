@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['i2cdevice_0',['I2cDevice',['../struct_i2c_device.html',1,'']]]
+  ['periodic_5finfo_39',['periodic_info',['../structperiodic__info.html',1,'']]]
 ];

@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['dpb_5fi2csensors_0',['DPB_I2cSensors',['../struct_d_p_b___i2c_sensors.html',1,'']]]
+  ['i2cdevice_38',['I2cDevice',['../struct_i2c_device.html',1,'']]]
 ];

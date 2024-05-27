@@ -132,58 +132,6 @@ int iio_event_monitor_up() {
     return 0;
 }
 
-/************************** External monitoring (via GPIO) functions ******************************/
-/**
- * Checks from GPIO if Ethernet Links status and reports it
- *
- * @param char *eth_interface: Name of the Ethernet interface
- * @param int status: value of the Ethernet interface status
- *
- * @return  0 if parameters are OK, if not negative integer
- */
-/*int eth_link_status (char *eth_interface, int *status)
-{
-	int rc = 0;
-	sem_wait(&file_sync);
-	char eth_link[64];
-	FILE *link_file;
-	char str[64];
-
-	char cmd[64];
-
-	strcpy(cmd,"ethtool ");
-	strcat(cmd,eth_interface);
-	strcat(cmd," | grep 'Link detected' >> /home/petalinux/eth_temp.txt");
-
-	rc = system(cmd);
-	link_file = fopen("/home/petalinux/eth_temp.txt","r");
-	if((rc == -1) | (link_file == NULL)){
-		sem_post(&file_sync);
-		return -EINVAL;
-	}
-	fread(eth_link, 64, 1, link_file);
-    fclose(link_file);
-
-	strtok(eth_link," ");
-	strtok(NULL," ");
-	strcpy(str,strtok(NULL,"\n"));
-	strcat(str,"");
-	if((strcmp(str,"yes")) == 0)
-		status[0] = 1;
-	else if((strcmp(str,"no")) == 0)
-		status[0] = 0;
-	else{
-		remove("/home/petalinux/eth_temp.txt");
-		sem_post(&file_sync);
-		return -EINVAL;
-	}
-	remove("/home/petalinux/eth_temp.txt");
-	sem_post(&file_sync);
-	return 0;
-
-}*/
-
-
 /************************** Signal Handling function declaration ******************************/
 /**
  * Handles termination signals, kills every subprocess

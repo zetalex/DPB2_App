@@ -1,6 +1,5 @@
 var searchData=
 [
-  ['checksum_5fcheck_0',['checksum_check',['../main_8c.html#a3cf6893ab5cb8c922c7f707bbeacb401',1,'main.c']]],
-  ['command_5fresponse_5fjson_1',['command_response_json',['../main_8c.html#a739c11ca34b8482acbf579efb43425d3',1,'main.c']]],
-  ['command_5fstatus_5fresponse_5fjson_2',['command_status_response_json',['../main_8c.html#a34018ed0b0c7dc52da171eec914c6992',1,'main.c']]]
+  ['main_55',['main',['../group__semaph.html#gae66f6b31b5ad750f1fe042a706a4e3d4',1,'main.c']]],
+  ['make_5fperiodic_56',['make_periodic',['../timer_8c.html#a011f0be95c8fc6074964582116b9c772',1,'make_periodic(int unsigned period, struct periodic_info *info):&#160;timer.c'],['../timer_8h.html#a011f0be95c8fc6074964582116b9c772',1,'make_periodic(int unsigned period, struct periodic_info *info):&#160;timer.c']]]
 ];

@@ -1,7 +1,5 @@
 var searchData=
 [
-  ['ch_5ftype_0',['ch_type',['../structwrapper.html#a29abc8acc94605c7983339dc56f5acd5',1,'wrapper']]],
-  ['child_5fpid_1',['child_pid',['../group__pth.html#gafef115d1ca4038a95c54388151f24a30',1,'main.c']]],
-  ['chn_2',['chn',['../structwrapper.html#a834cb2f99c772a9508188ea1a5cf3469',1,'wrapper']]],
-  ['cmd_5frouter_3',['cmd_router',['../main_8c.html#a5e5fa1b54341fcff49c3c2e91fbfcc1a',1,'main.c']]]
+  ['fd_62',['fd',['../struct_i2c_device.html#a6f8059414f0228f0256115e024eeed4b',1,'I2cDevice']]],
+  ['filename_63',['filename',['../struct_i2c_device.html#aeac90097f29f7529968697163cea5c18',1,'I2cDevice']]]
 ];
