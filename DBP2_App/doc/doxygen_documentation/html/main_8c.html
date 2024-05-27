@@ -9,6 +9,10 @@
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
+<link href="navtree.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="resize.js"></script>
+<script type="text/javascript" src="navtreedata.js"></script>
+<script type="text/javascript" src="navtree.js"></script>
 <link href="search/search.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="search/searchdata.js"></script>
 <script type="text/javascript" src="search/search.js"></script>
@@ -45,6 +49,23 @@ $(function() {
 });
 /* @license-end */</script>
 <div id="main-nav"></div>
+</div><!-- top -->
+<div id="side-nav" class="ui-resizable side-nav-resizable">
+  <div id="nav-tree">
+    <div id="nav-tree-contents">
+      <div id="nav-sync" class="sync"></div>
+    </div>
+  </div>
+  <div id="splitbar" style="-moz-user-select:none;" 
+       class="ui-resizable-handle">
+  </div>
+</div>
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+$(document).ready(function(){initNavTree('main_8c.html',''); initResizable(); });
+/* @license-end */
+</script>
+<div id="doc-content">
 <!-- window showing the filter options -->
 <div id="MSearchSelectWindow"
      onmouseover="return searchBox.OnSearchSelectShow()"
@@ -59,11 +80,6 @@ $(function() {
 </iframe>
 </div>
 
-<div id="nav-path" class="navpath">
-  <ul>
-<li class="navelem"><a class="el" href="dir_3c9f53aecc9ee1e3a8bbce2f0db0f513.html">DBP2_App</a></li><li class="navelem"><a class="el" href="dir_4ca8ae8a7116cefe0602bfa7ac1a3973.html">src</a></li>  </ul>
-</div>
-</div><!-- top -->
 <div class="header">
   <div class="summary">
 <a href="#define-members">Macros</a> &#124;
@@ -116,23 +132,31 @@ Include dependency graph for main.c:</div>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="define-members"></a>
 Macros</h2></td></tr>
-<tr class="memitem:gab0f3a36b2db5661a60346a996eedbb4a"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__semaph.html#gab0f3a36b2db5661a60346a996eedbb4a">MONIT_THREAD_PERIOD</a>&#160;&#160;&#160;5000000</td></tr>
-<tr class="separator:gab0f3a36b2db5661a60346a996eedbb4a"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ga0ebb54fa07bfc78ad22c752262d15317"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__semaph.html#ga0ebb54fa07bfc78ad22c752262d15317">ALARMS_THREAD_PERIOD</a>&#160;&#160;&#160;100</td></tr>
-<tr class="separator:ga0ebb54fa07bfc78ad22c752262d15317"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ga20711868506e73e09260e61d685f160b"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__semaph.html#ga20711868506e73e09260e61d685f160b">AMS_ALARMS_THREAD_PERIOD</a>&#160;&#160;&#160;100</td></tr>
-<tr class="separator:ga20711868506e73e09260e61d685f160b"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ga76e1ca696e625931c5e7d7a6d94aef81"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__semaph.html#ga76e1ca696e625931c5e7d7a6d94aef81">COMMAND_THREAD_PERIOD</a>&#160;&#160;&#160;50</td></tr>
-<tr class="separator:ga76e1ca696e625931c5e7d7a6d94aef81"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab0f3a36b2db5661a60346a996eedbb4a"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="main_8c.html#ab0f3a36b2db5661a60346a996eedbb4a">MONIT_THREAD_PERIOD</a>&#160;&#160;&#160;5000000</td></tr>
+<tr class="separator:ab0f3a36b2db5661a60346a996eedbb4a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a0ebb54fa07bfc78ad22c752262d15317"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="main_8c.html#a0ebb54fa07bfc78ad22c752262d15317">ALARMS_THREAD_PERIOD</a>&#160;&#160;&#160;100</td></tr>
+<tr class="separator:a0ebb54fa07bfc78ad22c752262d15317"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a20711868506e73e09260e61d685f160b"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="main_8c.html#a20711868506e73e09260e61d685f160b">AMS_ALARMS_THREAD_PERIOD</a>&#160;&#160;&#160;100</td></tr>
+<tr class="separator:a20711868506e73e09260e61d685f160b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a76e1ca696e625931c5e7d7a6d94aef81"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="main_8c.html#a76e1ca696e625931c5e7d7a6d94aef81">COMMAND_THREAD_PERIOD</a>&#160;&#160;&#160;50</td></tr>
+<tr class="separator:a76e1ca696e625931c5e7d7a6d94aef81"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="func-members"></a>
 Functions</h2></td></tr>
-<tr class="memitem:gaf3ae575266127cb29b706732acda1731"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__semaph.html#gaf3ae575266127cb29b706732acda1731">iio_event_monitor_up</a> ()</td></tr>
+<tr class="memitem:gaf3ae575266127cb29b706732acda1731"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__add.html#gaf3ae575266127cb29b706732acda1731">iio_event_monitor_up</a> ()</td></tr>
 <tr class="separator:gaf3ae575266127cb29b706732acda1731"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ga4bbdbc434dbf29d4b09821dbfb477100"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__semaph.html#ga4bbdbc434dbf29d4b09821dbfb477100">sighandler</a> (int)</td></tr>
+<tr class="memitem:ga4bbdbc434dbf29d4b09821dbfb477100"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__add.html#ga4bbdbc434dbf29d4b09821dbfb477100">sighandler</a> (int)</td></tr>
 <tr class="separator:ga4bbdbc434dbf29d4b09821dbfb477100"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:gae66f6b31b5ad750f1fe042a706a4e3d4"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__semaph.html#gae66f6b31b5ad750f1fe042a706a4e3d4">main</a> ()</td></tr>
-<tr class="separator:gae66f6b31b5ad750f1fe042a706a4e3d4"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gac19577371e7e3ea20f7a4fe1a0771d30"><td class="memItemLeft" align="right" valign="top">static void *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__threads.html#gac19577371e7e3ea20f7a4fe1a0771d30">monitoring_thread</a> (void *)</td></tr>
+<tr class="separator:gac19577371e7e3ea20f7a4fe1a0771d30"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gac704cb5e340d43cc1b00b9ebc3df5500"><td class="memItemLeft" align="right" valign="top">static void *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__threads.html#gac704cb5e340d43cc1b00b9ebc3df5500">i2c_alarms_thread</a> (void *)</td></tr>
+<tr class="separator:gac704cb5e340d43cc1b00b9ebc3df5500"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga2c845673086af22c226e71927f5ad071"><td class="memItemLeft" align="right" valign="top">static void *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__threads.html#ga2c845673086af22c226e71927f5ad071">ams_alarms_thread</a> (void *)</td></tr>
+<tr class="separator:ga2c845673086af22c226e71927f5ad071"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga04337706e8821abcaef4532d1e9acff0"><td class="memItemLeft" align="right" valign="top">static void *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__threads.html#ga04337706e8821abcaef4532d1e9acff0">command_thread</a> (void *)</td></tr>
+<tr class="separator:ga04337706e8821abcaef4532d1e9acff0"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ae66f6b31b5ad750f1fe042a706a4e3d4"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="main_8c.html#ae66f6b31b5ad750f1fe042a706a4e3d4">main</a> ()</td></tr>
+<tr class="separator:ae66f6b31b5ad750f1fe042a706a4e3d4"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="var-members"></a>
 Variables</h2></td></tr>
@@ -155,10 +179,99 @@ Variables</h2></td></tr>
 <tr class="memdesc:gaee1f3e364a2ce380f5f35e892cebc905"><td class="mdescLeft">&#160;</td><td class="mdescRight">Command Handling Thread.  <a href="group__pth.html#gaee1f3e364a2ce380f5f35e892cebc905">More...</a><br /></td></tr>
 <tr class="separator:gaee1f3e364a2ce380f5f35e892cebc905"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
+<h2 class="groupheader">Macro Definition Documentation</h2>
+<a id="a0ebb54fa07bfc78ad22c752262d15317"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a0ebb54fa07bfc78ad22c752262d15317">&#9670;&nbsp;</a></span>ALARMS_THREAD_PERIOD</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define ALARMS_THREAD_PERIOD&#160;&#160;&#160;100</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p class="definition">Definition at line <a class="el" href="main_8c_source.html#l00059">59</a> of file <a class="el" href="main_8c_source.html">main.c</a>.</p>
+
+</div>
+</div>
+<a id="a20711868506e73e09260e61d685f160b"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a20711868506e73e09260e61d685f160b">&#9670;&nbsp;</a></span>AMS_ALARMS_THREAD_PERIOD</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define AMS_ALARMS_THREAD_PERIOD&#160;&#160;&#160;100</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p class="definition">Definition at line <a class="el" href="main_8c_source.html#l00060">60</a> of file <a class="el" href="main_8c_source.html">main.c</a>.</p>
+
+</div>
+</div>
+<a id="a76e1ca696e625931c5e7d7a6d94aef81"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a76e1ca696e625931c5e7d7a6d94aef81">&#9670;&nbsp;</a></span>COMMAND_THREAD_PERIOD</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define COMMAND_THREAD_PERIOD&#160;&#160;&#160;50</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p class="definition">Definition at line <a class="el" href="main_8c_source.html#l00061">61</a> of file <a class="el" href="main_8c_source.html">main.c</a>.</p>
+
+</div>
+</div>
+<a id="ab0f3a36b2db5661a60346a996eedbb4a"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ab0f3a36b2db5661a60346a996eedbb4a">&#9670;&nbsp;</a></span>MONIT_THREAD_PERIOD</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define MONIT_THREAD_PERIOD&#160;&#160;&#160;5000000</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p class="definition">Definition at line <a class="el" href="main_8c_source.html#l00058">58</a> of file <a class="el" href="main_8c_source.html">main.c</a>.</p>
+
+</div>
+</div>
+<h2 class="groupheader">Function Documentation</h2>
+<a id="ae66f6b31b5ad750f1fe042a706a4e3d4"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ae66f6b31b5ad750f1fe042a706a4e3d4">&#9670;&nbsp;</a></span>main()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">int main </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p class="definition">Definition at line <a class="el" href="main_8c_source.html#l00972">972</a> of file <a class="el" href="main_8c_source.html">main.c</a>.</p>
+
+</div>
+</div>
 </div><!-- contents -->
+</div><!-- doc-content -->
 <!-- start footer part -->
-<hr class="footer"/><address class="footer"><small>
-Generated by&#160;<a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.9.1
-</small></address>
+<div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
+  <ul>
+    <li class="navelem"><a class="el" href="dir_3c9f53aecc9ee1e3a8bbce2f0db0f513.html">DBP2_App</a></li><li class="navelem"><a class="el" href="dir_4ca8ae8a7116cefe0602bfa7ac1a3973.html">src</a></li><li class="navelem"><a class="el" href="main_8c.html">main.c</a></li>
+    <li class="footer">Generated by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.9.1 </li>
+  </ul>
+</div>
 </body>
 </html>

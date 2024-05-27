@@ -15,8 +15,7 @@
 {\ttfamily \#include $<$regex.\+h$>$}\newline
 {\ttfamily \#include \char`\"{}linux/errno.\+h\char`\"{}}\newline
 {\ttfamily \#include $<$dpb2sc.\+h$>$}\newline
-Include dependency graph for main.\+c\+:
-\nopagebreak
+Include dependency graph for main.\+c\+:\nopagebreak
 \begin{figure}[H]
 \begin{center}
 \leavevmode
@@ -26,22 +25,30 @@ Include dependency graph for main.\+c\+:
 \doxysubsection*{Macros}
 \begin{DoxyCompactItemize}
 \item 
-\#define \mbox{\hyperlink{group__semaph_gab0f3a36b2db5661a60346a996eedbb4a}{MONIT\+\_\+\+THREAD\+\_\+\+PERIOD}}~5000000
+\#define \mbox{\hyperlink{main_8c_ab0f3a36b2db5661a60346a996eedbb4a}{MONIT\+\_\+\+THREAD\+\_\+\+PERIOD}}~5000000
 \item 
-\#define \mbox{\hyperlink{group__semaph_ga0ebb54fa07bfc78ad22c752262d15317}{ALARMS\+\_\+\+THREAD\+\_\+\+PERIOD}}~100
+\#define \mbox{\hyperlink{main_8c_a0ebb54fa07bfc78ad22c752262d15317}{ALARMS\+\_\+\+THREAD\+\_\+\+PERIOD}}~100
 \item 
-\#define \mbox{\hyperlink{group__semaph_ga20711868506e73e09260e61d685f160b}{AMS\+\_\+\+ALARMS\+\_\+\+THREAD\+\_\+\+PERIOD}}~100
+\#define \mbox{\hyperlink{main_8c_a20711868506e73e09260e61d685f160b}{AMS\+\_\+\+ALARMS\+\_\+\+THREAD\+\_\+\+PERIOD}}~100
 \item 
-\#define \mbox{\hyperlink{group__semaph_ga76e1ca696e625931c5e7d7a6d94aef81}{COMMAND\+\_\+\+THREAD\+\_\+\+PERIOD}}~50
+\#define \mbox{\hyperlink{main_8c_a76e1ca696e625931c5e7d7a6d94aef81}{COMMAND\+\_\+\+THREAD\+\_\+\+PERIOD}}~50
 \end{DoxyCompactItemize}
 \doxysubsection*{Functions}
 \begin{DoxyCompactItemize}
 \item 
-int \mbox{\hyperlink{group__semaph_gaf3ae575266127cb29b706732acda1731}{iio\+\_\+event\+\_\+monitor\+\_\+up}} ()
+int \mbox{\hyperlink{group__add_gaf3ae575266127cb29b706732acda1731}{iio\+\_\+event\+\_\+monitor\+\_\+up}} ()
 \item 
-void \mbox{\hyperlink{group__semaph_ga4bbdbc434dbf29d4b09821dbfb477100}{sighandler}} (int)
+void \mbox{\hyperlink{group__add_ga4bbdbc434dbf29d4b09821dbfb477100}{sighandler}} (int)
 \item 
-int \mbox{\hyperlink{group__semaph_gae66f6b31b5ad750f1fe042a706a4e3d4}{main}} ()
+static void $\ast$ \mbox{\hyperlink{group__threads_gac19577371e7e3ea20f7a4fe1a0771d30}{monitoring\+\_\+thread}} (void $\ast$)
+\item 
+static void $\ast$ \mbox{\hyperlink{group__threads_gac704cb5e340d43cc1b00b9ebc3df5500}{i2c\+\_\+alarms\+\_\+thread}} (void $\ast$)
+\item 
+static void $\ast$ \mbox{\hyperlink{group__threads_ga2c845673086af22c226e71927f5ad071}{ams\+\_\+alarms\+\_\+thread}} (void $\ast$)
+\item 
+static void $\ast$ \mbox{\hyperlink{group__threads_ga04337706e8821abcaef4532d1e9acff0}{command\+\_\+thread}} (void $\ast$)
+\item 
+int \mbox{\hyperlink{main_8c_ae66f6b31b5ad750f1fe042a706a4e3d4}{main}} ()
 \end{DoxyCompactItemize}
 \doxysubsection*{Variables}
 \begin{DoxyCompactItemize}
@@ -58,3 +65,59 @@ pthread\+\_\+t \mbox{\hyperlink{group__pth_ga74c336fc4b7753a99d7ff0936f6de6a0}{t
 \begin{DoxyCompactList}\small\item\em Monitoring Thread. \end{DoxyCompactList}\item 
 pthread\+\_\+t \mbox{\hyperlink{group__pth_gaee1f3e364a2ce380f5f35e892cebc905}{t\+\_\+4}}
 \begin{DoxyCompactList}\small\item\em Command Handling Thread. \end{DoxyCompactList}\end{DoxyCompactItemize}
+
+
+\doxysubsection{Macro Definition Documentation}
+\mbox{\Hypertarget{main_8c_a0ebb54fa07bfc78ad22c752262d15317}\label{main_8c_a0ebb54fa07bfc78ad22c752262d15317}} 
+\index{main.c@{main.c}!ALARMS\_THREAD\_PERIOD@{ALARMS\_THREAD\_PERIOD}}
+\index{ALARMS\_THREAD\_PERIOD@{ALARMS\_THREAD\_PERIOD}!main.c@{main.c}}
+\doxysubsubsection{\texorpdfstring{ALARMS\_THREAD\_PERIOD}{ALARMS\_THREAD\_PERIOD}}
+{\footnotesize\ttfamily \#define ALARMS\+\_\+\+THREAD\+\_\+\+PERIOD~100}
+
+
+
+Definition at line 59 of file main.\+c.
+
+\mbox{\Hypertarget{main_8c_a20711868506e73e09260e61d685f160b}\label{main_8c_a20711868506e73e09260e61d685f160b}} 
+\index{main.c@{main.c}!AMS\_ALARMS\_THREAD\_PERIOD@{AMS\_ALARMS\_THREAD\_PERIOD}}
+\index{AMS\_ALARMS\_THREAD\_PERIOD@{AMS\_ALARMS\_THREAD\_PERIOD}!main.c@{main.c}}
+\doxysubsubsection{\texorpdfstring{AMS\_ALARMS\_THREAD\_PERIOD}{AMS\_ALARMS\_THREAD\_PERIOD}}
+{\footnotesize\ttfamily \#define AMS\+\_\+\+ALARMS\+\_\+\+THREAD\+\_\+\+PERIOD~100}
+
+
+
+Definition at line 60 of file main.\+c.
+
+\mbox{\Hypertarget{main_8c_a76e1ca696e625931c5e7d7a6d94aef81}\label{main_8c_a76e1ca696e625931c5e7d7a6d94aef81}} 
+\index{main.c@{main.c}!COMMAND\_THREAD\_PERIOD@{COMMAND\_THREAD\_PERIOD}}
+\index{COMMAND\_THREAD\_PERIOD@{COMMAND\_THREAD\_PERIOD}!main.c@{main.c}}
+\doxysubsubsection{\texorpdfstring{COMMAND\_THREAD\_PERIOD}{COMMAND\_THREAD\_PERIOD}}
+{\footnotesize\ttfamily \#define COMMAND\+\_\+\+THREAD\+\_\+\+PERIOD~50}
+
+
+
+Definition at line 61 of file main.\+c.
+
+\mbox{\Hypertarget{main_8c_ab0f3a36b2db5661a60346a996eedbb4a}\label{main_8c_ab0f3a36b2db5661a60346a996eedbb4a}} 
+\index{main.c@{main.c}!MONIT\_THREAD\_PERIOD@{MONIT\_THREAD\_PERIOD}}
+\index{MONIT\_THREAD\_PERIOD@{MONIT\_THREAD\_PERIOD}!main.c@{main.c}}
+\doxysubsubsection{\texorpdfstring{MONIT\_THREAD\_PERIOD}{MONIT\_THREAD\_PERIOD}}
+{\footnotesize\ttfamily \#define MONIT\+\_\+\+THREAD\+\_\+\+PERIOD~5000000}
+
+
+
+Definition at line 58 of file main.\+c.
+
+
+
+\doxysubsection{Function Documentation}
+\mbox{\Hypertarget{main_8c_ae66f6b31b5ad750f1fe042a706a4e3d4}\label{main_8c_ae66f6b31b5ad750f1fe042a706a4e3d4}} 
+\index{main.c@{main.c}!main@{main}}
+\index{main@{main}!main.c@{main.c}}
+\doxysubsubsection{\texorpdfstring{main()}{main()}}
+{\footnotesize\ttfamily int main (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})}
+
+
+
+Definition at line 972 of file main.\+c.
+

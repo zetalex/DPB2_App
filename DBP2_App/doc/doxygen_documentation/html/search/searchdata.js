@@ -3,9 +3,10 @@ var indexSectionsWithContent =
   0: "acfilmpstw",
   1: "ip",
   2: "imt",
-  3: "imsw",
+  3: "acimsw",
   4: "acfst",
-  5: "cl"
+  5: "acm",
+  6: "acl"
 };
 
 var indexSectionNames =
@@ -15,7 +16,8 @@ var indexSectionNames =
   2: "files",
   3: "functions",
   4: "variables",
-  5: "groups"
+  5: "defines",
+  6: "groups"
 };
 
 var indexSectionLabels =
@@ -25,6 +27,7 @@ var indexSectionLabels =
   2: "Files",
   3: "Functions",
   4: "Variables",
-  5: "Modules"
+  5: "Macros",
+  6: "Modules"
 };
 

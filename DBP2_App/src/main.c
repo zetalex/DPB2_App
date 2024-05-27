@@ -32,7 +32,7 @@
 
 /** @brief Semaphore to synchronize thread creation */
 sem_t thread_sync;
-
+/** @} */
 /******************************************************************************
 *Child process and threads.
 ****************************************************************************/
@@ -71,6 +71,10 @@ static void *ams_alarms_thread(void *);
 static void *command_thread(void *);
 
 /************************** IIO_EVENT_MONITOR Functions ******************************/
+/** @defgroup add Additional functions for the application besides libdpb2sc
+ *  Additional functions declaration
+ *  @{
+ */
 /**
  * Start IIO EVENT MONITOR to enable Xilinx-AMS events
  *
@@ -155,8 +159,12 @@ void sighandler(int signum) {
    break_flag = 1;
    return ;
 }
-
+/** @} */
 /************************** Threads declaration ******************************/
+/** @defgroup threads All the dpb slow control application threads implementation
+ *  Threads implementation
+ *  @{
+ */
 /**
  * Periodic thread that every x seconds reads every magnitude of every sensor available and stores it.
  *
@@ -959,7 +967,7 @@ waitmsg:
 
 	return NULL;
 }
-
+/** @} */
 /************************** Main function ******************************/
 int main(){
 
