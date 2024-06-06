@@ -1,26 +1,28 @@
 import zmq
 import json
-
+import sys
 
 
 def process_json(json_data):
-    # Parsear el JSON
+    # Parse JSON
     json_obj = json.loads(json_data)
     
-    # # Imprimir la información extraída
+    # Print extracted info
     print(json.dumps(json_obj, indent=4))
 
 def main():
+    ip_str = "tcp://" + str(sys.argv[1]) + ":5556"
+    
     context = zmq.Context()
     socket = context.socket(zmq.SUB)
     
     socket.setsockopt_string(zmq.SUBSCRIBE, "")
-    socket.connect("tcp://20.0.0.30:5556")
+    socket.connect(ip_str)
     
+    print("Establishing connection with DPB at address " + str(str(sys.argv[1])))
     
     while True:
         json_data = socket.recv_string()
-        #print(json_data)
         process_json(json_data)
 
 
