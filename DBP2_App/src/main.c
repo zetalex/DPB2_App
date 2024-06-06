@@ -58,9 +58,9 @@ int periods[4];
 *Threads timers (ms).
 ****************************************************************************/
 #define MONIT_THREAD_PERIOD_DEFAULT 5000000
-#define ALARMS_THREAD_PERIOD_DEFAULT 100
-#define AMS_ALARMS_THREAD_PERIOD_DEFAULT 100
-#define COMMAND_THREAD_PERIOD_DEFAULT 50
+#define ALARMS_THREAD_PERIOD_DEFAULT 100000
+#define AMS_ALARMS_THREAD_PERIOD_DEFAULT 100000
+#define COMMAND_THREAD_PERIOD_DEFAULT 50000
 
 /************************** Function Prototypes ******************************/
 
@@ -631,7 +631,7 @@ static void *i2c_alarms_thread(void *arg){
 	int rc ;
 	struct DPB_I2cSensors *data = arg;
 
-	printf("Alarms thread period: %dms\n",periods[1]);
+	printf("Alarms thread period: %dms\n",periods[1]/1000);
 	rc = make_periodic(periods[1], &info);
 	if (rc) {
 		printf("Error\r\n");
@@ -748,7 +748,7 @@ static void *ams_alarms_thread(void *arg){
 
 	sem_wait(&memory->ams_sync);
 
-	printf("AMS Alarms thread period: %dms\n",periods[0]);
+	printf("AMS Alarms thread period: %dms\n",periods[0]/1000);
 	rc = make_periodic(periods[0], &info);
 	if (rc) {
 		printf("Error\r\n");
@@ -840,7 +840,7 @@ static void *command_thread(void *arg){
 	int rc ;
 	struct DPB_I2cSensors *data = arg;
 
-	printf("Command thread period: %dms\n",periods[3]);
+	printf("Command thread period: %dms\n",periods[3]/1000);
 	rc = make_periodic(periods[3], &info);
 	if (rc) {
 		printf("Error\r\n");
