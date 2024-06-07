@@ -940,13 +940,19 @@ static void *command_thread(void *arg){
 		else{
 			json_object_put(jmsg);
 			json_object_put(jobj);
-			if(!strcmp(cmd[1],"HV")){
+			if(!strcmp(cmd[1],"LV")){
 				//Command conversion
+				char hvlvcmd[40] =  "$BD:0,$CMD:";
+				rc = hv_lv_command_translation(hvlvcmd, cmd, i);
 				//RS485 communication
+				rc = hv_lv_command_handling(hvlvcmd, reply);
 			}
-			else if(!strcmp(cmd[1],"LV")){
+			else if(!strcmp(cmd[1],"HV")){
 				//Command conversion
+				char hvlvcmd[40] =  "$BD:1,$CMD:";
+				rc = hv_lv_command_translation(hvlvcmd, cmd, i);
 				//RS485 communication
+				rc = hv_lv_command_handling(hvlvcmd, reply);
 			}
 			else if(!strcmp(cmd[1],"Dig0")){
 				//Command conversion
@@ -976,7 +982,7 @@ int main(int argc, char *argv[]){
 	sigset_t alarm_sig;
 	int i;
 	int rc;
-	struct DPB_I2cSensors data;
+	struct DPB_I2cSensors data;  
 
 	for(int i = 1 ; i < 5; i++) {
 		if(argc <= i)
@@ -994,6 +1000,8 @@ int main(int argc, char *argv[]){
 			periods[i-1] = atoi(argv[i]);
 	}
 
+	populate_lv_hash_table(LV_CMD_TABLE_SIZE,lv_daq_words,lv_board_words);
+	populate_hv_hash_table(HV_CMD_TABLE_SIZE,hv_daq_words,hv_board_words);
 	rc = init_semaphores();
 	if(rc)
 		exit(1);
