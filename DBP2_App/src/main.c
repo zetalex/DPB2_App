@@ -253,6 +253,7 @@ static void *monitoring_thread(void *arg)
 	}
 	sem_post(&thread_sync);
 	while (1) {
+		// DPB Slow Control Monitoring
 		sem_wait(&i2c_sync); //Semaphore to sync I2C usage
 		rc = mcp9844_read_temperature(data,temp);
 		if (rc) {
@@ -588,6 +589,110 @@ static void *monitoring_thread(void *arg)
 			parsing_mon_sensor_data_into_array(jdpb,curr_som[l]*volt_som[l],pwr,99);
 		}
 
+		//LV Slow Control Monitoring
+		char *lv_mon_root = "$BD:0,$CMD:MON,PAR:";
+		char *lv_mon_cmd;
+		char *mag_code;
+		char *response;
+
+		//Read Environment Parameters
+		for(int i = 0 ; i < 5; i++){
+			strcpy(lv_mon_cmd,lv_mon_root);
+			strcat(lv_mon_cmd,lv_board_words[i]);
+			strcat(lv_mon_cmd,"\r\n");
+			hv_lv_command_handling(lv_mon_cmd,response);
+
+			char *mag_str = NULL;
+			char *start, *end;
+
+			if ( start = strstr( response, "#CMD:OK,VAL:" ) ){
+				start += strlen( "#CMD:OK,VAL:" );
+				if ( end = strstr( start, "\r\n" ) )
+				{
+					mag_str = ( char * )malloc( end - start + 1 );
+					memcpy( mag_str, start, end - start );
+					mag_str[end - start] = '\0';
+				}
+    		}
+			parsing_mon_sensor_string_into_array(jlv,mag_str, lv_mag_names[i],99);		
+		}
+		//Read Channel Parameters
+		for(int i = 0; i < 7; i++){
+		//Status Voltage and Current
+			for(int j = 5; j < LV_CMD_TABLE_SIZE; i++){
+				strcpy(lv_mon_cmd,lv_mon_root);
+				if(i <= 1 && j == 5){
+					strcat(lv_mon_cmd,"BCEN");
+				}
+				else if(i > 1 && j == 5){
+					strcat(lv_mon_cmd,"SDEN");
+				}
+				else{
+					strcat(lv_mon_cmd,lv_board_words[j]);
+				}
+				strcat(lv_mon_cmd,"\r\n");
+				hv_lv_command_handling(lv_mon_cmd,response);
+
+				char *mag_str = NULL;
+				char *start, *end;
+
+				if ( start = strstr( response, "#CMD:OK,VAL:" ) ){
+					start += strlen( "#CMD:OK,VAL:" );
+					if ( end = strstr( start, "\r\n" ) )
+					{
+						mag_str = ( char * )malloc( end - start + 1 );
+						memcpy( mag_str, start, end - start );
+						mag_str[end - start] = '\0';
+					}
+				}
+				// If it is status, we strip the least significant bit from the string
+				parsing_mon_sensor_string_into_array(jlv,mag_str, lv_mag_names[j],i);
+			}		
+		}
+
+		// HV Slow Control Monitoring
+		char *hv_mon_root = "$BD:1,$CMD:MON,PAR:";
+		char *hv_mon_cmd;
+		char *chan_mag_value;
+
+		//Read Channel Parameters
+		for(int i = 0; i < 24; i++){
+			for(int j = 0; j < HV_CMD_TABLE_SIZE; i++){
+				strcpy(hv_mon_cmd,hv_mon_root);
+				strcat(hv_mon_cmd,hv_board_words[j]);
+				strcat(hv_mon_cmd,"\r\n");
+				hv_lv_command_handling(hv_mon_cmd,response);
+
+				char *mag_str = NULL;
+				char *start, *end;
+
+				if ( start = strstr( response, "#CMD:OK,VAL:" ) ){
+					start += strlen( "#CMD:OK,VAL:" );
+					if ( end = strstr( start, "\r\n" ) )
+					{
+						mag_str = ( char * )malloc( end - start + 1 );
+						memcpy( mag_str, start, end - start );
+						mag_str[end - start] = '\0';
+					}
+				}
+				// If it is status, we strip the least significant bit from the string
+				if(j==0){
+					chan_mag_value[0] = mag_str[13];
+					chan_mag_value[1] =  '\0';
+				}
+				// If it is the channel error, we strip the most significant bit
+				else if(j==6){
+					chan_mag_value[0] = mag_str[0];
+					chan_mag_value[1] =  '\0';
+				}	
+				else{
+					strcpy(chan_mag_value,mag_str);
+				}
+				parsing_mon_sensor_string_into_array(jhv,chan_mag_value, hv_mag_names[j],i);
+			}		
+		}
+
+		
 		json_object_object_add(jdata,"LV", jlv);
 		json_object_object_add(jdata,"HV", jhv);
 		json_object_object_add(jdata,"Dig0", jdig0);
