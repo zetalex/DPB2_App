@@ -594,6 +594,7 @@ static void *monitoring_thread(void *arg)
 		char *lv_mon_cmd;
 		char *mag_code;
 		char *response;
+		char channel;
 
 		//Read Environment Parameters
 		for(int i = 0 ; i < 5; i++){
@@ -613,17 +614,26 @@ static void *monitoring_thread(void *arg)
 					memcpy( mag_str, start, end - start );
 					mag_str[end - start] = '\0';
 				}
+				else {
+						strcpy(mag_str,"ERROR");
+				}
     		}
+			printf("MONITORING THREAD: %s",lv_mon_cmd);
 			parsing_mon_sensor_string_into_array(jlv,mag_str, lv_mag_names[i],99);		
 		}
+		lv_mon_root = "$BD:0,$CMD:MON,CH:";
 		//Read Channel Parameters
 		for(int i = 0; i < 7; i++){
 		//Status Voltage and Current
 			for(int j = 5; j < LV_CMD_TABLE_SIZE; i++){
 				strcpy(lv_mon_cmd,lv_mon_root);
+				channel = (char) (i + 0x30);
+				strncat(lv_mon_cmd,&channel,1);
+				strcat(lv_mon_cmd,",PAR:");
+				// Exception, enable for channels 0 and 1 are bus converters
 				if(i <= 1 && j == 5){
 					strcat(lv_mon_cmd,"BCEN");
-				}
+				} // Enable for channels 2 to 6 are stepdowns
 				else if(i > 1 && j == 5){
 					strcat(lv_mon_cmd,"SDEN");
 				}
@@ -631,6 +641,7 @@ static void *monitoring_thread(void *arg)
 					strcat(lv_mon_cmd,lv_board_words[j]);
 				}
 				strcat(lv_mon_cmd,"\r\n");
+				printf("MONITORING THREAD: %s",lv_mon_cmd);
 				hv_lv_command_handling(lv_mon_cmd,response);
 
 				char *mag_str = NULL;
@@ -644,6 +655,12 @@ static void *monitoring_thread(void *arg)
 						memcpy( mag_str, start, end - start );
 						mag_str[end - start] = '\0';
 					}
+					else {
+						strcpy(mag_str,"ERROR");
+					}
+				}
+				else{
+					strcpy(mag_str,"ERROR");
 				}
 				// If it is status, we strip the least significant bit from the string
 				parsing_mon_sensor_string_into_array(jlv,mag_str, lv_mag_names[j],i);
@@ -651,7 +668,7 @@ static void *monitoring_thread(void *arg)
 		}
 
 		// HV Slow Control Monitoring
-		char *hv_mon_root = "$BD:1,$CMD:MON,PAR:";
+		char *hv_mon_root = "$BD:1,$CMD:MON,CH:";
 		char *hv_mon_cmd;
 		char *chan_mag_value;
 
@@ -659,8 +676,12 @@ static void *monitoring_thread(void *arg)
 		for(int i = 0; i < 24; i++){
 			for(int j = 0; j < HV_CMD_TABLE_SIZE; i++){
 				strcpy(hv_mon_cmd,hv_mon_root);
+				channel = (char) (i + 0x30);
+				strncat(hv_mon_cmd,&channel,1);
+				strcat(lv_mon_cmd,",PAR:");
 				strcat(hv_mon_cmd,hv_board_words[j]);
 				strcat(hv_mon_cmd,"\r\n");
+				printf("MONITORING THREAD: %s",hv_mon_cmd);
 				hv_lv_command_handling(hv_mon_cmd,response);
 
 				char *mag_str = NULL;
@@ -673,6 +694,9 @@ static void *monitoring_thread(void *arg)
 						mag_str = ( char * )malloc( end - start + 1 );
 						memcpy( mag_str, start, end - start );
 						mag_str[end - start] = '\0';
+					}
+					else {
+						strcpy(mag_str,"ERROR");
 					}
 				}
 				// If it is status, we strip the least significant bit from the string
