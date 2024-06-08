@@ -735,7 +735,7 @@ static void *monitoring_thread(void *arg)
 		if (rc) {
 			printf("Error validating JSON Schema\r\n");
 		}
-		else{
+		else{ //FIXME DAQ Function HERE. Use the send monitoring data function of DAQ library
 			rc2 = zmq_send(mon_publisher, serialized_json, strlen(serialized_json), 0);
 			if (rc2 < 0) {
 				printf("Error sending JSON\r\n");
@@ -945,6 +945,7 @@ static void *ams_alarms_thread(void *arg){
         }
         else if(!strcmp(ch_type,"temp") && chan >= 7){
         	xlnx_ams_read_temp(&chan,1,res);
+			// FIXME: DAQ Function here. Replace alarm_json by DAQ function
         	rc = alarm_json("DPB",ams_channels[chan-7],ev_type, 99, res[0],timestamp,"warning");
             //printf("Chip: AMS. Event type: %s. Timestamp: %lld. Channel type: %s. Channel: %d. Value: %f ºC\n",ev_type,timestamp,ch_type,chan,res[0]);
         }
@@ -1097,6 +1098,7 @@ static void *command_thread(void *arg){
 		}
 waitmsg:
 	const char* msg_sent = (const char*) reply;
+	//FIXME: DAQ Function HERE. Use whole command_thread function as callback function for DAQ library and parse string into DPB command format
 	zmq_send(cmd_router,msg_sent, strlen(msg_sent), 0);
 	wait_period(&info);
 	}
