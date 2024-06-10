@@ -588,24 +588,27 @@ static void *monitoring_thread(void *arg)
 			parsing_mon_sensor_data_into_array(jdpb,curr_som[l],curr,99);
 			parsing_mon_sensor_data_into_array(jdpb,curr_som[l]*volt_som[l],pwr,99);
 		}
-
+		printf("MONITORING: EMPEZANDO LV");
 		//LV Slow Control Monitoring
-		char *lv_mon_root = "$BD:0,$CMD:MON,PAR:";
-		char *lv_mon_cmd;
+		char lv_mon_root[80] = "$BD:0,$CMD:MON,PAR:";
+		char lv_mon_cmd[80];
 		char *mag_code;
-		char *response;
+		char response[80];
 		char channel;
-
+		char *board_dev = "/dev/ttyUL4";
 		//Read Environment Parameters
 		for(int i = 0 ; i < 5; i++){
+			printf("Iterando environ Paso 1\n");
 			strcpy(lv_mon_cmd,lv_mon_root);
 			strcat(lv_mon_cmd,lv_board_words[i]);
 			strcat(lv_mon_cmd,"\r\n");
-			hv_lv_command_handling(lv_mon_cmd,response);
+			printf("Iterando environ Paso 2\n");
+			printf("MONITORING THREAD: %s",lv_mon_cmd);
+			hv_lv_command_handling(board_dev,lv_mon_cmd,response);
 
 			char *mag_str = NULL;
 			char *start, *end;
-
+			printf("Iterando environ Paso 3\n");
 			if ( start = strstr( response, "#CMD:OK,VAL:" ) ){
 				start += strlen( "#CMD:OK,VAL:" );
 				if ( end = strstr( start, "\r\n" ) )
@@ -615,17 +618,19 @@ static void *monitoring_thread(void *arg)
 					mag_str[end - start] = '\0';
 				}
 				else {
+						printf("Iterando environ Error");
 						strcpy(mag_str,"ERROR");
 				}
-    		}
-			printf("MONITORING THREAD: %s",lv_mon_cmd);
+			}
+			printf("%s\n",mag_str);
 			parsing_mon_sensor_string_into_array(jlv,mag_str, lv_mag_names[i],99);		
 		}
-		lv_mon_root = "$BD:0,$CMD:MON,CH:";
+		printf("MONITORING: EMPEZANDO LV CANALES");
+		strcpy(lv_mon_root,"$BD:0,$CMD:MON,CH:");
 		//Read Channel Parameters
-		for(int i = 0; i < 7; i++){
+		for(int i = 0; i <= 7; i++){
 		//Status Voltage and Current
-			for(int j = 5; j < LV_CMD_TABLE_SIZE; i++){
+			for(int j = 5; j < LV_CMD_TABLE_SIZE; j++){
 				strcpy(lv_mon_cmd,lv_mon_root);
 				channel = (char) (i + 0x30);
 				strncat(lv_mon_cmd,&channel,1);
@@ -641,8 +646,8 @@ static void *monitoring_thread(void *arg)
 					strcat(lv_mon_cmd,lv_board_words[j]);
 				}
 				strcat(lv_mon_cmd,"\r\n");
-				printf("MONITORING THREAD: %s",lv_mon_cmd);
-				hv_lv_command_handling(lv_mon_cmd,response);
+				printf("MONITORING THREAD: %s\n",lv_mon_cmd);
+				hv_lv_command_handling(board_dev,lv_mon_cmd,response);
 
 				char *mag_str = NULL;
 				char *start, *end;
@@ -669,12 +674,13 @@ static void *monitoring_thread(void *arg)
 
 		// HV Slow Control Monitoring
 		char *hv_mon_root = "$BD:1,$CMD:MON,CH:";
-		char *hv_mon_cmd;
+		char hv_mon_cmd[80];
 		char *chan_mag_value;
+		strcpy(board_dev,"/dev/ttyUL3");
 
 		//Read Channel Parameters
 		for(int i = 0; i < 24; i++){
-			for(int j = 0; j < HV_CMD_TABLE_SIZE; i++){
+			for(int j = 0; j < HV_CMD_TABLE_SIZE; j++){
 				strcpy(hv_mon_cmd,hv_mon_root);
 				channel = (char) (i + 0x30);
 				strncat(hv_mon_cmd,&channel,1);
@@ -682,9 +688,9 @@ static void *monitoring_thread(void *arg)
 				strcat(hv_mon_cmd,hv_board_words[j]);
 				strcat(hv_mon_cmd,"\r\n");
 				printf("MONITORING THREAD: %s",hv_mon_cmd);
-				hv_lv_command_handling(hv_mon_cmd,response);
+				hv_lv_command_handling(board_dev,hv_mon_cmd,response);
 
-				char *mag_str = NULL;
+				char *mag_str;
 				char *start, *end;
 
 				if ( start = strstr( response, "#CMD:OK,VAL:" ) ){
@@ -1071,18 +1077,20 @@ static void *command_thread(void *arg){
 			json_object_put(jmsg);
 			json_object_put(jobj);
 			if(!strcmp(cmd[1],"LV")){
+				char *board_dev = "/dev/ttyUL4";
 				//Command conversion
 				char hvlvcmd[40] =  "$BD:0,$CMD:";
 				rc = hv_lv_command_translation(hvlvcmd, cmd, i);
 				//RS485 communication
-				rc = hv_lv_command_handling(hvlvcmd, reply);
+				rc = hv_lv_command_handling(board_dev,hvlvcmd, reply);
 			}
 			else if(!strcmp(cmd[1],"HV")){
+				char *board_dev = "/dev/ttyUL3";
 				//Command conversion
 				char hvlvcmd[40] =  "$BD:1,$CMD:";
 				rc = hv_lv_command_translation(hvlvcmd, cmd, i);
 				//RS485 communication
-				rc = hv_lv_command_handling(hvlvcmd, reply);
+				rc = hv_lv_command_handling(board_dev,hvlvcmd, reply);
 			}
 			else if(!strcmp(cmd[1],"Dig0")){
 				//Command conversion
@@ -1196,13 +1204,13 @@ int main(int argc, char *argv[]){
 		sigaddset(&alarm_sig, i);
 	sigprocmask(SIG_BLOCK, &alarm_sig, NULL);
 
-	pthread_create(&t_1, NULL, ams_alarms_thread,NULL); //Create thread 1 - reads AMS alarms
-	sem_wait(&thread_sync);
-	pthread_create(&t_2, NULL, i2c_alarms_thread,(void *)&data); //Create thread 2 - reads I2C alarms every x miliseconds
-	sem_wait(&thread_sync);
+	//pthread_create(&t_1, NULL, ams_alarms_thread,NULL); //Create thread 1 - reads AMS alarms
+	//sem_wait(&thread_sync);
+	//pthread_create(&t_2, NULL, i2c_alarms_thread,(void *)&data); //Create thread 2 - reads I2C alarms every x miliseconds
+	//sem_wait(&thread_sync);
 	pthread_create(&t_3, NULL, monitoring_thread,(void *)&data);//Create thread 3 - monitors magnitudes every x seconds
 	sem_wait(&thread_sync); //Avoids race conditions
-	pthread_create(&t_4, NULL, command_thread,(void *)&data);//Create thread 4 - waits and attends commands
+	//pthread_create(&t_4, NULL, command_thread,(void *)&data);//Create thread 4 - waits and attends commands
 
 	while(1){
 		sleep(100);
