@@ -595,7 +595,7 @@ static void *monitoring_thread(void *arg)
 		char *mag_code;
 		char response[80];
 		char channel;
-		char *board_dev = "/dev/ttyUL4";
+		char board_dev[32] = "/dev/ttyUL4";
 		//Read Environment Parameters
 		for(int i = 0 ; i < 5; i++){
 			printf("Iterando environ Paso 1\n");
@@ -672,10 +672,11 @@ static void *monitoring_thread(void *arg)
 			}		
 		}
 
+		printf("MONITORING: EMPEZANDO LV");
 		// HV Slow Control Monitoring
 		char *hv_mon_root = "$BD:1,$CMD:MON,CH:";
 		char hv_mon_cmd[80];
-		char *chan_mag_value;
+		char chan_mag_value[80];
 		strcpy(board_dev,"/dev/ttyUL3");
 
 		//Read Channel Parameters
@@ -1204,13 +1205,13 @@ int main(int argc, char *argv[]){
 		sigaddset(&alarm_sig, i);
 	sigprocmask(SIG_BLOCK, &alarm_sig, NULL);
 
-	//pthread_create(&t_1, NULL, ams_alarms_thread,NULL); //Create thread 1 - reads AMS alarms
-	//sem_wait(&thread_sync);
-	//pthread_create(&t_2, NULL, i2c_alarms_thread,(void *)&data); //Create thread 2 - reads I2C alarms every x miliseconds
-	//sem_wait(&thread_sync);
+	pthread_create(&t_1, NULL, ams_alarms_thread,NULL); //Create thread 1 - reads AMS alarms
+	sem_wait(&thread_sync);
+	pthread_create(&t_2, NULL, i2c_alarms_thread,(void *)&data); //Create thread 2 - reads I2C alarms every x miliseconds
+	sem_wait(&thread_sync);
 	pthread_create(&t_3, NULL, monitoring_thread,(void *)&data);//Create thread 3 - monitors magnitudes every x seconds
 	sem_wait(&thread_sync); //Avoids race conditions
-	//pthread_create(&t_4, NULL, command_thread,(void *)&data);//Create thread 4 - waits and attends commands
+	pthread_create(&t_4, NULL, command_thread,(void *)&data);//Create thread 4 - waits and attends commands
 
 	while(1){
 		sleep(100);
