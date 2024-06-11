@@ -882,6 +882,8 @@ static void *i2c_alarms_thread(void *arg){
 				printf("Error reading alarm\r\n");
 			}
 		}
+
+		//FIXME: Write here the HV and LV alarms for overvoltage and overcurrent
 		sem_post(&i2c_sync); //Free semaphore to sync I2C usage
 		wait_period(&info);
 	}
@@ -1116,7 +1118,7 @@ static void *command_thread(void *arg){
 				//RS485 communication
 				rc = hv_lv_command_handling(board_dev,hvlvcmd, board_response);
 				printf("COMMAND THREAD: %s \n",board_response);
-				// Generate the JSON message
+				// Generate the JSON message depending on reading or setting
 				if(!strcmp("READ",cmd[0]))
 					rc = hv_lv_command_response(board_response,reply,1,msg_id);
 				else
@@ -1131,7 +1133,7 @@ static void *command_thread(void *arg){
 				//RS485 communication
 				rc = hv_lv_command_handling(board_dev,hvlvcmd, board_response);
 				printf("COMMAND THREAD: %s \n",board_response);
-				// Generate the JSON message
+				// Generate the JSON message depending on reading or setting
 				if(!strcmp("READ",cmd[0]))
 					rc = hv_lv_command_response(board_response,reply,1,msg_id);
 				else
