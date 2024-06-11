@@ -594,7 +594,7 @@ static void *monitoring_thread(void *arg)
 		char lv_mon_cmd[80];
 		char *mag_code;
 		char response[80];
-		char channel;
+		char channel_str[4];
 		char board_dev[32] = "/dev/ttyUL4";
 		//Read Environment Parameters
 		for(int i = 0 ; i < 5; i++){
@@ -632,8 +632,8 @@ static void *monitoring_thread(void *arg)
 		//Status Voltage and Current
 			for(int j = 5; j < LV_CMD_TABLE_SIZE; j++){
 				strcpy(lv_mon_cmd,lv_mon_root);
-				channel = (char) (i + 0x30);
-				strncat(lv_mon_cmd,&channel,1);
+				sprintf(channel_str,"%d",i);
+				strcat(lv_mon_cmd,channel_str);
 				strcat(lv_mon_cmd,",PAR:");
 				// Exception, enable for channels 0 and 1 are bus converters
 				if(i <= 1 && j == 5){
@@ -683,9 +683,9 @@ static void *monitoring_thread(void *arg)
 		for(int i = 0; i < 24; i++){
 			for(int j = 0; j < HV_CMD_TABLE_SIZE; j++){
 				strcpy(hv_mon_cmd,hv_mon_root);
-				channel = (char) (i + 0x30);
-				strncat(hv_mon_cmd,&channel,1);
-				strcat(lv_mon_cmd,",PAR:");
+				sprintf(channel_str,"%d",i);
+				strcat(hv_mon_cmd,channel_str);
+				strcat(hv_mon_cmd,",PAR:");
 				strcat(hv_mon_cmd,hv_board_words[j]);
 				strcat(hv_mon_cmd,"\r\n");
 				printf("MONITORING THREAD: %s",hv_mon_cmd);
@@ -738,6 +738,7 @@ static void *monitoring_thread(void *arg)
 		json_object_object_add(jobj,"data",jdata);*/
 
 		const char *serialized_json = json_object_to_json_string(jdata);
+		printf("%s\n",serialized_json);
 		rc = json_schema_validate("JSONSchemaMonitoring.json",serialized_json, "mon_temp.json");
 		if (rc) {
 			printf("Error validating JSON Schema\r\n");
