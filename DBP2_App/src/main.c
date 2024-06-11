@@ -596,6 +596,7 @@ static void *monitoring_thread(void *arg)
 		char response[80];
 		char channel_str[4];
 		char board_dev[32] = "/dev/ttyUL4";
+		float mag_value;
 		//Read Environment Parameters
 		for(int i = 0 ; i < 5; i++){
 			printf("Iterando environ Paso 1\n");
@@ -606,6 +607,7 @@ static void *monitoring_thread(void *arg)
 			printf("MONITORING THREAD: %s",lv_mon_cmd);
 			hv_lv_command_handling(board_dev,lv_mon_cmd,response);
 
+			// Strip the returned value from response string
 			char *mag_str = NULL;
 			char *start, *end;
 			printf("Iterando environ Paso 3\n");
@@ -623,7 +625,24 @@ static void *monitoring_thread(void *arg)
 				}
 			}
 			printf("%s\n",mag_str);
-			parsing_mon_sensor_string_into_array(jlv,mag_str, lv_mag_names[i],99);		
+			switch(i){
+				case 0: // Temperature
+				case 1: // BCM Temperature
+				case 2: // Relative Humidity
+				case 3: // Pressure
+					mag_value=(float) atoi(mag_str);
+					printf("%f\n",mag_value);
+					parsing_mon_sensor_data_into_array(jlv,mag_value, lv_mag_names[i],99);
+					break;
+				case 4: // Water Leak
+					if(!strcmp(mag_str,"YES"))
+						mag_value = 1;
+					else
+						mag_value = 0;
+					parsing_mon_status_data_into_array(jlv,mag_value, lv_mag_names[i],99);
+					break;
+				default:
+			}	
 		}
 		printf("MONITORING: EMPEZANDO LV CANALES");
 		strcpy(lv_mon_root,"$BD:0,$CMD:MON,CH:");
@@ -649,6 +668,7 @@ static void *monitoring_thread(void *arg)
 				printf("MONITORING THREAD: %s\n",lv_mon_cmd);
 				hv_lv_command_handling(board_dev,lv_mon_cmd,response);
 
+				// Strip the returned value from response string
 				char *mag_str = NULL;
 				char *start, *end;
 
@@ -667,8 +687,17 @@ static void *monitoring_thread(void *arg)
 				else{
 					strcpy(mag_str,"ERROR");
 				}
-				// If it is status, we strip the least significant bit from the string
-				parsing_mon_sensor_string_into_array(jlv,mag_str, lv_mag_names[j],i);
+				switch (j){
+					case 5: //Output Status
+					parsing_mon_sensor_string_into_array(jlv,mag_str, lv_mag_names[j],i);
+					break;
+					case 6: //Voltage Monitor
+					case 7: //Current Monitor
+					mag_value=atof(mag_str);
+					printf("%f\n",mag_value);
+					parsing_mon_sensor_data_into_array(jlv,mag_value, lv_mag_names[j],i);
+					default:
+				}
 			}		
 		}
 
@@ -677,6 +706,7 @@ static void *monitoring_thread(void *arg)
 		char *hv_mon_root = "$BD:1,$CMD:MON,CH:";
 		char hv_mon_cmd[80];
 		char chan_mag_value[80];
+		int mag_status;
 		strcpy(board_dev,"/dev/ttyUL3");
 
 		//Read Channel Parameters
@@ -690,7 +720,8 @@ static void *monitoring_thread(void *arg)
 				strcat(hv_mon_cmd,"\r\n");
 				printf("MONITORING THREAD: %s",hv_mon_cmd);
 				hv_lv_command_handling(board_dev,hv_mon_cmd,response);
-
+				
+				// Strip the returned value from response string
 				char *mag_str;
 				char *start, *end;
 
@@ -706,20 +737,29 @@ static void *monitoring_thread(void *arg)
 						strcpy(mag_str,"ERROR");
 					}
 				}
-				// If it is status, we strip the least significant bit from the string
-				if(j==0){
-					chan_mag_value[0] = mag_str[13];
-					chan_mag_value[1] =  '\0';
+
+				switch(j) {
+					case 0:
+					// If it is status, we strip the least significant bit from the string
+					mag_status = atoi(mag_str) & 0x1;
+					parsing_mon_status_data_into_array(jhv,mag_status, hv_mag_names[j],i);
+					break;
+					case 1:  //Voltage Monitor
+					case 2:	 //Current Monitor
+					case 3:  // Temperature
+					case 4:  //Rampup Speed
+					case 5:  // Rampdown Speed
+					mag_value = atof(mag_str);
+					printf("%f\n",mag_value);
+					parsing_mon_sensor_data_into_array(jhv,mag_value, hv_mag_names[j],i);
+					break;
+					case 6:
+					// If it is the channel error, we strip the most significant bit
+					mag_status = atoi(mag_str) & (0x1 << 13);
+					parsing_mon_status_data_into_array(jhv,mag_status, hv_mag_names[j],i);
+					break;
+					default:
 				}
-				// If it is the channel error, we strip the most significant bit
-				else if(j==6){
-					chan_mag_value[0] = mag_str[0];
-					chan_mag_value[1] =  '\0';
-				}	
-				else{
-					strcpy(chan_mag_value,mag_str);
-				}
-				parsing_mon_sensor_string_into_array(jhv,chan_mag_value, hv_mag_names[j],i);
 			}		
 		}
 
@@ -1082,7 +1122,9 @@ static void *command_thread(void *arg){
 				char *board_dev = "/dev/ttyUL4";
 				//Command conversion
 				char hvlvcmd[40] =  "$BD:0,$CMD:";
+				printf("COMMAND THREAD: HANDLEANDO COMANDO LV\n");
 				rc = hv_lv_command_translation(hvlvcmd, cmd, i);
+				printf("COMMAND THREAD: %s \n",cmd);
 				//RS485 communication
 				rc = hv_lv_command_handling(board_dev,hvlvcmd, reply);
 			}
