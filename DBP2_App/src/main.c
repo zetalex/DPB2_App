@@ -588,7 +588,6 @@ static void *monitoring_thread(void *arg)
 			parsing_mon_sensor_data_into_array(jdpb,curr_som[l],curr,99);
 			parsing_mon_sensor_data_into_array(jdpb,curr_som[l]*volt_som[l],pwr,99);
 		}
-		printf("MONITORING: EMPEZANDO LV");
 		//LV Slow Control Monitoring
 		char lv_mon_root[80] = "$BD:0,$CMD:MON,PAR:";
 		char lv_mon_cmd[80];
@@ -599,18 +598,14 @@ static void *monitoring_thread(void *arg)
 		float mag_value;
 		//Read Environment Parameters
 		for(int i = 0 ; i < 5; i++){
-			printf("Iterando environ Paso 1\n");
 			strcpy(lv_mon_cmd,lv_mon_root);
 			strcat(lv_mon_cmd,lv_board_words[i]);
 			strcat(lv_mon_cmd,"\r\n");
-			printf("Iterando environ Paso 2\n");
-			printf("MONITORING THREAD: %s",lv_mon_cmd);
 			hv_lv_command_handling(board_dev,lv_mon_cmd,response);
 
 			// Strip the returned value from response string
 			char *mag_str = NULL;
 			char *start, *end;
-			printf("Iterando environ Paso 3\n");
 			if ( start = strstr( response, "#CMD:OK,VAL:" ) ){
 				start += strlen( "#CMD:OK,VAL:" );
 				if ( end = strstr( start, "\r\n" ) )
@@ -620,18 +615,15 @@ static void *monitoring_thread(void *arg)
 					mag_str[end - start] = '\0';
 				}
 				else {
-						printf("Iterando environ Error");
 						strcpy(mag_str,"ERROR");
 				}
 			}
-			printf("%s\n",mag_str);
 			switch(i){
 				case 0: // Temperature
 				case 1: // BCM Temperature
 				case 2: // Relative Humidity
 				case 3: // Pressure
 					mag_value=(float) atoi(mag_str);
-					printf("%f\n",mag_value);
 					parsing_mon_sensor_data_into_array(jlv,mag_value, lv_mag_names[i],99);
 					break;
 				case 4: // Water Leak
@@ -642,9 +634,9 @@ static void *monitoring_thread(void *arg)
 					parsing_mon_status_data_into_array(jlv,mag_value, lv_mag_names[i],99);
 					break;
 				default:
-			}	
+			}
+			free(mag_str);	
 		}
-		printf("MONITORING: EMPEZANDO LV CANALES");
 		strcpy(lv_mon_root,"$BD:0,$CMD:MON,CH:");
 		//Read Channel Parameters
 		for(int i = 0; i <= 7; i++){
@@ -665,7 +657,6 @@ static void *monitoring_thread(void *arg)
 					strcat(lv_mon_cmd,lv_board_words[j]);
 				}
 				strcat(lv_mon_cmd,"\r\n");
-				printf("MONITORING THREAD: %s\n",lv_mon_cmd);
 				hv_lv_command_handling(board_dev,lv_mon_cmd,response);
 
 				// Strip the returned value from response string
@@ -694,14 +685,13 @@ static void *monitoring_thread(void *arg)
 					case 6: //Voltage Monitor
 					case 7: //Current Monitor
 					mag_value=atof(mag_str);
-					printf("%f\n",mag_value);
 					parsing_mon_sensor_data_into_array(jlv,mag_value, lv_mag_names[j],i);
 					default:
 				}
+				free(mag_str);
 			}		
 		}
 
-		printf("MONITORING: EMPEZANDO LV");
 		// HV Slow Control Monitoring
 		char *hv_mon_root = "$BD:1,$CMD:MON,CH:";
 		char hv_mon_cmd[80];
@@ -718,7 +708,6 @@ static void *monitoring_thread(void *arg)
 				strcat(hv_mon_cmd,",PAR:");
 				strcat(hv_mon_cmd,hv_board_words[j]);
 				strcat(hv_mon_cmd,"\r\n");
-				printf("MONITORING THREAD: %s",hv_mon_cmd);
 				hv_lv_command_handling(board_dev,hv_mon_cmd,response);
 				
 				// Strip the returned value from response string
@@ -750,7 +739,6 @@ static void *monitoring_thread(void *arg)
 					case 4:  //Rampup Speed
 					case 5:  // Rampdown Speed
 					mag_value = atof(mag_str);
-					printf("%f\n",mag_value);
 					parsing_mon_sensor_data_into_array(jhv,mag_value, hv_mag_names[j],i);
 					break;
 					case 6:
@@ -760,6 +748,7 @@ static void *monitoring_thread(void *arg)
 					break;
 					default:
 				}
+				free(mag_str);
 			}		
 		}
 
@@ -778,7 +767,6 @@ static void *monitoring_thread(void *arg)
 		json_object_object_add(jobj,"data",jdata);*/
 
 		const char *serialized_json = json_object_to_json_string(jdata);
-		printf("%s\n",serialized_json);
 		rc = json_schema_validate("JSONSchemaMonitoring.json",serialized_json, "mon_temp.json");
 		if (rc) {
 			printf("Error validating JSON Schema\r\n");
@@ -1113,11 +1101,10 @@ static void *command_thread(void *arg){
 		printf("%s\n",serialized_json);
 		rc = json_schema_validate("JSONSchemaCommandRequest.json",serialized_json, "cmd_temp.json");
 		if(rc){
-			json_object_put(jmsg);
-			json_object_put(jobj);
-			printf("\n COMANDO AQUI 1 \n");
 			sleep(1);
 			rc = command_status_response_json (msg_id,-EINCMD,reply);
+			json_object_put(jmsg);
+			json_object_put(jobj);
 		}
 		else{
 			json_object_put(jmsg);
@@ -1128,9 +1115,10 @@ static void *command_thread(void *arg){
 				char hvlvcmd[40] =  "$BD:0,$CMD:";
 				printf("COMMAND THREAD: HANDLEANDO COMANDO LV\n");
 				rc = hv_lv_command_translation(hvlvcmd, cmd, i);
-				printf("COMMAND THREAD: %s \n",cmd);
+				printf("COMMAND THREAD: %s \n",hvlvcmd);
 				//RS485 communication
 				rc = hv_lv_command_handling(board_dev,hvlvcmd, reply);
+				printf("COMMAND THREAD: %s \n",reply);
 			}
 			else if(!strcmp(cmd[1],"HV")){
 				char *board_dev = "/dev/ttyUL3";
