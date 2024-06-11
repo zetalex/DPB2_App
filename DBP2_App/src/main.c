@@ -1047,6 +1047,7 @@ static void *command_thread(void *arg){
 			goto waitmsg;
 		}
 		const char *serialized_json_msg = json_object_to_json_string(jmsg);
+		printf("%s\n",serialized_json_msg);
 		rc = json_schema_validate("JSONSchemaSlowControl.json",serialized_json_msg, "cmd_temp.json");
 		if(rc){
 			rc = command_status_response_json (0,-EINCMD,reply);
@@ -1109,10 +1110,13 @@ static void *command_thread(void *arg){
 		}
 		//Check JSON schema valid
 		const char *serialized_json = json_object_to_json_string(jobj);
+		printf("%s\n",serialized_json);
 		rc = json_schema_validate("JSONSchemaCommandRequest.json",serialized_json, "cmd_temp.json");
 		if(rc){
 			json_object_put(jmsg);
 			json_object_put(jobj);
+			printf("\n COMANDO AQUI 1 \n");
+			sleep(1);
 			rc = command_status_response_json (msg_id,-EINCMD,reply);
 		}
 		else{
