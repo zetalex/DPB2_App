@@ -641,7 +641,7 @@ static void *monitoring_thread(void *arg)
 		//Read Channel Parameters
 		for(int i = 0; i <= 7; i++){
 		//Status Voltage and Current
-			for(int j = 5; j < LV_CMD_TABLE_SIZE; j++){
+			for(int j = 5; j < (LV_CMD_TABLE_SIZE-1); j++){
 				strcpy(lv_mon_cmd,lv_mon_root);
 				sprintf(channel_str,"%d",i);
 				strcat(lv_mon_cmd,channel_str);
@@ -701,7 +701,7 @@ static void *monitoring_thread(void *arg)
 
 		//Read Channel Parameters
 		for(int i = 0; i < 24; i++){
-			for(int j = 0; j < HV_CMD_TABLE_SIZE; j++){
+			for(int j = 0; j < (HV_CMD_TABLE_SIZE-1); j++){
 				strcpy(hv_mon_cmd,hv_mon_root);
 				sprintf(channel_str,"%d",i);
 				strcat(hv_mon_cmd,channel_str);
@@ -1101,32 +1101,41 @@ static void *command_thread(void *arg){
 		printf("%s\n",serialized_json);
 		rc = json_schema_validate("JSONSchemaCommandRequest.json",serialized_json, "cmd_temp.json");
 		if(rc){
-			sleep(1);
 			rc = command_status_response_json (msg_id,-EINCMD,reply);
-			json_object_put(jmsg);
-			json_object_put(jobj);
+			//json_object_put(jmsg);
+			//json_object_put(jobj);
 		}
 		else{
-			json_object_put(jmsg);
-			json_object_put(jobj);
+			char board_response[64];
 			if(!strcmp(cmd[1],"LV")){
 				char *board_dev = "/dev/ttyUL4";
 				//Command conversion
 				char hvlvcmd[40] =  "$BD:0,$CMD:";
-				printf("COMMAND THREAD: HANDLEANDO COMANDO LV\n");
 				rc = hv_lv_command_translation(hvlvcmd, cmd, i);
 				printf("COMMAND THREAD: %s \n",hvlvcmd);
 				//RS485 communication
-				rc = hv_lv_command_handling(board_dev,hvlvcmd, reply);
-				printf("COMMAND THREAD: %s \n",reply);
+				rc = hv_lv_command_handling(board_dev,hvlvcmd, board_response);
+				printf("COMMAND THREAD: %s \n",board_response);
+				// Generate the JSON message
+				if(!strcmp("READ",cmd[0]))
+					rc = hv_lv_command_response(board_response,reply,1,msg_id);
+				else
+					rc = hv_lv_command_response(board_response,reply,0,msg_id);
 			}
 			else if(!strcmp(cmd[1],"HV")){
 				char *board_dev = "/dev/ttyUL3";
 				//Command conversion
 				char hvlvcmd[40] =  "$BD:1,$CMD:";
 				rc = hv_lv_command_translation(hvlvcmd, cmd, i);
+				printf("COMMAND THREAD: %s \n",hvlvcmd);
 				//RS485 communication
-				rc = hv_lv_command_handling(board_dev,hvlvcmd, reply);
+				rc = hv_lv_command_handling(board_dev,hvlvcmd, board_response);
+				printf("COMMAND THREAD: %s \n",board_response);
+				// Generate the JSON message
+				if(!strcmp("READ",cmd[0]))
+					rc = hv_lv_command_response(board_response,reply,1,msg_id);
+				else
+					rc = hv_lv_command_response(board_response,reply,0,msg_id);
 			}
 			else if(!strcmp(cmd[1],"Dig0")){
 				//Command conversion
@@ -1139,8 +1148,11 @@ static void *command_thread(void *arg){
 			else{ //DPB
 				rc = dpb_command_handling(data,cmd,msg_id,reply);
 			}
+			//json_object_put(jmsg);
+			//json_object_put(jobj);
 		}
 waitmsg:
+	printf("COMMAND THREAD: %s \n",reply);
 	const char* msg_sent = (const char*) reply;
 	//FIXME: DAQ Function HERE. Use whole command_thread function as callback function for DAQ library and parse string into DPB command format
 	zmq_send(cmd_router,msg_sent, strlen(msg_sent), 0);
