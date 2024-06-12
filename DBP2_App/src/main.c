@@ -604,74 +604,19 @@ static void *monitoring_thread(void *arg)
 		char channel_str[4];
 		char board_dev[32] = "/dev/ttyUL4";
 		float mag_value;
-		json_object *jlvchannels = json_object_new_array();
-		//Read Environment Parameters
-		for(int i = 0 ; i < 5; i++){
-			strcpy(lv_mon_cmd,lv_mon_root);
-			strcat(lv_mon_cmd,lv_board_words[i]);
-			strcat(lv_mon_cmd,"\r\n");
-			hv_lv_command_handling(board_dev,lv_mon_cmd,response);
 
-			// Strip the returned value from response string
-			char *mag_str = NULL;
-			char *start, *end;
-			if ( start = strstr( response, "#CMD:OK,VAL:" ) ){
-				start += strlen( "#CMD:OK,VAL:" );
-				if ( end = strstr( start, "\r\n" ) )
-				{
-					mag_str = ( char * )malloc( end - start + 1 );
-					memcpy( mag_str, start, end - start );
-					mag_str[end - start] = '\0';
-				}
-				else {
-						strcpy(mag_str,"ERROR");
-				}
-			}
-			switch(i){
-				case 0: // Temperature
-				case 1: // BCM Temperature
-				case 2: // Relative Humidity
-				case 3: // Pressure
-					mag_value=(float) atoi(mag_str);
-					parsing_mon_environment_data_into_object(jlv,lv_mag_names[i], mag_value);
-					break;
-				case 4: // Water Leak
-					if(!strcmp(mag_str,"YES"))
-						mag_value = 1;
-					else
-						mag_value = 0;
-					parsing_mon_environment_status_into_object(jlv,lv_mag_names[i], mag_value);
-					break;
-				default:
-			}
-			free(mag_str);	
-		}
-		strcpy(lv_mon_root,"$BD:0,$CMD:MON,CH:");
-		//Read Channel Parameters
-		for(int i = 0; i <= 7; i++){
-		//Status Voltage and Current
-			for(int j = 5; j < (LV_CMD_TABLE_SIZE-1); j++){
+		if(lv_connected){
+			json_object *jlvchannels = json_object_new_array();
+			//Read Environment Parameters
+			for(int i = 0 ; i < 5; i++){
 				strcpy(lv_mon_cmd,lv_mon_root);
-				sprintf(channel_str,"%d",i);
-				strcat(lv_mon_cmd,channel_str);
-				strcat(lv_mon_cmd,",PAR:");
-				// Exception, enable for channels 0 and 1 are bus converters
-				if(i <= 1 && j == 5){
-					strcat(lv_mon_cmd,"BCEN");
-				} // Enable for channels 2 to 6 are stepdowns
-				else if(i > 1 && j == 5){
-					strcat(lv_mon_cmd,"SDEN");
-				}
-				else{
-					strcat(lv_mon_cmd,lv_board_words[j]);
-				}
+				strcat(lv_mon_cmd,lv_board_words[i]);
 				strcat(lv_mon_cmd,"\r\n");
 				hv_lv_command_handling(board_dev,lv_mon_cmd,response);
 
 				// Strip the returned value from response string
 				char *mag_str = NULL;
 				char *start, *end;
-
 				if ( start = strstr( response, "#CMD:OK,VAL:" ) ){
 					start += strlen( "#CMD:OK,VAL:" );
 					if ( end = strstr( start, "\r\n" ) )
@@ -681,94 +626,153 @@ static void *monitoring_thread(void *arg)
 						mag_str[end - start] = '\0';
 					}
 					else {
-						strcpy(mag_str,"ERROR");
+							strcpy(mag_str,"ERROR");
 					}
 				}
-				else{
-					strcpy(mag_str,"ERROR");
-				}
-				switch (j){
-					case 5: //Output Status
-					if(!strcmp(mag_str,"ON"))
-						mag_value = 1;
-					else
-						mag_value= 0;
-					parsing_mon_channel_status_into_object(jlvchannels,i,lv_mag_names[j],mag_value);
-					break;
-					case 6: //Voltage Monitor
-					case 7: //Current Monitor
-					mag_value=atof(mag_str);
-					parsing_mon_channel_data_into_object(jlvchannels,i,lv_mag_names[j],mag_value);
+				switch(i){
+					case 0: // Temperature
+					case 1: // BCM Temperature
+					case 2: // Relative Humidity
+					case 3: // Pressure
+						mag_value=(float) atoi(mag_str);
+						parsing_mon_environment_data_into_object(jlv,lv_mag_names[i], mag_value);
+						break;
+					case 4: // Water Leak
+						if(!strcmp(mag_str,"YES"))
+							mag_value = 1;
+						else
+							mag_value = 0;
+						parsing_mon_environment_status_into_object(jlv,lv_mag_names[i], mag_value);
+						break;
 					default:
 				}
-				free(mag_str);
-			}		
-		}
+				free(mag_str);	
+			}
+			strcpy(lv_mon_root,"$BD:0,$CMD:MON,CH:");
+			//Read Channel Parameters
+			for(int i = 0; i <= 7; i++){
+			//Status Voltage and Current
+				for(int j = 5; j < (LV_CMD_TABLE_SIZE-1); j++){
+					strcpy(lv_mon_cmd,lv_mon_root);
+					sprintf(channel_str,"%d",i);
+					strcat(lv_mon_cmd,channel_str);
+					strcat(lv_mon_cmd,",PAR:");
+					// Exception, enable for channels 0 and 1 are bus converters
+					if(i <= 1 && j == 5){
+						strcat(lv_mon_cmd,"BCEN");
+					} // Enable for channels 2 to 6 are stepdowns
+					else if(i > 1 && j == 5){
+						strcat(lv_mon_cmd,"SDEN");
+					}
+					else{
+						strcat(lv_mon_cmd,lv_board_words[j]);
+					}
+					strcat(lv_mon_cmd,"\r\n");
+					hv_lv_command_handling(board_dev,lv_mon_cmd,response);
 
+					// Strip the returned value from response string
+					char *mag_str = NULL;
+					char *start, *end;
+
+					if ( start = strstr( response, "#CMD:OK,VAL:" ) ){
+						start += strlen( "#CMD:OK,VAL:" );
+						if ( end = strstr( start, "\r\n" ) )
+						{
+							mag_str = ( char * )malloc( end - start + 1 );
+							memcpy( mag_str, start, end - start );
+							mag_str[end - start] = '\0';
+						}
+						else {
+							strcpy(mag_str,"ERROR");
+						}
+					}
+					else{
+						strcpy(mag_str,"ERROR");
+					}
+					switch (j){
+						case 5: //Output Status
+						if(!strcmp(mag_str,"ON"))
+							mag_value = 1;
+						else
+							mag_value= 0;
+						parsing_mon_channel_status_into_object(jlvchannels,i,lv_mag_names[j],mag_value);
+						break;
+						case 6: //Voltage Monitor
+						case 7: //Current Monitor
+						mag_value=atof(mag_str);
+						parsing_mon_channel_data_into_object(jlvchannels,i,lv_mag_names[j],mag_value);
+						default:
+					}
+					free(mag_str);
+				}		
+			}
+			json_object_object_add(jlv,"channels",jlvchannels);
+		}
 		// HV Slow Control Monitoring
 		char *hv_mon_root = "$BD:1,$CMD:MON,CH:";
 		char hv_mon_cmd[80];
 		char chan_mag_value[80];
 		int mag_status;
-		json_object *jhvchannels = json_object_new_array();
-		strcpy(board_dev,"/dev/ttyUL3");
+		if(hv_connected){
+			json_object *jhvchannels = json_object_new_array();
+			strcpy(board_dev,"/dev/ttyUL3");
 
-		//Read Channel Parameters
-		for(int i = 0; i < 24; i++){
-			for(int j = 0; j < (HV_CMD_TABLE_SIZE-1); j++){
-				strcpy(hv_mon_cmd,hv_mon_root);
-				sprintf(channel_str,"%d",i);
-				strcat(hv_mon_cmd,channel_str);
-				strcat(hv_mon_cmd,",PAR:");
-				strcat(hv_mon_cmd,hv_board_words[j]);
-				strcat(hv_mon_cmd,"\r\n");
-				hv_lv_command_handling(board_dev,hv_mon_cmd,response);
-				
-				// Strip the returned value from response string
-				char *mag_str;
-				char *start, *end;
+			//Read Channel Parameters
+			for(int i = 0; i < 24; i++){
+				for(int j = 0; j < (HV_CMD_TABLE_SIZE-1); j++){
+					strcpy(hv_mon_cmd,hv_mon_root);
+					sprintf(channel_str,"%d",i);
+					strcat(hv_mon_cmd,channel_str);
+					strcat(hv_mon_cmd,",PAR:");
+					strcat(hv_mon_cmd,hv_board_words[j]);
+					strcat(hv_mon_cmd,"\r\n");
+					hv_lv_command_handling(board_dev,hv_mon_cmd,response);
+					
+					// Strip the returned value from response string
+					char *mag_str;
+					char *start, *end;
 
-				if ( start = strstr( response, "#CMD:OK,VAL:" ) ){
-					start += strlen( "#CMD:OK,VAL:" );
-					if ( end = strstr( start, "\r\n" ) )
-					{
-						mag_str = ( char * )malloc( end - start + 1 );
-						memcpy( mag_str, start, end - start );
-						mag_str[end - start] = '\0';
+					if ( start = strstr( response, "#CMD:OK,VAL:" ) ){
+						start += strlen( "#CMD:OK,VAL:" );
+						if ( end = strstr( start, "\r\n" ) )
+						{
+							mag_str = ( char * )malloc( end - start + 1 );
+							memcpy( mag_str, start, end - start );
+							mag_str[end - start] = '\0';
+						}
+						else {
+							strcpy(mag_str,"ERROR");
+						}
 					}
-					else {
-						strcpy(mag_str,"ERROR");
-					}
-				}
 
-				switch(j) {
-					case 0:
-					// If it is status, we strip the least significant bit from the string
-					mag_status = atoi(mag_str) & 0x1;
-					parsing_mon_channel_status_into_object(jhvchannels,i,hv_mag_names[j],mag_value);
-					break;
-					case 1:  //Voltage Monitor
-					case 2:	 //Current Monitor
-					case 3:  // Temperature
-					case 4:  //Rampup Speed
-					case 5:  // Rampdown Speed
-					mag_value = atof(mag_str);
-					parsing_mon_channel_data_into_object(jhvchannels,i,hv_mag_names[j],mag_value);
-					break;
-					case 6:
-					// If it is the channel error, we strip the most significant bit
-					mag_status = (atoi(mag_str) & (0x1 << 13)) >> 13;
-					parsing_mon_channel_status_into_object(jhvchannels,i,hv_mag_names[j],mag_value);
-					break;
-					default:
-				}
-				free(mag_str);
-			}		
+					switch(j) {
+						case 0:
+						// If it is status, we strip the least significant bit from the string
+						mag_status = atoi(mag_str) & 0x1;
+						parsing_mon_channel_status_into_object(jhvchannels,i,hv_mag_names[j],mag_value);
+						break;
+						case 1:  //Voltage Monitor
+						case 2:	 //Current Monitor
+						case 3:  // Temperature
+						case 4:  //Rampup Speed
+						case 5:  // Rampdown Speed
+						mag_value = atof(mag_str);
+						parsing_mon_channel_data_into_object(jhvchannels,i,hv_mag_names[j],mag_value);
+						break;
+						case 6:
+						// If it is the channel error, we strip the most significant bit
+						mag_status = (atoi(mag_str) & (0x1 << 13)) >> 13;
+						parsing_mon_channel_status_into_object(jhvchannels,i,hv_mag_names[j],mag_value);
+						break;
+						default:
+					}
+					free(mag_str);
+				}		
+			}
+			json_object_object_add(jhv,"channels",jhvchannels);
 		}
 
 		json_object_object_add(jdpb,"SFPs",jsfps);
-		json_object_object_add(jlv,"SFPs",jlvchannels);
-		json_object_object_add(jhv,"SFPs",jhvchannels);
 
 		json_object_object_add(jdata,"LV", jlv);
 		json_object_object_add(jdata,"HV", jhv);
@@ -902,7 +906,8 @@ static void *i2c_alarms_thread(void *arg){
 		sem_post(&i2c_sync); //Free semaphore to sync I2C usage
 
 		//HV alarm parsing
-		hv_read_alarms();
+		if(hv_connected)
+			hv_read_alarms();
 
 		wait_period(&info);
 	}
@@ -1148,7 +1153,7 @@ static void *command_thread(void *arg){
 					write_GPIO(gpio_cpu_addr,gpio_cpu_val);
 					command_status_response_json (msg_id,99,reply);
 				}
-				else{	
+				else if(lv_connected){	
 					char *board_dev = "/dev/ttyUL4";
 					//Command conversion
 					char hvlvcmd[40] =  "$BD:0,$CMD:";
@@ -1159,6 +1164,9 @@ static void *command_thread(void *arg){
 					printf("COMMAND THREAD: %s \n",board_response);
 					// Generate the JSON message depending on reading or setting
 					rc = hv_lv_command_response(board_response,reply,msg_id,cmd);
+				}
+				else{
+					rc = hv_lv_command_response("ERROR: READ operation not successful",reply,msg_id,cmd);
 				}
 			}
 			else if(!strcmp(cmd[1],"HV")){
@@ -1181,7 +1189,7 @@ static void *command_thread(void *arg){
 					write_GPIO(gpio_cpu_addr,gpio_cpu_val);
 					command_status_response_json (msg_id,99,reply);
 				}
-				else{
+				else if(hv_connected){
 					char *board_dev = "/dev/ttyUL3";
 					//Command conversion
 					char hvlvcmd[40] =  "$BD:1,$CMD:";
@@ -1192,6 +1200,9 @@ static void *command_thread(void *arg){
 					printf("COMMAND THREAD: %s \n",board_response);
 					// Generate the JSON message depending on reading or setting
 					rc = hv_lv_command_response(board_response,reply,msg_id,cmd);
+				}
+				else{
+					rc = hv_lv_command_response("ERROR: READ operation not successful",reply,msg_id,cmd);
 				}
 			}
 			else if(!strcmp(cmd[1],"Dig0")){
@@ -1257,6 +1268,7 @@ int main(int argc, char *argv[]){
 	write_GPIO(LV_MAIN_CPU_GPIO_OFFSET,1);
 	write_GPIO(HV_MAIN_CPU_GPIO_OFFSET,1);
 
+
 	key_t sharedMemoryKey = MEMORY_KEY;
 	memoryID = shmget(sharedMemoryKey, sizeof(struct wrapper), IPC_CREAT | 0600);
 	if (memoryID == -1) {
@@ -1301,6 +1313,25 @@ int main(int argc, char *argv[]){
 	signal(SIGTERM, sighandler);
 	signal(SIGINT, sighandler);
 
+	// Check if HV and LV is there
+	char *buffer[40];
+	int serial_port_UL3 = open("/dev/ttyUL3",O_RDWR);
+	setup_serial_port(serial_port_UL3);
+	write(serial_port_UL3, "$BD:1,$CMD:MON,PAR:BDSNUM\r\n", strlen("$BD:1,$CMD:MON,PAR:BDSNUM\r\n"));
+	usleep(10000);
+	int	n = read(serial_port_UL3, buffer, sizeof(buffer));
+	if(n){
+		hv_connected = 1;
+	}
+
+	int serial_port_UL4 = open("/dev/ttyUL4",O_RDWR);
+	setup_serial_port(serial_port_UL4);
+	write(serial_port_UL4, "$BD:0,$CMD:MON,PAR:BDSNUM\r\n", strlen("$BD:0,$CMD:MON,PAR:BDSNUM\r\n"));
+	usleep(10000);
+	n = read(serial_port_UL4, buffer, sizeof(buffer));
+	if(n){
+		lv_connected = 1;
+	}
 
 	sem_init(&thread_sync,0,0);
 
