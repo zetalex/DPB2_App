@@ -1110,7 +1110,7 @@ static void *command_thread(void *arg){
 		else{
 			char board_response[64];
 			if(!strcmp(cmd[1],"LV")){
-				// Implement CPU toggling of HV and LV
+				// Implement CPU toggling of LV (Only SET command)
 				if(!strcmp(cmd[2],"CPU")){
 					int gpio_cpu_addr;
 					int gpio_cpu_val;
@@ -1120,24 +1120,14 @@ static void *command_thread(void *arg){
 					else{
 						gpio_cpu_addr = LV_BACKUP_CPU_GPIO_OFFSET;
 					}
-					if(!strcmp(cmd[0],"SET")){
-						if(!strcmp(cmd[4],"ON")){
-							gpio_cpu_val = 1;
-						}
-						else{
-							gpio_cpu_val = 0;
-						}
-						write_GPIO(gpio_cpu_addr,gpio_cpu_val);
-						command_status_response_json (msg_id,99,reply);
+					if(!strcmp(cmd[4],"ON")){
+						gpio_cpu_val = 1;
 					}
 					else{
-						read_GPIO(gpio_cpu_addr,&gpio_cpu_val);
-						if(gpio_cpu_val)
-							gpio_cpu_val = 0;
-						else
-							gpio_cpu_val = 1;
-						command_status_response_json (msg_id,gpio_cpu_val,reply);
+						gpio_cpu_val = 0;
 					}
+					write_GPIO(gpio_cpu_addr,gpio_cpu_val);
+					command_status_response_json (msg_id,99,reply);
 				}
 				else{	char *board_dev = "/dev/ttyUL4";
 					//Command conversion
@@ -1152,7 +1142,7 @@ static void *command_thread(void *arg){
 				}
 			}
 			else if(!strcmp(cmd[1],"HV")){
-				// Implement CPU toggling of HV and LV
+				// Implement CPU toggling of HV (only SET command)
 				if(!strcmp(cmd[2],"CPU")){
 					int gpio_cpu_addr;
 					int gpio_cpu_val;
@@ -1162,21 +1152,14 @@ static void *command_thread(void *arg){
 					else{
 						gpio_cpu_addr = HV_BACKUP_CPU_GPIO_OFFSET;
 					}
-					if(!strcmp(cmd[0],"SET")){
-						int gpio_cpu_val;
-						if(!strcmp(cmd[4],"ON")){
-							gpio_cpu_val = 1;
-						}
-						else{
-							gpio_cpu_val = 0;
-						}
-						write_GPIO(gpio_cpu_addr,gpio_cpu_val);
-						command_status_response_json (msg_id,99,reply);
+					if(!strcmp(cmd[4],"ON")){
+						gpio_cpu_val = 1;
 					}
 					else{
-						read_GPIO(gpio_cpu_addr,&gpio_cpu_val);
-						command_status_response_json (msg_id,gpio_cpu_val,reply);
+						gpio_cpu_val = 0;
 					}
+					write_GPIO(gpio_cpu_addr,gpio_cpu_val);
+					command_status_response_json (msg_id,99,reply);
 				}
 				else{
 					char *board_dev = "/dev/ttyUL3";
