@@ -553,7 +553,7 @@ static void *monitoring_thread(void *arg)
 		}
 		parsing_mon_environment_data_into_object(jdpb,"lpdcputemp", ams_temp[0]);
 		parsing_mon_environment_data_into_object(jdpb,"fpdcputemp", ams_temp[1]);
-		parsing_mon_environment_data_into_object(jdpb,"fpgatemp", ams_temp[13]);
+		parsing_mon_environment_data_into_object(jdpb,"fpgatemp", ams_temp[2]);
 
 		/*for(int n = 0; n<AMS_VOLT_NUM_CHAN;n++){
 			if(n != 11){

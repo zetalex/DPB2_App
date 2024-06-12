@@ -8,21 +8,17 @@ import dateutil
 import datetime
 
 
-def get_magnitude(json_data,board,magnitude):
+def get_environment_magnitude(json_data,board,magnitude):
     # Parse JSON
     json_obj = json.loads(json_data)
     data = json_obj
     # Extract info from data field
     dpb_data = data[board]
-    for i in range(0,len(dpb_data)):
-        if dpb_data[i]['magnitudename'] == magnitude :
-            
-            magnitude_value = dpb_data[i]['value']
-            break
-    if(magnitude_value == None):
-        return 0
-    else:
+    try:
+        magnitude_value = dpb_data['fpgatemp']
         return magnitude_value
+    except:
+        return 0
     
 def plot_magnitude(x,y):
     dates = [dateutil.parser.parse(s) for s in x]
@@ -60,7 +56,7 @@ def main():
     
     for i in range(0, num_points):
         json_data = socket.recv_string()
-        magnitude[i] = get_magnitude(json_data,"DPB","PL Temperature")
+        magnitude[i] = get_environment_magnitude(json_data,"DPB","fpgatemp")
         datestrings[i] = str(datetime.datetime.now())
         print(datestrings[i])
     plot_magnitude(datestrings,magnitude)
