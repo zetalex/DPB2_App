@@ -473,6 +473,7 @@ static void *monitoring_thread(void *arg)
 		if (rc) {
 			printf("Reading Error\r\n");
 		}
+		printf("Empiezan los JSON \n");
 		//json_object * jobj = json_object_new_object();
 		json_object *jdata = json_object_new_object();
 		json_object *jlv = json_object_new_object();
@@ -482,8 +483,9 @@ static void *monitoring_thread(void *arg)
 		json_object *jdpb = json_object_new_object();
 
 		json_object *jsfps = json_object_new_array();
-		
+		printf("ETH0 \n");
 		parsing_mon_environment_status_into_object(jdpb, "ethmain", eth_status[0]);
+		printf("ETH1 \n");
 		parsing_mon_environment_status_into_object(jdpb, "ethbackup", eth_status[1]);
 
 		parsing_mon_environment_status_into_object(jdig0, "auroramain", aurora_status[0]);
@@ -492,8 +494,9 @@ static void *monitoring_thread(void *arg)
 		parsing_mon_environment_status_into_object(jdig1, "auroramain", aurora_status[2]);
 		parsing_mon_environment_status_into_object(jdig1, "aurorabackup", aurora_status[3]);
 
+	printf("PCB TEMP \n");
 		parsing_mon_environment_data_into_object(jdpb,"boardtemp", temp[0]);
-
+		printf("SFPs \n");
 		if(sfp0_connected){
 			parsing_mon_channel_data_into_object(jsfps,0,"temperature",sfp_temp_0[0]);
 			parsing_mon_channel_data_into_object(jsfps,0,"biascurr",sfp_temp_0[0]);
@@ -556,6 +559,7 @@ static void *monitoring_thread(void *arg)
 			if(n != 11){
 				parsing_mon_sensor_data_into_array(jdpb,ams_volt[n],ams_channels[n+2],99);	}
 		}*/
+		printf("INAs \n");
 		for(int j=0;j<INA3221_NUM_CHAN;j++){
 			pwr_array[j] = volt_sfp0_2[j]*curr_sfp0_2[j];
 			parsing_mon_channel_data_into_object(jsfps,j,"voltage",volt_sfp0_2[j]);
@@ -596,6 +600,7 @@ static void *monitoring_thread(void *arg)
 			parsing_mon_environment_data_into_object(jdpb,curr, curr_som[l]);
 			parsing_mon_environment_data_into_object(jdpb,pwr, curr_som[l]*volt_som[l]);
 		}
+		printf("LV \n");
 		//LV Slow Control Monitoring
 		char lv_mon_root[80] = "$BD:0,$CMD:MON,PAR:";
 		char lv_mon_cmd[80];
@@ -708,6 +713,7 @@ static void *monitoring_thread(void *arg)
 			}
 			json_object_object_add(jlv,"channels",jlvchannels);
 		}
+		printf("HV \n");
 		// HV Slow Control Monitoring
 		char *hv_mon_root = "$BD:1,$CMD:MON,CH:";
 		char hv_mon_cmd[80];
@@ -771,9 +777,9 @@ static void *monitoring_thread(void *arg)
 			}
 			json_object_object_add(jhv,"channels",jhvchannels);
 		}
-
+		printf("Empacado de JSONs 1 \n");
 		json_object_object_add(jdpb,"SFPs",jsfps);
-
+		printf("Empacado de JSONs 2 \n");
 		json_object_object_add(jdata,"LV", jlv);
 		json_object_object_add(jdata,"HV", jhv);
 		json_object_object_add(jdata,"Dig0", jdig0);
@@ -786,8 +792,9 @@ static void *monitoring_thread(void *arg)
 		json_object_object_add(jobj,"timestamp", jtimestamp);
 		json_object_object_add(jobj,"device", jdevice);
 		json_object_object_add(jobj,"data",jdata);*/
-
+		printf("Haciendo strings \n");
 		const char *serialized_json = json_object_to_json_string(jdata);
+		printf("%s\n",serialized_json);
 		//rc = json_schema_validate("JSONSchemaMonitoring.json",serialized_json, "mon_temp.json");
 		//if (rc) {
 		//	printf("Error validating JSON Schema\r\n");
@@ -1321,6 +1328,7 @@ int main(int argc, char *argv[]){
 	usleep(10000);
 	int	n = read(serial_port_UL3, buffer, sizeof(buffer));
 	if(n){
+		printf("HV has been detected \n");
 		hv_connected = 1;
 	}
 
@@ -1330,6 +1338,7 @@ int main(int argc, char *argv[]){
 	usleep(10000);
 	n = read(serial_port_UL4, buffer, sizeof(buffer));
 	if(n){
+		printf("LV has been detected \n");
 		lv_connected = 1;
 	}
 
