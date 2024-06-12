@@ -1110,34 +1110,86 @@ static void *command_thread(void *arg){
 		else{
 			char board_response[64];
 			if(!strcmp(cmd[1],"LV")){
-				char *board_dev = "/dev/ttyUL4";
-				//Command conversion
-				char hvlvcmd[40] =  "$BD:0,$CMD:";
-				rc = hv_lv_command_translation(hvlvcmd, cmd, i);
-				printf("COMMAND THREAD: %s \n",hvlvcmd);
-				//RS485 communication
-				rc = hv_lv_command_handling(board_dev,hvlvcmd, board_response);
-				printf("COMMAND THREAD: %s \n",board_response);
-				// Generate the JSON message depending on reading or setting
-				if(!strcmp("READ",cmd[0]))
-					rc = hv_lv_command_response(board_response,reply,1,msg_id);
-				else
-					rc = hv_lv_command_response(board_response,reply,0,msg_id);
+				// Implement CPU toggling of HV and LV
+				if(!strcmp(cmd[2],"CPU")){
+					int gpio_cpu_addr;
+					int gpio_cpu_val;
+					if(!strcmp(cmd[3],"MAIN")){
+						gpio_cpu_addr = LV_MAIN_CPU_GPIO_OFFSET;
+					}
+					else{
+						gpio_cpu_addr = LV_BACKUP_CPU_GPIO_OFFSET;
+					}
+					if(!strcmp(cmd[0],"SET")){
+						if(!strcmp(cmd[4],"ON")){
+							gpio_cpu_val = 1;
+						}
+						else{
+							gpio_cpu_val = 0;
+						}
+						write_GPIO(gpio_cpu_addr,gpio_cpu_val);
+						command_status_response_json (msg_id,99,reply);
+					}
+					else{
+						read_GPIO(gpio_cpu_addr,&gpio_cpu_val);
+						if(gpio_cpu_val)
+							gpio_cpu_val = 0;
+						else
+							gpio_cpu_val = 1;
+						command_status_response_json (msg_id,gpio_cpu_val,reply);
+					}
+				}
+				else{	char *board_dev = "/dev/ttyUL4";
+					//Command conversion
+					char hvlvcmd[40] =  "$BD:0,$CMD:";
+					rc = hv_lv_command_translation(hvlvcmd, cmd, i);
+					printf("COMMAND THREAD: %s \n",hvlvcmd);
+					//RS485 communication
+					rc = hv_lv_command_handling(board_dev,hvlvcmd, board_response);
+					printf("COMMAND THREAD: %s \n",board_response);
+					// Generate the JSON message depending on reading or setting
+					rc = hv_lv_command_response(board_response,reply,msg_id,cmd);
+				}
 			}
 			else if(!strcmp(cmd[1],"HV")){
-				char *board_dev = "/dev/ttyUL3";
-				//Command conversion
-				char hvlvcmd[40] =  "$BD:1,$CMD:";
-				rc = hv_lv_command_translation(hvlvcmd, cmd, i);
-				printf("COMMAND THREAD: %s \n",hvlvcmd);
-				//RS485 communication
-				rc = hv_lv_command_handling(board_dev,hvlvcmd, board_response);
-				printf("COMMAND THREAD: %s \n",board_response);
-				// Generate the JSON message depending on reading or setting
-				if(!strcmp("READ",cmd[0]))
-					rc = hv_lv_command_response(board_response,reply,1,msg_id);
-				else
-					rc = hv_lv_command_response(board_response,reply,0,msg_id);
+				// Implement CPU toggling of HV and LV
+				if(!strcmp(cmd[2],"CPU")){
+					int gpio_cpu_addr;
+					int gpio_cpu_val;
+					if(!strcmp(cmd[3],"MAIN")){
+						gpio_cpu_addr = HV_MAIN_CPU_GPIO_OFFSET;
+					}
+					else{
+						gpio_cpu_addr = HV_BACKUP_CPU_GPIO_OFFSET;
+					}
+					if(!strcmp(cmd[0],"SET")){
+						int gpio_cpu_val;
+						if(!strcmp(cmd[4],"ON")){
+							gpio_cpu_val = 1;
+						}
+						else{
+							gpio_cpu_val = 0;
+						}
+						write_GPIO(gpio_cpu_addr,gpio_cpu_val);
+						command_status_response_json (msg_id,99,reply);
+					}
+					else{
+						read_GPIO(gpio_cpu_addr,&gpio_cpu_val);
+						command_status_response_json (msg_id,gpio_cpu_val,reply);
+					}
+				}
+				else{
+					char *board_dev = "/dev/ttyUL3";
+					//Command conversion
+					char hvlvcmd[40] =  "$BD:1,$CMD:";
+					rc = hv_lv_command_translation(hvlvcmd, cmd, i);
+					printf("COMMAND THREAD: %s \n",hvlvcmd);
+					//RS485 communication
+					rc = hv_lv_command_handling(board_dev,hvlvcmd, board_response);
+					printf("COMMAND THREAD: %s \n",board_response);
+					// Generate the JSON message depending on reading or setting
+					rc = hv_lv_command_response(board_response,reply,msg_id,cmd);
+				}
 			}
 			else if(!strcmp(cmd[1],"Dig0")){
 				//Command conversion
@@ -1196,6 +1248,11 @@ int main(int argc, char *argv[]){
 		exit(1);
 
 	get_GPIO_base_address(&GPIO_BASE_ADDRESS);
+	// Enable HV LV driver
+	write_GPIO(HVLV_DRV_ENABLE_GPIO_OFFSET,1);
+	//Enable Main CPUs of both HV and LV
+	write_GPIO(LV_MAIN_CPU_GPIO_OFFSET,1);
+	write_GPIO(HV_MAIN_CPU_GPIO_OFFSET,1);
 
 	key_t sharedMemoryKey = MEMORY_KEY;
 	memoryID = shmget(sharedMemoryKey, sizeof(struct wrapper), IPC_CREAT | 0600);
