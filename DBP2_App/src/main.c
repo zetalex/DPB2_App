@@ -743,7 +743,7 @@ static void *monitoring_thread(void *arg)
 					break;
 					case 6:
 					// If it is the channel error, we strip the most significant bit
-					mag_status = atoi(mag_str) & (0x1 << 13);
+					mag_status = (atoi(mag_str) & (0x1 << 13)) >> 13;
 					parsing_mon_status_data_into_array(jhv,mag_status, hv_mag_names[j],i);
 					break;
 					default:
@@ -882,9 +882,11 @@ static void *i2c_alarms_thread(void *arg){
 				printf("Error reading alarm\r\n");
 			}
 		}
-
-		//FIXME: Write here the HV and LV alarms for overvoltage and overcurrent
 		sem_post(&i2c_sync); //Free semaphore to sync I2C usage
+				
+		//HV alarm parsing
+		hv_read_alarms();
+
 		wait_period(&info);
 	}
 
@@ -1129,7 +1131,8 @@ static void *command_thread(void *arg){
 					write_GPIO(gpio_cpu_addr,gpio_cpu_val);
 					command_status_response_json (msg_id,99,reply);
 				}
-				else{	char *board_dev = "/dev/ttyUL4";
+				else{	
+					char *board_dev = "/dev/ttyUL4";
 					//Command conversion
 					char hvlvcmd[40] =  "$BD:0,$CMD:";
 					rc = hv_lv_command_translation(hvlvcmd, cmd, i);
