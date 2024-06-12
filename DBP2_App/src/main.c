@@ -475,118 +475,126 @@ static void *monitoring_thread(void *arg)
 		}
 		//json_object * jobj = json_object_new_object();
 		json_object *jdata = json_object_new_object();
-		json_object *jlv = json_object_new_array();
-		json_object *jhv = json_object_new_array();
-		json_object *jdig0 = json_object_new_array();
-		json_object *jdig1 = json_object_new_array();
-		json_object *jdpb = json_object_new_array();
+		json_object *jlv = json_object_new_object();
+		json_object *jhv = json_object_new_object();
+		json_object *jdig0 = json_object_new_object();
+		json_object *jdig1 = json_object_new_object();
+		json_object *jdpb = json_object_new_object();
 
-		parsing_mon_status_data_into_array(jdpb,eth_status[0],"Main Ethernet Link Status",99);
-		parsing_mon_status_data_into_array(jdpb,eth_status[1],"Backup Ethernet Link Status",99);
+		json_object *jsfps = json_object_new_array();
+		
+		parsing_mon_environment_status_into_object(jdpb, "ethmain", eth_status[0]);
+		parsing_mon_environment_status_into_object(jdpb, "ethbackup", eth_status[1]);
 
-		parsing_mon_status_data_into_array(jdig0,aurora_status[0],"Aurora Main Link Status",99);
-		parsing_mon_status_data_into_array(jdig0,aurora_status[1],"Aurora Backup Link Status",99);
+		parsing_mon_environment_status_into_object(jdig0, "auroramain", aurora_status[0]);
+		parsing_mon_environment_status_into_object(jdig0, "aurorabackup", aurora_status[1]);
 
-		parsing_mon_status_data_into_array(jdig1,aurora_status[2],"Aurora Main Link Status",99);
-		parsing_mon_status_data_into_array(jdig1,aurora_status[3],"Aurora Backup Link Status",99);
+		parsing_mon_environment_status_into_object(jdig1, "auroramain", aurora_status[2]);
+		parsing_mon_environment_status_into_object(jdig1, "aurorabackup", aurora_status[3]);
 
-		parsing_mon_sensor_data_into_array(jdpb,temp[0],"PCB Temperature",99);
+		parsing_mon_environment_data_into_object(jdpb,"boardtemp", temp[0]);
 
 		if(sfp0_connected){
-			parsing_mon_sensor_data_into_array(jdpb,sfp_temp_0[0],"SFP Temperature",0);
-			parsing_mon_sensor_data_into_array(jdpb,sfp_txbias_0[0],"SFP Laser Bias Current",0);
-			parsing_mon_sensor_data_into_array(jdpb,sfp_txpwr_0[0],"SFP TX Power",0);
-			parsing_mon_sensor_data_into_array(jdpb,sfp_rxpwr_0[0],"SFP RX Power",0);
-			parsing_mon_status_data_into_array(jdpb,sfp_status_0[0],"SFP RX_LOS Status",0);
-			parsing_mon_status_data_into_array(jdpb,sfp_status_0[1],"SFP TX_FAULT Status",0);
+			parsing_mon_channel_data_into_object(jsfps,0,"temperature",sfp_temp_0[0]);
+			parsing_mon_channel_data_into_object(jsfps,0,"biascurr",sfp_temp_0[0]);
+			parsing_mon_channel_data_into_object(jsfps,0,"txpwr",sfp_txbias_0[0]);
+			parsing_mon_channel_data_into_object(jsfps,0,"rxpwr",sfp_rxpwr_0[0]);
+
+			parsing_mon_channel_status_into_object(jsfps,0,"rxlos",sfp_status_0[0]);
+			parsing_mon_channel_status_into_object(jsfps,0,"txfault",sfp_status_0[1]);
 		}
 		if(sfp1_connected){
-			parsing_mon_sensor_data_into_array(jdpb,sfp_temp_1[0],"SFP Temperature",1);
-			parsing_mon_sensor_data_into_array(jdpb,sfp_txbias_1[0],"SFP Laser Bias Current",1);
-			parsing_mon_sensor_data_into_array(jdpb,sfp_txpwr_1[0],"SFP TX Power",1);
-			parsing_mon_sensor_data_into_array(jdpb,sfp_rxpwr_1[0],"SFP RX Power",1);
-			parsing_mon_status_data_into_array(jdpb,sfp_status_1[0],"SFP RX_LOS Status",1);
-			parsing_mon_status_data_into_array(jdpb,sfp_status_1[1],"SFP TX_FAULT Status",1);
+			parsing_mon_channel_data_into_object(jsfps,1,"temperature",sfp_temp_1[0]);
+			parsing_mon_channel_data_into_object(jsfps,1,"biascurr",sfp_temp_1[0]);
+			parsing_mon_channel_data_into_object(jsfps,1,"txpwr",sfp_txbias_1[0]);
+			parsing_mon_channel_data_into_object(jsfps,1,"rxpwr",sfp_rxpwr_1[0]);
+
+			parsing_mon_channel_status_into_object(jsfps,1,"rxlos",sfp_status_1[0]);
+			parsing_mon_channel_status_into_object(jsfps,1,"txfault",sfp_status_1[1]);
 		}
 		if(sfp2_connected){
-			parsing_mon_sensor_data_into_array(jdpb,sfp_temp_2[0],"SFP Temperature",2);
-			parsing_mon_sensor_data_into_array(jdpb,sfp_txbias_2[0],"SFP Laser Bias Current",2);
-			parsing_mon_sensor_data_into_array(jdpb,sfp_txpwr_2[0],"SFP TX Power",2);
-			parsing_mon_sensor_data_into_array(jdpb,sfp_rxpwr_2[0],"SFP RX Power",2);
-			parsing_mon_status_data_into_array(jdpb,sfp_status_2[0],"SFP RX_LOS Status",2);
-			parsing_mon_status_data_into_array(jdpb,sfp_status_2[1],"SFP TX_FAULT Status",2);
+			parsing_mon_channel_data_into_object(jsfps,2,"temperature",sfp_temp_2[0]);
+			parsing_mon_channel_data_into_object(jsfps,2,"biascurr",sfp_temp_2[0]);
+			parsing_mon_channel_data_into_object(jsfps,2,"txpwr",sfp_txbias_2[0]);
+			parsing_mon_channel_data_into_object(jsfps,2,"rxpwr",sfp_rxpwr_2[0]);
+
+			parsing_mon_channel_status_into_object(jsfps,2,"rxlos",sfp_status_2[0]);
+			parsing_mon_channel_status_into_object(jsfps,2,"txfault",sfp_status_2[1]);
 		}
 		if(sfp3_connected){
-			parsing_mon_sensor_data_into_array(jdpb,sfp_temp_3[0],"SFP Temperature",3);
-			parsing_mon_sensor_data_into_array(jdpb,sfp_txbias_3[0],"SFP Laser Bias Current",3);
-			parsing_mon_sensor_data_into_array(jdpb,sfp_txpwr_3[0],"SFP TX Power",3);
-			parsing_mon_sensor_data_into_array(jdpb,sfp_rxpwr_3[0],"SFP RX Power",3);
-			parsing_mon_status_data_into_array(jdpb,sfp_status_3[0],"SFP RX_LOS Status",3);
-			parsing_mon_status_data_into_array(jdpb,sfp_status_3[1],"SFP TX_FAULT Status",3);
+			parsing_mon_channel_data_into_object(jsfps,3,"temperature",sfp_temp_3[0]);
+			parsing_mon_channel_data_into_object(jsfps,3,"biascurr",sfp_temp_3[0]);
+			parsing_mon_channel_data_into_object(jsfps,3,"txpwr",sfp_txbias_3[0]);
+			parsing_mon_channel_data_into_object(jsfps,3,"rxpwr",sfp_rxpwr_3[0]);
+
+			parsing_mon_channel_status_into_object(jsfps,3,"rxlos",sfp_status_3[0]);
+			parsing_mon_channel_status_into_object(jsfps,3,"txfault",sfp_status_3[1]);
 		}
 		if(sfp4_connected){
-			parsing_mon_sensor_data_into_array(jdpb,sfp_temp_4[0],"SFP Temperature",4);
-			parsing_mon_sensor_data_into_array(jdpb,sfp_txbias_4[0],"SFP Laser Bias Current",4);
-			parsing_mon_sensor_data_into_array(jdpb,sfp_txpwr_4[0],"SFP TX Power",4);
-			parsing_mon_sensor_data_into_array(jdpb,sfp_rxpwr_4[0],"SFP RX Power",4);
-			parsing_mon_status_data_into_array(jdpb,sfp_status_4[0],"SFP RX_LOS Status",4);
-			parsing_mon_status_data_into_array(jdpb,sfp_status_4[1],"SFP TX_FAULT Status",4);
+			parsing_mon_channel_data_into_object(jsfps,4,"temperature",sfp_temp_4[0]);
+			parsing_mon_channel_data_into_object(jsfps,4,"biascurr",sfp_temp_4[0]);
+			parsing_mon_channel_data_into_object(jsfps,4,"txpwr",sfp_txbias_4[0]);
+			parsing_mon_channel_data_into_object(jsfps,4,"rxpwr",sfp_rxpwr_4[0]);
+
+			parsing_mon_channel_status_into_object(jsfps,4,"rxlos",sfp_status_4[0]);
+			parsing_mon_channel_status_into_object(jsfps,4,"txfault",sfp_status_4[1]);
 		}
 		if(sfp5_connected){
-			parsing_mon_sensor_data_into_array(jdpb,sfp_temp_5[0],"SFP Temperature",5);
-			parsing_mon_sensor_data_into_array(jdpb,sfp_txbias_5[0],"SFP Laser Bias Current",5);
-			parsing_mon_sensor_data_into_array(jdpb,sfp_txpwr_5[0],"SFP TX Power",5);
-			parsing_mon_sensor_data_into_array(jdpb,sfp_rxpwr_5[0],"SFP RX Power",5);
-			parsing_mon_status_data_into_array(jdpb,sfp_status_5[0],"SFP RX_LOS Status",5);
-			parsing_mon_status_data_into_array(jdpb,sfp_status_5[1],"SFP TX_FAULT Status",5);
+			parsing_mon_channel_data_into_object(jsfps,5,"temperature",sfp_temp_5[0]);
+			parsing_mon_channel_data_into_object(jsfps,5,"biascurr",sfp_temp_5[0]);
+			parsing_mon_channel_data_into_object(jsfps,5,"txpwr",sfp_txbias_5[0]);
+			parsing_mon_channel_data_into_object(jsfps,5,"rxpwr",sfp_rxpwr_5[0]);
+
+			parsing_mon_channel_status_into_object(jsfps,5,"rxlos",sfp_status_5[0]);
+			parsing_mon_channel_status_into_object(jsfps,5,"txfault",sfp_status_5[1]);
 		}
-		parsing_mon_sensor_data_into_array(jdpb,ams_temp[0],ams_channels[0],99);
-		parsing_mon_sensor_data_into_array(jdpb,ams_temp[1],ams_channels[1],99);
-		parsing_mon_sensor_data_into_array(jdpb,ams_temp[2],ams_channels[13],99);
+		parsing_mon_environment_data_into_object(jdpb,"lpdcputemp", ams_temp[0]);
+		parsing_mon_environment_data_into_object(jdpb,"fpdcputemp", ams_temp[1]);
+		parsing_mon_environment_data_into_object(jdpb,"fpgatemp", ams_temp[13]);
 
 		/*for(int n = 0; n<AMS_VOLT_NUM_CHAN;n++){
 			if(n != 11){
 				parsing_mon_sensor_data_into_array(jdpb,ams_volt[n],ams_channels[n+2],99);	}
 		}*/
-
 		for(int j=0;j<INA3221_NUM_CHAN;j++){
 			pwr_array[j] = volt_sfp0_2[j]*curr_sfp0_2[j];
-			parsing_mon_sensor_data_into_array(jdpb,volt_sfp0_2[j],"SFP Voltage Monitor",j);
-			parsing_mon_sensor_data_into_array(jdpb,curr_sfp0_2[j],"SFP Current Monitor",j);
-			parsing_mon_sensor_data_into_array(jdpb,pwr_array[j],"SFP Power Monitor",j);
+			parsing_mon_channel_data_into_object(jsfps,j,"voltage",volt_sfp0_2[j]);
+			parsing_mon_channel_data_into_object(jsfps,j,"current",curr_sfp0_2[j]);
+			parsing_mon_channel_data_into_object(jsfps,j,"pwr",pwr_array[j]);
 		}
 		for(int k=0;k<INA3221_NUM_CHAN;k++){
 			pwr_array[k] = volt_sfp3_5[k]*curr_sfp3_5[k];
-			parsing_mon_sensor_data_into_array(jdpb,volt_sfp3_5[k],"SFP Voltage Monitor",k+3);
-			parsing_mon_sensor_data_into_array(jdpb,curr_sfp3_5[k],"SFP Current Monitor",k+3);
-			parsing_mon_sensor_data_into_array(jdpb,pwr_array[k],"SFP Power Monitor",k+3);
+			parsing_mon_channel_data_into_object(jsfps,k + 3,"voltage",volt_sfp3_5[k]);
+			parsing_mon_channel_data_into_object(jsfps,k + 3,"current",curr_sfp3_5[k]);
+			parsing_mon_channel_data_into_object(jsfps,k + 3,"pwr",pwr_array[k]);
 		}
+
 		for(int l=0;l<INA3221_NUM_CHAN;l++){
 			switch(l){
 			case 0:
-				volt = "Voltage Monitor (+12V)";
-				curr = "Current Monitor (+12V)";
-				pwr = "Power Monitor (+12V)";
+				volt = "12Vvoltage";
+				curr = "12Vcurrent";
+				pwr = "12Vpwr";
 				break;
 			case 1:
-				volt = "Voltage Monitor (+3.3V)";
-				curr = "Current Monitor (+3.3V)";
-				pwr = "Power Monitor (+3.3V)";
+				volt = "3V3voltage";
+				curr = "3V3current";
+				pwr = "3V3pwr";
 				break;
 			case 2:
-				volt = "Voltage Monitor (+1.8V)";
-				curr = "Current Monitor (+1.8V)";
-				pwr = "Power Monitor (+1.8V)";
+				volt = "1V8voltage";
+				curr = "1V8current";
+				pwr = "1V8pwr";
 				break;
 			default:
-				volt = "Voltage Monitor (+12V)";
-				curr = "Current Monitor (+12V)";
-				pwr = "Power Monitor (+12V)";
+				volt = "12Vvoltage";
+				curr = "12Vcurrent";
+				pwr = "12Vpwr";
 			break;
 			}
-			parsing_mon_sensor_data_into_array(jdpb,volt_som[l],volt,99);
-			parsing_mon_sensor_data_into_array(jdpb,curr_som[l],curr,99);
-			parsing_mon_sensor_data_into_array(jdpb,curr_som[l]*volt_som[l],pwr,99);
+			parsing_mon_environment_data_into_object(jdpb,volt, volt_som[l]);
+			parsing_mon_environment_data_into_object(jdpb,curr, curr_som[l]);
+			parsing_mon_environment_data_into_object(jdpb,pwr, curr_som[l]*volt_som[l]);
 		}
 		//LV Slow Control Monitoring
 		char lv_mon_root[80] = "$BD:0,$CMD:MON,PAR:";
@@ -596,6 +604,7 @@ static void *monitoring_thread(void *arg)
 		char channel_str[4];
 		char board_dev[32] = "/dev/ttyUL4";
 		float mag_value;
+		json_object *jlvchannels = json_object_new_array();
 		//Read Environment Parameters
 		for(int i = 0 ; i < 5; i++){
 			strcpy(lv_mon_cmd,lv_mon_root);
@@ -624,14 +633,14 @@ static void *monitoring_thread(void *arg)
 				case 2: // Relative Humidity
 				case 3: // Pressure
 					mag_value=(float) atoi(mag_str);
-					parsing_mon_sensor_data_into_array(jlv,mag_value, lv_mag_names[i],99);
+					parsing_mon_environment_data_into_object(jlv,lv_mag_names[i], mag_value);
 					break;
 				case 4: // Water Leak
 					if(!strcmp(mag_str,"YES"))
 						mag_value = 1;
 					else
 						mag_value = 0;
-					parsing_mon_status_data_into_array(jlv,mag_value, lv_mag_names[i],99);
+					parsing_mon_environment_status_into_object(jlv,lv_mag_names[i], mag_value);
 					break;
 				default:
 			}
@@ -680,12 +689,16 @@ static void *monitoring_thread(void *arg)
 				}
 				switch (j){
 					case 5: //Output Status
-					parsing_mon_sensor_string_into_array(jlv,mag_str, lv_mag_names[j],i);
+					if(!strcmp(mag_str,"ON"))
+						mag_value = 1;
+					else
+						mag_value= 0;
+					parsing_mon_channel_status_into_object(jlvchannels,i,lv_mag_names[j],mag_value);
 					break;
 					case 6: //Voltage Monitor
 					case 7: //Current Monitor
 					mag_value=atof(mag_str);
-					parsing_mon_sensor_data_into_array(jlv,mag_value, lv_mag_names[j],i);
+					parsing_mon_channel_data_into_object(jlvchannels,i,lv_mag_names[j],mag_value);
 					default:
 				}
 				free(mag_str);
@@ -697,6 +710,7 @@ static void *monitoring_thread(void *arg)
 		char hv_mon_cmd[80];
 		char chan_mag_value[80];
 		int mag_status;
+		json_object *jhvchannels = json_object_new_array();
 		strcpy(board_dev,"/dev/ttyUL3");
 
 		//Read Channel Parameters
@@ -731,7 +745,7 @@ static void *monitoring_thread(void *arg)
 					case 0:
 					// If it is status, we strip the least significant bit from the string
 					mag_status = atoi(mag_str) & 0x1;
-					parsing_mon_status_data_into_array(jhv,mag_status, hv_mag_names[j],i);
+					parsing_mon_channel_status_into_object(jhvchannels,i,hv_mag_names[j],mag_value);
 					break;
 					case 1:  //Voltage Monitor
 					case 2:	 //Current Monitor
@@ -739,12 +753,12 @@ static void *monitoring_thread(void *arg)
 					case 4:  //Rampup Speed
 					case 5:  // Rampdown Speed
 					mag_value = atof(mag_str);
-					parsing_mon_sensor_data_into_array(jhv,mag_value, hv_mag_names[j],i);
+					parsing_mon_channel_data_into_object(jhvchannels,i,hv_mag_names[j],mag_value);
 					break;
 					case 6:
 					// If it is the channel error, we strip the most significant bit
 					mag_status = (atoi(mag_str) & (0x1 << 13)) >> 13;
-					parsing_mon_status_data_into_array(jhv,mag_status, hv_mag_names[j],i);
+					parsing_mon_channel_status_into_object(jhvchannels,i,hv_mag_names[j],mag_value);
 					break;
 					default:
 				}
@@ -752,7 +766,10 @@ static void *monitoring_thread(void *arg)
 			}		
 		}
 
-		
+		json_object_object_add(jdpb,"SFPs",jsfps);
+		json_object_object_add(jlv,"SFPs",jlvchannels);
+		json_object_object_add(jhv,"SFPs",jhvchannels);
+
 		json_object_object_add(jdata,"LV", jlv);
 		json_object_object_add(jdata,"HV", jhv);
 		json_object_object_add(jdata,"Dig0", jdig0);
@@ -767,16 +784,16 @@ static void *monitoring_thread(void *arg)
 		json_object_object_add(jobj,"data",jdata);*/
 
 		const char *serialized_json = json_object_to_json_string(jdata);
-		rc = json_schema_validate("JSONSchemaMonitoring.json",serialized_json, "mon_temp.json");
-		if (rc) {
-			printf("Error validating JSON Schema\r\n");
-		}
-		else{ //FIXME DAQ Function HERE. Use the send monitoring data function of DAQ library
+		//rc = json_schema_validate("JSONSchemaMonitoring.json",serialized_json, "mon_temp.json");
+		//if (rc) {
+		//	printf("Error validating JSON Schema\r\n");
+		//}
+		//else{ //FIXME DAQ Function HERE. Use the send monitoring data function of DAQ library
 			rc2 = zmq_send(mon_publisher, serialized_json, strlen(serialized_json), 0);
-			if (rc2 < 0) {
-				printf("Error sending JSON\r\n");
-			}
-		}
+		//	if (rc2 < 0) {
+		//		printf("Error sending JSON\r\n");
+		//	}
+		//}
 		json_object_put(jdata);
 		wait_period(&info);
 	}
@@ -883,7 +900,7 @@ static void *i2c_alarms_thread(void *arg){
 			}
 		}
 		sem_post(&i2c_sync); //Free semaphore to sync I2C usage
-				
+
 		//HV alarm parsing
 		hv_read_alarms();
 
