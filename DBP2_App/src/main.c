@@ -473,7 +473,6 @@ static void *monitoring_thread(void *arg)
 		if (rc) {
 			printf("Reading Error\r\n");
 		}
-		printf("Empiezan los JSON \n");
 		//json_object * jobj = json_object_new_object();
 		json_object *jdata = json_object_new_object();
 		json_object *jlv = json_object_new_object();
@@ -483,9 +482,7 @@ static void *monitoring_thread(void *arg)
 		json_object *jdpb = json_object_new_object();
 
 		json_object *jsfps = json_object_new_array();
-		printf("ETH0 \n");
 		parsing_mon_environment_status_into_object(jdpb, "ethmain", eth_status[0]);
-		printf("ETH1 \n");
 		parsing_mon_environment_status_into_object(jdpb, "ethbackup", eth_status[1]);
 
 		parsing_mon_environment_status_into_object(jdig0, "auroramain", aurora_status[0]);
@@ -494,9 +491,7 @@ static void *monitoring_thread(void *arg)
 		parsing_mon_environment_status_into_object(jdig1, "auroramain", aurora_status[2]);
 		parsing_mon_environment_status_into_object(jdig1, "aurorabackup", aurora_status[3]);
 
-	printf("PCB TEMP \n");
 		parsing_mon_environment_data_into_object(jdpb,"boardtemp", temp[0]);
-		printf("SFPs \n");
 		if(sfp0_connected){
 			parsing_mon_channel_data_into_object(jsfps,0,"temperature",sfp_temp_0[0]);
 			parsing_mon_channel_data_into_object(jsfps,0,"biascurr",sfp_temp_0[0]);
@@ -557,9 +552,8 @@ static void *monitoring_thread(void *arg)
 
 		/*for(int n = 0; n<AMS_VOLT_NUM_CHAN;n++){
 			if(n != 11){
-				parsing_mon_sensor_data_into_array(jdpb,ams_volt[n],ams_channels[n+2],99);	}
+				parsing_mon_environment_data_into_object(jdpb,ams_channels[n+2],ams_volt[n]);	}
 		}*/
-		printf("INAs \n");
 		for(int j=0;j<INA3221_NUM_CHAN;j++){
 			pwr_array[j] = volt_sfp0_2[j]*curr_sfp0_2[j];
 			parsing_mon_channel_data_into_object(jsfps,j,"voltage",volt_sfp0_2[j]);
@@ -600,7 +594,6 @@ static void *monitoring_thread(void *arg)
 			parsing_mon_environment_data_into_object(jdpb,curr, curr_som[l]);
 			parsing_mon_environment_data_into_object(jdpb,pwr, curr_som[l]*volt_som[l]);
 		}
-		printf("LV \n");
 		//LV Slow Control Monitoring
 		char lv_mon_root[80] = "$BD:0,$CMD:MON,PAR:";
 		char lv_mon_cmd[80];
@@ -713,7 +706,7 @@ static void *monitoring_thread(void *arg)
 			}
 			json_object_object_add(jlv,"channels",jlvchannels);
 		}
-		printf("HV \n");
+
 		// HV Slow Control Monitoring
 		char *hv_mon_root = "$BD:1,$CMD:MON,CH:";
 		char hv_mon_cmd[80];
@@ -777,9 +770,9 @@ static void *monitoring_thread(void *arg)
 			}
 			json_object_object_add(jhv,"channels",jhvchannels);
 		}
-		printf("Empacado de JSONs 1 \n");
+
 		json_object_object_add(jdpb,"SFPs",jsfps);
-		printf("Empacado de JSONs 2 \n");
+
 		json_object_object_add(jdata,"LV", jlv);
 		json_object_object_add(jdata,"HV", jhv);
 		json_object_object_add(jdata,"Dig0", jdig0);
@@ -792,9 +785,9 @@ static void *monitoring_thread(void *arg)
 		json_object_object_add(jobj,"timestamp", jtimestamp);
 		json_object_object_add(jobj,"device", jdevice);
 		json_object_object_add(jobj,"data",jdata);*/
-		printf("Haciendo strings \n");
+
 		const char *serialized_json = json_object_to_json_string(jdata);
-		printf("%s\n",serialized_json);
+
 		//rc = json_schema_validate("JSONSchemaMonitoring.json",serialized_json, "mon_temp.json");
 		//if (rc) {
 		//	printf("Error validating JSON Schema\r\n");
@@ -1131,7 +1124,6 @@ static void *command_thread(void *arg){
 		}
 		//Check JSON schema valid
 		const char *serialized_json = json_object_to_json_string(jobj);
-		printf("%s\n",serialized_json);
 		rc = json_schema_validate("JSONSchemaCommandRequest.json",serialized_json, "cmd_temp.json");
 		if(rc){
 			rc = command_status_response_json (msg_id,-EINCMD,reply);
@@ -1165,10 +1157,8 @@ static void *command_thread(void *arg){
 					//Command conversion
 					char hvlvcmd[40] =  "$BD:0,$CMD:";
 					rc = hv_lv_command_translation(hvlvcmd, cmd, i);
-					printf("COMMAND THREAD: %s \n",hvlvcmd);
 					//RS485 communication
 					rc = hv_lv_command_handling(board_dev,hvlvcmd, board_response);
-					printf("COMMAND THREAD: %s \n",board_response);
 					// Generate the JSON message depending on reading or setting
 					rc = hv_lv_command_response(board_response,reply,msg_id,cmd);
 				}
@@ -1201,10 +1191,8 @@ static void *command_thread(void *arg){
 					//Command conversion
 					char hvlvcmd[40] =  "$BD:1,$CMD:";
 					rc = hv_lv_command_translation(hvlvcmd, cmd, i);
-					printf("COMMAND THREAD: %s \n",hvlvcmd);
 					//RS485 communication
 					rc = hv_lv_command_handling(board_dev,hvlvcmd, board_response);
-					printf("COMMAND THREAD: %s \n",board_response);
 					// Generate the JSON message depending on reading or setting
 					rc = hv_lv_command_response(board_response,reply,msg_id,cmd);
 				}
@@ -1227,7 +1215,6 @@ static void *command_thread(void *arg){
 			//json_object_put(jobj);
 		}
 waitmsg:
-	printf("COMMAND THREAD: %s \n",reply);
 	const char* msg_sent = (const char*) reply;
 	//FIXME: DAQ Function HERE. Use whole command_thread function as callback function for DAQ library and parse string into DPB command format
 	zmq_send(cmd_router,msg_sent, strlen(msg_sent), 0);
@@ -1321,27 +1308,29 @@ int main(int argc, char *argv[]){
 	signal(SIGINT, sighandler);
 
 	// Check if HV and LV is there
-	char *buffer[40];
+	char buffer[40];
 	int serial_port_UL3 = open("/dev/ttyUL3",O_RDWR);
 	setup_serial_port(serial_port_UL3);
 	write(serial_port_UL3, "$BD:1,$CMD:MON,PAR:BDSNUM\r\n", strlen("$BD:1,$CMD:MON,PAR:BDSNUM\r\n"));
-	usleep(10000);
+	usleep(1000000);
 	int	n = read(serial_port_UL3, buffer, sizeof(buffer));
 	if(n){
 		printf("HV has been detected \n");
 		hv_connected = 1;
 	}
+	close(serial_port_UL3);
 
 	int serial_port_UL4 = open("/dev/ttyUL4",O_RDWR);
 	setup_serial_port(serial_port_UL4);
 	write(serial_port_UL4, "$BD:0,$CMD:MON,PAR:BDSNUM\r\n", strlen("$BD:0,$CMD:MON,PAR:BDSNUM\r\n"));
-	usleep(10000);
+	usleep(1000000);
 	n = read(serial_port_UL4, buffer, sizeof(buffer));
 	if(n){
 		printf("LV has been detected \n");
 		lv_connected = 1;
 	}
-
+	close(serial_port_UL4);
+	
 	sem_init(&thread_sync,0,0);
 
 	/* Block all real time signals so they can be used for the timers.
