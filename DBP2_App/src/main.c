@@ -595,16 +595,19 @@ static void *monitoring_thread(void *arg)
 			parsing_mon_environment_data_into_object(jdpb,pwr, curr_som[l]*volt_som[l]);
 		}
 		//LV Slow Control Monitoring
-		char lv_mon_root[80] = "$BD:0,$CMD:MON,PAR:";
+		char lv_mon_root[80];
 		char lv_mon_cmd[80];
 		char *mag_code;
 		char response[80];
 		char channel_str[4];
-		char board_dev[32] = "/dev/ttyUL4";
+		char board_dev[32];
 		float mag_value;
 
 		if(lv_connected){
 			json_object *jlvchannels = json_object_new_array();
+			strcpy(lv_mon_root,"$BD:0,$CMD:MON,PAR:");
+			strcpy(board_dev,"/dev/ttyUL4");
+
 			//Read Environment Parameters
 			for(int i = 0 ; i < 5; i++){
 				strcpy(lv_mon_cmd,lv_mon_root);
@@ -708,13 +711,14 @@ static void *monitoring_thread(void *arg)
 		}
 
 		// HV Slow Control Monitoring
-		char *hv_mon_root = "$BD:1,$CMD:MON,CH:";
+		char hv_mon_root[80];
 		char hv_mon_cmd[80];
 		char chan_mag_value[80];
 		int mag_status;
 		if(hv_connected){
 			json_object *jhvchannels = json_object_new_array();
 			strcpy(board_dev,"/dev/ttyUL3");
+			strcpy(hv_mon_root,"$BD:1,$CMD:MON,CH:");
 
 			//Read Channel Parameters
 			for(int i = 0; i < 24; i++){
@@ -770,10 +774,6 @@ static void *monitoring_thread(void *arg)
 			}
 			json_object_object_add(jhv,"channels",jhvchannels);
 		}
-		free(response);
-		free(lv_mon_cmd);
-		free(hv_mon_cmd);
-		free(chan_mag_value);
 
 		json_object_object_add(jdpb,"SFPs",jsfps);
 
