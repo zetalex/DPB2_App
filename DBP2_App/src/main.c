@@ -770,6 +770,10 @@ static void *monitoring_thread(void *arg)
 			}
 			json_object_object_add(jhv,"channels",jhvchannels);
 		}
+		free(response);
+		free(lv_mon_cmd);
+		free(hv_mon_cmd);
+		free(chan_mag_value);
 
 		json_object_object_add(jdpb,"SFPs",jsfps);
 
