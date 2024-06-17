@@ -616,19 +616,25 @@ static void *monitoring_thread(void *arg)
 				hv_lv_command_handling(board_dev,lv_mon_cmd,response);
 
 				// Strip the returned value from response string
-				char *mag_str = NULL;
+				char mag_str[16];
+				char *target = NULL;
 				char *start, *end;
 				if ( start = strstr( response, "#CMD:OK,VAL:" ) ){
 					start += strlen( "#CMD:OK,VAL:" );
 					if ( end = strstr( start, "\r\n" ) )
 					{
-						mag_str = ( char * )malloc( end - start + 1 );
-						memcpy( mag_str, start, end - start );
-						mag_str[end - start] = '\0';
+						target = ( char * )malloc( end - start + 1 );
+						memcpy( target, start, end - start );
+						target[end - start] = '\0';
+						strcpy(mag_str,target);
+						free(target);
 					}
 					else {
-							strcpy(mag_str,"ERROR");
+						strcpy(mag_str,"ERROR");
 					}
+				}
+				else {
+					strcpy(mag_str,"ERROR");
 				}
 				switch(i){
 					case 0: // Temperature
@@ -647,7 +653,6 @@ static void *monitoring_thread(void *arg)
 						break;
 					default:
 				}
-				free(mag_str);	
 			}
 			strcpy(lv_mon_root,"$BD:0,$CMD:MON,CH:");
 			//Read Channel Parameters
@@ -672,22 +677,24 @@ static void *monitoring_thread(void *arg)
 					hv_lv_command_handling(board_dev,lv_mon_cmd,response);
 
 					// Strip the returned value from response string
-					char *mag_str = NULL;
+					char mag_str[16];
+					char *target = NULL;
 					char *start, *end;
-
 					if ( start = strstr( response, "#CMD:OK,VAL:" ) ){
 						start += strlen( "#CMD:OK,VAL:" );
 						if ( end = strstr( start, "\r\n" ) )
 						{
-							mag_str = ( char * )malloc( end - start + 1 );
-							memcpy( mag_str, start, end - start );
-							mag_str[end - start] = '\0';
+							target = ( char * )malloc( end - start + 1 );
+							memcpy( target, start, end - start );
+							target[end - start] = '\0';
+							strcpy(mag_str,target);
+							free(target);
 						}
 						else {
 							strcpy(mag_str,"ERROR");
 						}
 					}
-					else{
+					else {
 						strcpy(mag_str,"ERROR");
 					}
 					switch (j){
@@ -732,20 +739,25 @@ static void *monitoring_thread(void *arg)
 					hv_lv_command_handling(board_dev,hv_mon_cmd,response);
 					
 					// Strip the returned value from response string
-					char *mag_str;
+					char mag_str[16];
+					char *target = NULL;
 					char *start, *end;
-
 					if ( start = strstr( response, "#CMD:OK,VAL:" ) ){
 						start += strlen( "#CMD:OK,VAL:" );
 						if ( end = strstr( start, "\r\n" ) )
 						{
-							mag_str = ( char * )malloc( end - start + 1 );
-							memcpy( mag_str, start, end - start );
-							mag_str[end - start] = '\0';
+							target = ( char * )malloc( end - start + 1 );
+							memcpy( target, start, end - start );
+							target[end - start] = '\0';
+							strcpy(mag_str,target);
+							free(target);
 						}
 						else {
 							strcpy(mag_str,"ERROR");
 						}
+					}
+					else {
+						strcpy(mag_str,"ERROR");
 					}
 
 					switch(j) {
