@@ -597,10 +597,10 @@ static void *monitoring_thread(void *arg)
 		//LV Slow Control Monitoring
 		char lv_mon_root[80];
 		char lv_mon_cmd[80];
-		char *mag_code;
 		char response[80];
 		char channel_str[4];
 		char board_dev[32];
+		char mag_str[16];
 		float mag_value;
 
 		if(lv_connected){
@@ -666,7 +666,7 @@ static void *monitoring_thread(void *arg)
 					// Exception, enable for channels 0 and 1 are bus converters
 					if(i <= 1 && j == 5){
 						strcat(lv_mon_cmd,"BCEN");
-					} // Enable for channels 2 to 6 are stepdowns
+					} // Enable for channels 2 to 7 are stepdowns
 					else if(i > 1 && j == 5){
 						strcat(lv_mon_cmd,"SDEN");
 					}
@@ -677,7 +677,6 @@ static void *monitoring_thread(void *arg)
 					hv_lv_command_handling(board_dev,lv_mon_cmd,response);
 
 					// Strip the returned value from response string
-					char mag_str[16];
 					char *target = NULL;
 					char *start, *end;
 					if ( start = strstr( response, "#CMD:OK,VAL:" ) ){
@@ -711,7 +710,6 @@ static void *monitoring_thread(void *arg)
 						parsing_mon_channel_data_into_object(jlvchannels,i,lv_mag_names[j],mag_value);
 						default:
 					}
-					free(mag_str);
 				}		
 			}
 			json_object_object_add(jlv,"channels",jlvchannels);
@@ -720,7 +718,6 @@ static void *monitoring_thread(void *arg)
 		// HV Slow Control Monitoring
 		char hv_mon_root[80];
 		char hv_mon_cmd[80];
-		char chan_mag_value[80];
 		int mag_status;
 		if(hv_connected){
 			json_object *jhvchannels = json_object_new_array();
@@ -739,7 +736,6 @@ static void *monitoring_thread(void *arg)
 					hv_lv_command_handling(board_dev,hv_mon_cmd,response);
 					
 					// Strip the returned value from response string
-					char mag_str[16];
 					char *target = NULL;
 					char *start, *end;
 					if ( start = strstr( response, "#CMD:OK,VAL:" ) ){
@@ -764,7 +760,7 @@ static void *monitoring_thread(void *arg)
 						case 0:
 						// If it is status, we strip the least significant bit from the string
 						mag_status = atoi(mag_str) & 0x1;
-						parsing_mon_channel_status_into_object(jhvchannels,i,hv_mag_names[j],mag_value);
+						parsing_mon_channel_status_into_object(jhvchannels,i,hv_mag_names[j],mag_status);
 						break;
 						case 1:  //Voltage Monitor
 						case 2:	 //Current Monitor
@@ -777,11 +773,10 @@ static void *monitoring_thread(void *arg)
 						case 6:
 						// If it is the channel error, we strip the most significant bit
 						mag_status = (atoi(mag_str) & (0x1 << 13)) >> 13;
-						parsing_mon_channel_status_into_object(jhvchannels,i,hv_mag_names[j],mag_value);
+						parsing_mon_channel_status_into_object(jhvchannels,i,hv_mag_names[j],mag_status);
 						break;
 						default:
 					}
-					free(mag_str);
 				}		
 			}
 			json_object_object_add(jhv,"channels",jhvchannels);
@@ -1077,7 +1072,7 @@ static void *command_thread(void *arg){
 			goto waitmsg;
 		}
 		const char *serialized_json_msg = json_object_to_json_string(jmsg);
-		printf("%s\n",serialized_json_msg);
+		//printf("%s\n",serialized_json_msg);
 		rc = json_schema_validate("JSONSchemaSlowControl.json",serialized_json_msg, "cmd_temp.json");
 		if(rc){
 			rc = command_status_response_json (0,-EINCMD,reply);
@@ -1096,13 +1091,11 @@ static void *command_thread(void *arg){
 		   cmd[i] = strtok(NULL, " ");
 		}
 		json_object *jobj = json_object_new_object();
-		json_object *jstr4;
-		json_object *jstr5;
-		json_object *jempty = json_object_new_string("");
 		char buff[8];
 
 		switch(i){
 		case 5:
+			json_object *jstr5;
 			if(!strcmp(cmd[4],"ON") | !strcmp(cmd[4],"OFF")){
 				jstr5 = json_object_new_string(cmd[4]);
 			}
@@ -1112,6 +1105,7 @@ static void *command_thread(void *arg){
 				jstr5 = json_object_new_double_s((double) val,buff);
 			}
 		case 4:
+			json_object *jstr4;
 			jstr4 = json_object_new_string(cmd[3]);
 		case 3:
 			json_object *jstr3 = json_object_new_string(cmd[2]);
@@ -1126,12 +1120,14 @@ static void *command_thread(void *arg){
 				json_object_object_add(jobj,"channel", jstr4);
 			}
 			else{
+				json_object *jempty = json_object_new_string("");
 				json_object_object_add(jobj,"channel", jempty);
 			}
 			if(i == 5){
 				json_object_object_add(jobj,"write_value", jstr5);
 			}
 			else{
+				json_object *jempty = json_object_new_string("");
 				json_object_object_add(jobj,"write_value", jempty);
 			}
 			break;
@@ -1143,8 +1139,8 @@ static void *command_thread(void *arg){
 		rc = json_schema_validate("JSONSchemaCommandRequest.json",serialized_json, "cmd_temp.json");
 		if(rc){
 			rc = command_status_response_json (msg_id,-EINCMD,reply);
-			//json_object_put(jmsg);
-			//json_object_put(jobj);
+			json_object_put(jmsg);
+			json_object_put(jobj);
 		}
 		else{
 			char board_response[64];
@@ -1227,9 +1223,9 @@ static void *command_thread(void *arg){
 			else{ //DPB
 				rc = dpb_command_handling(data,cmd,msg_id,reply);
 			}
-			//json_object_put(jmsg);
-			//json_object_put(jobj);
 		}
+		json_object_put(jmsg);
+		json_object_put(jobj);
 waitmsg:
 	const char* msg_sent = (const char*) reply;
 	//FIXME: DAQ Function HERE. Use whole command_thread function as callback function for DAQ library and parse string into DPB command format
