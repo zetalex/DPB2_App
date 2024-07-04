@@ -767,15 +767,24 @@ static void *monitoring_thread(void *arg)
 						case 3:  // Temperature
 						case 4:  //Rampup Speed
 						case 5:  // Rampdown Speed
+						case 6: // Trip Time
 						mag_value = atof(mag_str);
 						parsing_mon_channel_data_into_object(jhvchannels,i,hv_mag_names[j],mag_value);
 						break;
-						case 6:
+						case 7:
 						// If it is the channel error, we strip the most significant bit
 						mag_status = (atoi(mag_str) & (0x1 << 13)) >> 13;
 						parsing_mon_channel_status_into_object(jhvchannels,i,hv_mag_names[j],mag_status);
 						break;
+						case 8:
+						case 9:
+						if(inList(i,hv_sd_channels,8)){
+							mag_value = atof(mag_str);
+							parsing_mon_channel_data_into_object(jhvchannels,i,hv_mag_names[j],mag_value);
+						}
+						break;
 						default:
+						break;
 					}
 				}		
 			}
