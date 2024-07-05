@@ -3,7 +3,14 @@
         "i2c-dev.h": "c",
         "i2c.h": "c",
         "shm.h": "c",
-        "dpb2sc.h": "c"
+        "dpb2sc.h": "c",
+        "iostream": "cpp",
+        "ostream": "cpp",
+        "ios": "cpp",
+        "string": "cpp",
+        "cstdlib": "cpp",
+        "stdlib.h": "c",
+        "cfloat": "cpp"
     },
     "cSpell.language": "en-GB",
     "cSpell.words": [
@@ -67,5 +74,7 @@
         "voltage",
         "Voltage",
         "Zynq"
-    ]
+    ],
+    "C_Cpp.default.compilerPath": "/usr/bin/g++",
+    "C_Cpp.errorSquiggles": "enabled"
 }
