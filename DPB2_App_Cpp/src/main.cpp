@@ -22,9 +22,9 @@ extern "C"
 #include <regex.h>
 #include "linux/errno.h"
 
-#include <dpb2sc.h>
 }
 
+#include <dpb2sc.h>
 #include <iostream>
 
 /******************************************************************************
