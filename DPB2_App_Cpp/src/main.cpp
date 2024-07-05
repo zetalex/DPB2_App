@@ -1271,7 +1271,6 @@ int main(int argc, char *argv[]){
 	int serial_port_UL4;
 	int	n;
 
-	std::cout << "GeeksforGeeks";
 	for(int i = 1 ; i < 5; i++) {
 		if(argc <= i)
 			switch(i){
