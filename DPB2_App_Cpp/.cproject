@@ -79,6 +79,12 @@
                                 								
                                 <option id="xilinx.gnu.compiler.option.optimization.flags.766111201" name="Other optimization flags" superClass="xilinx.gnu.compiler.option.optimization.flags" useByScannerDiscovery="false" value="-fpermissive" valueType="string"/>
                                 								
+                                <option id="xilinx.gnu.compiler.dircategory.includes.423823546" superClass="xilinx.gnu.compiler.dircategory.includes" useByScannerDiscovery="false" valueType="includePath">
+                                    									
+                                    <listOptionValue builtIn="false" value="&quot;${workspace_loc:/DBP2_Platform/export/DBP2_Platform/sw/DBP2_Platform/linux_domain/sysroot/cortexa72-cortexa53-xilinx-linux/usr/include}&quot;"/>
+                                    								
+                                </option>
+                                								
                                 <inputType id="xilinx.gnu.arm.a53.linux.cxx.compiler.input.303679529" name="C++ source files" superClass="xilinx.gnu.arm.a53.linux.cxx.compiler.input"/>
                                 							
                             </tool>
@@ -134,6 +140,12 @@
                                     <listOptionValue builtIn="false" value="dpb2sc"/>
                                     									
                                     <listOptionValue builtIn="false" value="zmq"/>
+                                    								
+                                </option>
+                                								
+                                <option id="xilinx.gnu.c.link.option.paths.55698562" name="Library search path (-L)" superClass="xilinx.gnu.c.link.option.paths" useByScannerDiscovery="false" valueType="libPaths">
+                                    									
+                                    <listOptionValue builtIn="false" value="&quot;${workspace_loc:/DBP2_Platform/export/DBP2_Platform/sw/DBP2_Platform/linux_domain/sysroot/cortexa72-cortexa53-xilinx-linux/usr/lib}&quot;"/>
                                     								
                                 </option>
                                 								
@@ -241,6 +253,12 @@
                                     								
                                 </option>
                                 								
+                                <option id="xilinx.gnu.compiler.dircategory.includes.242932502" superClass="xilinx.gnu.compiler.dircategory.includes" useByScannerDiscovery="false" valueType="includePath">
+                                    									
+                                    <listOptionValue builtIn="false" value="&quot;${workspace_loc:/DBP2_Platform/export/DBP2_Platform/sw/DBP2_Platform/linux_domain/sysroot/cortexa72-cortexa53-xilinx-linux/usr/include}&quot;"/>
+                                    								
+                                </option>
+                                								
                                 <inputType id="xilinx.gnu.arm.a53.linux.cxx.compiler.input.791647254" name="C++ source files" superClass="xilinx.gnu.arm.a53.linux.cxx.compiler.input"/>
                                 							
                             </tool>
@@ -289,13 +307,19 @@
                                     								
                                 </option>
                                 								
-                                <option id="xilinx.gnu.c.link.option.libs.110826302" superClass="xilinx.gnu.c.link.option.libs" useByScannerDiscovery="false" valueType="libs">
+                                <option id="xilinx.gnu.c.link.option.libs.110826302" name="Libraries (-l)" superClass="xilinx.gnu.c.link.option.libs" useByScannerDiscovery="false" valueType="libs">
                                     									
                                     <listOptionValue builtIn="false" value="dpb2sc"/>
                                     									
                                     <listOptionValue builtIn="false" value="json-c"/>
                                     									
                                     <listOptionValue builtIn="false" value="zmq"/>
+                                    								
+                                </option>
+                                								
+                                <option id="xilinx.gnu.c.link.option.paths.1970089787" name="Library search path (-L)" superClass="xilinx.gnu.c.link.option.paths" useByScannerDiscovery="false" valueType="libPaths">
+                                    									
+                                    <listOptionValue builtIn="false" value="&quot;${workspace_loc:/DBP2_Platform/export/DBP2_Platform/sw/DBP2_Platform/linux_domain/sysroot/cortexa72-cortexa53-xilinx-linux/usr/lib}&quot;"/>
                                     								
                                 </option>
                                 								
