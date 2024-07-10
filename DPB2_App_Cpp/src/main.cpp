@@ -1173,8 +1173,6 @@ static void *command_thread(void *arg){
 		rc = json_schema_validate("JSONSchemaCommandRequest.json",serialized_json, "cmd_temp.json");
 		if(rc){
 			rc = command_status_response_json (msg_id,-EINCMD,reply);
-			json_object_put(jmsg);
-			json_object_put(jobj);
 		}
 		else{
 			char board_response[64];
@@ -1258,6 +1256,7 @@ static void *command_thread(void *arg){
 				rc = dpb_command_handling(data,cmd,msg_id,reply);
 			}
 		}
+		// Free JSON objects after using them
 		json_object_put(jmsg);
 		json_object_put(jobj);
 waitmsg:
