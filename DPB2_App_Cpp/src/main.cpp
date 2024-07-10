@@ -1288,12 +1288,16 @@ int main(int argc, char *argv[]){
 			switch(i){
 				case 1:
 				periods[i-1] = AMS_ALARMS_THREAD_PERIOD_DEFAULT;
+				break;
 				case 2:
 				periods[i-1] = ALARMS_THREAD_PERIOD_DEFAULT;
+				break;
 				case 3:
 				periods[i-1] = MONIT_THREAD_PERIOD_DEFAULT;
+				break;
 				case 4:
 				periods[i-1] = COMMAND_THREAD_PERIOD_DEFAULT;
+				break;
 			}
 		else
 			periods[i-1] = atoi(argv[i]);
