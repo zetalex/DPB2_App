@@ -250,7 +250,7 @@ static void *monitoring_thread(void *arg)
 	float sfp_txbias_5[1];
 	uint8_t sfp_status_5[2];
 
-	printf("Monitoring thread period: %ds\n",periods[2]/1000000);
+	printf("Monitoring thread period: %3.4fs\n",((float)periods[2])/1000000);
 	rc = make_periodic(periods[2], &info);
 	if (rc) {
 		printf("Error\r\n");
@@ -856,7 +856,7 @@ static void *i2c_alarms_thread(void *arg){
 	int rc ;
 	struct DPB_I2cSensors *data = static_cast<DPB_I2cSensors *>(arg);
 
-	printf("Alarms thread period: %dms\n",periods[1]/1000);
+	printf("Alarms thread period: %3.4fms\n",((float)periods[1])/1000);
 	rc = make_periodic(periods[1], &info);
 	if (rc) {
 		printf("Error\r\n");
@@ -978,7 +978,7 @@ static void *ams_alarms_thread(void *arg){
 
 	sem_wait(&memory->ams_sync);
 
-	printf("AMS Alarms thread period: %dms\n",periods[0]/1000);
+	printf("AMS Alarms thread period: %3.4fms\n",((float)periods[0])/1000);
 	rc = make_periodic(periods[0], &info);
 	if (rc) {
 		printf("Error\r\n");
@@ -1071,7 +1071,7 @@ static void *command_thread(void *arg){
 	int rc ;
 	struct DPB_I2cSensors *data = static_cast<DPB_I2cSensors *>(arg);
 
-	printf("Command thread period: %dms\n",periods[3]/1000);
+	printf("Command thread period: %3.4fms\n",((float)periods[3])/1000);
 	rc = make_periodic(periods[3], &info);
 	if (rc) {
 		printf("Error\r\n");
