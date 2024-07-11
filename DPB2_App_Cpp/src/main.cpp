@@ -743,7 +743,7 @@ static void *monitoring_thread(void *arg)
 
 			//Read Channel Parameters
 			for(int i = 0; i < 24; i++){
-				for(int j = 0; j < (HV_CMD_TABLE_SIZE-1); j++){
+				for(int j = 0; j < HV_CMD_TABLE_SIZE; j++){
 					strcpy(hv_mon_cmd,hv_mon_root);
 					sprintf(channel_str,"%d",i);
 					strcat(hv_mon_cmd,channel_str);
