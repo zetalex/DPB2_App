@@ -15,7 +15,19 @@ def get_environment_magnitude(json_data,board,magnitude):
     # Extract info from data field
     dpb_data = data[board]
     try:
-        magnitude_value = dpb_data['fpgatemp']
+        magnitude_value = dpb_data[magnitude]
+        return magnitude_value
+    except:
+        return 0
+    
+def get_channel_magnitude(json_data,board,channel,magnitude):
+    # Parse JSON
+    json_obj = json.loads(json_data)
+    data = json_obj
+    # Extract info from data field
+    dpb_data = data[board]
+    try:
+        magnitude_value = dpb_data["channels"][channel][magnitude]
         return magnitude_value
     except:
         return 0
@@ -56,7 +68,8 @@ def main():
     
     for i in range(0, num_points):
         json_data = socket.recv_string()
-        magnitude[i] = get_environment_magnitude(json_data,"DPB","fpgatemp")
+        #magnitude[i] = get_environment_magnitude(json_data,"DPB","fpgatemp")
+        magnitude[i] = get_channel_magnitude(json_data,"HV",1,"voltage")
         datestrings[i] = str(datetime.datetime.now())
         print(datestrings[i])
     plot_magnitude(datestrings,magnitude)
