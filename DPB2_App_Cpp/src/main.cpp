@@ -946,7 +946,7 @@ static void *i2c_alarms_thread(void *arg){
 
 		//HV alarm parsing
 		if(hv_connected)
-			//hv_read_alarms();
+			hv_read_alarms();
 
 		wait_period(&info);
 	}
