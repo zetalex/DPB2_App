@@ -613,17 +613,13 @@ static void *monitoring_thread(void *arg)
 			strcpy(lv_mon_root,"$BD:0,$CMD:MON,PAR:");
 			strcpy(board_dev,"/dev/ttyUL4");
 
-			//printf("Empezando monitoring LV environment\n");
-
 			//Read Environment Parameters
-			for(int i = 0 ; i < 5; i++){
+			for(int i = 0 ; i < 6; i++){
 				strcpy(lv_mon_cmd,lv_mon_root);
 				strcat(lv_mon_cmd,lv_board_words[i]);
 				strcat(lv_mon_cmd,"\r\n");
 				hv_lv_command_handling(board_dev,lv_mon_cmd,response);
-
 				// Strip the returned value from response string
-				char mag_str[16];
 				char *target = NULL;
 				char *start, *end;
 				if ( start = strstr( response, "#CMD:OK,VAL:" ) ){
@@ -633,9 +629,7 @@ static void *monitoring_thread(void *arg)
 						target = ( char * )malloc( end - start + 1 );
 						memcpy( target, start, end - start );
 						target[end - start] = '\0';
-						//printf("Respuesta obtenida correctamente LV environment\n");
 						strcpy(mag_str,target);
-						//printf("Respuesta copiada correctamente LV environment\n");
 						free(target);
 					}
 					else {
@@ -645,16 +639,18 @@ static void *monitoring_thread(void *arg)
 				else {
 					strcpy(mag_str,"ERROR");
 				}
-				//printf("Detectando LV environment\n");
 				switch(i){
-					case 0: // Temperature
-					case 1: // BCM Temperature
-					case 2: // Relative Humidity
-					case 3: // Pressure
+					case 0: // Serial Number
+						parsing_mon_environment_string_into_object(jlv, lv_mag_names[i],mag_str);
+						break;
+					case 1: // Temperature
+					case 2: // BCM Temperature
+					case 3: // Relative Humidity
+					case 4: // Pressure
 						mag_value=(float) atoi(mag_str);
 						parsing_mon_environment_data_into_object(jlv,lv_mag_names[i], mag_value);
 						break;
-					case 4: // Water Leak
+					case 5: // Water Leak
 						if(!strcmp(mag_str,"YES"))
 							mag_value = 1;
 						else
@@ -665,12 +661,12 @@ static void *monitoring_thread(void *arg)
 						break;
 				}
 			}
-			strcpy(lv_mon_root,"$BD:0,$CMD:MON,CH:");
+
 			//Read Channel Parameters
+			strcpy(lv_mon_root,"$BD:0,$CMD:MON,CH:");
 			for(int i = 0; i <= 7; i++){
 			//Status Voltage and Current
-				for(int j = 5; j < (LV_CMD_TABLE_SIZE-1); j++){
-					//printf("Empezando monitoring LV channels\n");
+				for(int j = 6; j < (LV_CMD_TABLE_SIZE-1); j++){  // We can't read CPU status
 					strcpy(lv_mon_cmd,lv_mon_root);
 					sprintf(channel_str,"%d",i);
 					strcat(lv_mon_cmd,channel_str);
@@ -687,7 +683,6 @@ static void *monitoring_thread(void *arg)
 					}
 					strcat(lv_mon_cmd,"\r\n");
 					hv_lv_command_handling(board_dev,lv_mon_cmd,response);
-
 					// Strip the returned value from response string
 					char *target = NULL;
 					char *start, *end;
@@ -698,9 +693,7 @@ static void *monitoring_thread(void *arg)
 							target = ( char * )malloc( end - start + 1 );
 							memcpy( target, start, end - start );
 							target[end - start] = '\0';
-							//printf("Respuesta obtenida correctamente LV channels\n");
 							strcpy(mag_str,target);
-							//printf("Respuesta copiada correctamente LV channels\n");
 							free(target);
 						}
 						else {
@@ -710,7 +703,6 @@ static void *monitoring_thread(void *arg)
 					else {
 						strcpy(mag_str,"ERROR");
 					}
-					//printf("Detectando monitoring LV channels\n");
 					switch (j){
 						case 5: //Output Status
 						if(!strcmp(mag_str,"ON"))
@@ -736,14 +728,53 @@ static void *monitoring_thread(void *arg)
 		char hv_mon_cmd[80];
 		int mag_status;
 		if(hv_connected){
-			//printf("Empezando monitoring HV\n");
+
 			json_object *jhvchannels = json_object_new_array();
 			strcpy(board_dev,"/dev/ttyUL3");
-			strcpy(hv_mon_root,"$BD:1,$CMD:MON,CH:");
+			strcpy(hv_mon_root,"$BD:1,$CMD:MON,PAR:");
+			//Read Serial Number and Board Temperature
+			for(int j = 0; j < 2; j++) {
+				strcpy(hv_mon_cmd,hv_mon_root);
+				strcat(hv_mon_cmd,hv_board_words[j]);
+				strcat(hv_mon_cmd,"\r\n");
+				hv_lv_command_handling(board_dev,hv_mon_cmd,response);
+				// Strip the returned value from response string
+				char *target = NULL;
+				char *start, *end;
+				if ( start = strstr( response, "#CMD:OK,VAL:" ) ){
+					start += strlen( "#CMD:OK,VAL:" );
+					if ( end = strstr( start, "\r\n" ) )
+					{
+						target = ( char * )malloc( end - start + 1 );
+						memcpy( target, start, end - start );
+						target[end - start] = '\0';
+						strcpy(mag_str,target);
+						free(target);
+					}
+					else {
+						strcpy(mag_str,"ERROR");
+					}
+				}
+				else {
+					strcpy(mag_str,"ERROR");
+				}
+				switch(j){
+					case 0: // Serial number
+						parsing_mon_environment_string_into_object(jhv,hv_mag_names[j], mag_str);
+					case 1: // Board Temperature
+						mag_value = atof(mag_str);
+						parsing_mon_environment_data_into_object(jhv,hv_mag_names[j], mag_value);
+						break;
+					default:
+						break;
+
+				}
+			}
 
 			//Read Channel Parameters
+			strcpy(hv_mon_root,"$BD:1,$CMD:MON,CH:");
 			for(int i = 0; i < 24; i++){
-				for(int j = 0; j < HV_CMD_TABLE_SIZE; j++){
+				for(int j = 2; j < HV_CMD_TABLE_SIZE; j++){
 					strcpy(hv_mon_cmd,hv_mon_root);
 					sprintf(channel_str,"%d",i);
 					strcat(hv_mon_cmd,channel_str);
@@ -762,9 +793,7 @@ static void *monitoring_thread(void *arg)
 							target = ( char * )malloc( end - start + 1 );
 							memcpy( target, start, end - start );
 							target[end - start] = '\0';
-							//printf("Respuesta obtenida correctamente HV channels\n");
 							strcpy(mag_str,target);
-							//printf("Respuesta copiada correctamente HV channels\n");
 							free(target);
 						}
 						else {
@@ -774,8 +803,8 @@ static void *monitoring_thread(void *arg)
 					else {
 						strcpy(mag_str,"ERROR");
 					}
-					//printf("Detectando monitoring HV\n");
-					switch(j) {
+
+					switch(j-2) {
 						case 0:
 						// If it is status, we strip the least significant bit from the string
 						mag_status = atoi(mag_str) & 0x1;
@@ -1105,7 +1134,6 @@ static void *command_thread(void *arg){
 			goto waitmsg;
 		}
 		serialized_json_msg = json_object_to_json_string(jmsg);
-		//printf("%s\n",serialized_json_msg);
 		rc = json_schema_validate("JSONSchemaSlowControl.json",serialized_json_msg, "cmd_temp.json");
 		if(rc){
 			rc = command_status_response_json (0,-EINCMD,reply);
