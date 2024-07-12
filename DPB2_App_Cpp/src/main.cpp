@@ -703,16 +703,16 @@ static void *monitoring_thread(void *arg)
 					else {
 						strcpy(mag_str,"ERROR");
 					}
-					switch (j){
-						case 5: //Output Status
+					switch (j-6){
+						case 0: //Output Status
 						if(!strcmp(mag_str,"ON"))
 							mag_value = 1;
 						else
 							mag_value= 0;
 						parsing_mon_channel_status_into_object(jlvchannels,i,lv_mag_names[j],mag_value);
 						break;
-						case 6: //Voltage Monitor
-						case 7: //Current Monitor
+						case 1: //Voltage Monitor
+						case 2: //Current Monitor
 						mag_value=atof(mag_str);
 						parsing_mon_channel_data_into_object(jlvchannels,i,lv_mag_names[j],mag_value);
 						default:
