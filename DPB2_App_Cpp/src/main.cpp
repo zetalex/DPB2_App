@@ -613,8 +613,11 @@ static void *monitoring_thread(void *arg)
 			strcpy(lv_mon_root,"$BD:0,$CMD:MON,PAR:");
 			strcpy(board_dev,"/dev/ttyUL4");
 
+			//Send Serial number
+			parsing_mon_environment_string_into_object(jlv, lv_mag_names[0],LV_SN);
+
 			//Read Environment Parameters
-			for(int i = 0 ; i < 6; i++){
+			for(int i = 1 ; i < 6; i++){
 				strcpy(lv_mon_cmd,lv_mon_root);
 				strcat(lv_mon_cmd,lv_board_words[i]);
 				strcat(lv_mon_cmd,"\r\n");
@@ -640,9 +643,6 @@ static void *monitoring_thread(void *arg)
 					strcpy(mag_str,"ERROR");
 				}
 				switch(i){
-					case 0: // Serial Number
-						parsing_mon_environment_string_into_object(jlv, lv_mag_names[i],mag_str);
-						break;
 					case 1: // Temperature
 					case 2: // BCM Temperature
 					case 3: // Relative Humidity
@@ -731,46 +731,36 @@ static void *monitoring_thread(void *arg)
 
 			json_object *jhvchannels = json_object_new_array();
 			strcpy(board_dev,"/dev/ttyUL3");
-			strcpy(hv_mon_root,"$BD:1,$CMD:MON,PAR:");
-			//Read Serial Number and Board Temperature
-			for(int j = 0; j < 2; j++) {
-				strcpy(hv_mon_cmd,hv_mon_root);
-				strcat(hv_mon_cmd,hv_board_words[j]);
-				strcat(hv_mon_cmd,"\r\n");
-				hv_lv_command_handling(board_dev,hv_mon_cmd,response);
-				// Strip the returned value from response string
-				char *target = NULL;
-				char *start, *end;
-				if ( start = strstr( response, "#CMD:OK,VAL:" ) ){
-					start += strlen( "#CMD:OK,VAL:" );
-					if ( end = strstr( start, "\r\n" ) )
-					{
-						target = ( char * )malloc( end - start + 1 );
-						memcpy( target, start, end - start );
-						target[end - start] = '\0';
-						strcpy(mag_str,target);
-						free(target);
-					}
-					else {
-						strcpy(mag_str,"ERROR");
-					}
+
+			//Read Serial Number
+			parsing_mon_environment_string_into_object(jhv,hv_mag_names[0], HV_SN);
+
+			//Read Board Temperature
+			strcpy(hv_mon_cmd,"$BD:1,$CMD:MON,PAR:BDTEMP\r\n");
+			hv_lv_command_handling(board_dev,hv_mon_cmd,response);
+
+			// Strip the returned value from response string
+			char *target = NULL;
+			char *start, *end;
+			if ( start = strstr( response, "#CMD:OK,VAL:+" ) ){
+				start += strlen( "#CMD:OK,VAL:" );
+				if ( end = strstr( start, "\r\n" ) )
+				{
+					target = ( char * )malloc( end - start + 1 );
+					memcpy( target, start, end - start );
+					target[end - start] = '\0';
+					strcpy(mag_str,target);
+					free(target);
 				}
 				else {
 					strcpy(mag_str,"ERROR");
 				}
-				switch(j){
-					case 0: // Serial number
-						parsing_mon_environment_string_into_object(jhv,hv_mag_names[j], mag_str);
-						break;
-					case 1: // Board Temperature
-						mag_value = atof(mag_str);
-						parsing_mon_environment_data_into_object(jhv,hv_mag_names[j], mag_value);
-						break;
-					default:
-						break;
-
-				}
 			}
+			else {
+				strcpy(mag_str,"ERROR");
+			}
+			mag_value = atof(mag_str);
+			parsing_mon_environment_data_into_object(jhv,hv_mag_names[1], mag_value);
 
 			//Read Channel Parameters
 			strcpy(hv_mon_root,"$BD:1,$CMD:MON,CH:");
@@ -847,13 +837,6 @@ static void *monitoring_thread(void *arg)
 		json_object_object_add(jdata,"Dig0", jdig0);
 		json_object_object_add(jdata,"Dig1", jdig1);
 		json_object_object_add(jdata,"DPB", jdpb);
-
-		//uint64_t timestamp = time(NULL)*1000;
-		/*json_object *jdevice = json_object_new_string("ID DPB");
-		json_object *jtimestamp = json_object_new_int64(timestamp);
-		json_object_object_add(jobj,"timestamp", jtimestamp);
-		json_object_object_add(jobj,"device", jdevice);
-		json_object_object_add(jobj,"data",jdata);*/
 
 		const char *serialized_json = json_object_to_json_string(jdata);
 
@@ -1153,7 +1136,7 @@ static void *command_thread(void *arg){
 		   cmd[i] = strtok(NULL, " ");
 		}
 		jobj = json_object_new_object();
-		char buff[8];
+		char buff[512];
 
 		switch(i){
 		case 5:
@@ -1163,7 +1146,7 @@ static void *command_thread(void *arg){
 			}
 			else{
 				float val = atof(cmd[4]);
-				sprintf(buff, "%3.4f", val);
+				sprintf(buff, "%f", val);
 				jstr5 = json_object_new_double_s((double) val,buff);
 			}
 		case 4:
@@ -1389,15 +1372,19 @@ int main(int argc, char *argv[]){
 	signal(SIGTERM, sighandler);
 	signal(SIGINT, sighandler);
 
-	// Check if HV and LV is there
+	// Check if HV and LV are there
 	char buffer[40];
+
 	serial_port_UL3 = open("/dev/ttyUL3",O_RDWR);
 	setup_serial_port(serial_port_UL3);
 	write(serial_port_UL3, "$BD:1,$CMD:MON,PAR:BDSNUM\r\n", strlen("$BD:1,$CMD:MON,PAR:BDSNUM\r\n"));
 	usleep(1000000);
 	n = read(serial_port_UL3, buffer, sizeof(buffer));
 	if(n){
-		printf("HV has been detected \n");
+		for(int i = 12; i <=16; i++ ){ // Take just serial number from the response
+			HV_SN[i-12] = buffer[i];
+		}
+		printf("HV has been detected: S/N %s \n",HV_SN);
 		hv_connected = 1;
 	}
 	close(serial_port_UL3);
@@ -1408,7 +1395,10 @@ int main(int argc, char *argv[]){
 	usleep(1000000);
 	n = read(serial_port_UL4, buffer, sizeof(buffer));
 	if(n){
-		printf("LV has been detected \n");
+		for(int i = 12; i <=16; i++ ){ // Take just serial number from the response
+			LV_SN[i-12] = buffer[i];
+		}
+		printf("LV has been detected: S/N %s \n", LV_SN);
 		lv_connected = 1;
 	}
 	close(serial_port_UL4);
