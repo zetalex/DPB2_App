@@ -188,9 +188,9 @@ static void *monitoring_thread(void *arg)
 	int eth_status[2];
 	int aurora_status[4];
 
-	char *curr;
-	char *volt;
-	char *pwr;
+	char curr[32] = "12Vcurrent";
+	char volt[32] = "12Vvoltage";
+	char pwr[32] = "12Vpwr";
 	int rc2;
 
 	float ams_temp[AMS_TEMP_NUM_CHAN];
@@ -575,24 +575,24 @@ static void *monitoring_thread(void *arg)
 		for(int l=0;l<INA3221_NUM_CHAN;l++){
 			switch(l){
 			case 0:
-				volt = "12Vvoltage";
-				curr = "12Vcurrent";
-				pwr = "12Vpwr";
+				strcpy(volt , "12Vvoltage");
+				strcpy(curr , "12Vcurrent");
+				strcpy(pwr , "12Vpwr");
 				break;
 			case 1:
-				volt = "3V3voltage";
-				curr = "3V3current";
-				pwr = "3V3pwr";
+				strcpy(volt , "3V3voltage");
+				strcpy(curr , "3V3current");
+				strcpy(pwr , "3V3pwr");
 				break;
 			case 2:
-				volt = "1V8voltage";
-				curr = "1V8current";
-				pwr = "1V8pwr";
+				strcpy(volt , "1V8voltage");
+				strcpy(curr , "1V8current");
+				strcpy(pwr , "1V8pwr");
 				break;
 			default:
-				volt = "12Vvoltage";
-				curr = "12Vcurrent";
-				pwr = "12Vpwr";
+				strcpy(volt , "12Vvoltage");
+				strcpy(curr , "12Vcurrent");
+				strcpy(pwr , "12Vpwr");
 			break;
 			}
 			parsing_mon_environment_data_into_object(jdpb,volt, volt_som[l]);
@@ -625,9 +625,9 @@ static void *monitoring_thread(void *arg)
 				// Strip the returned value from response string
 				char *target = NULL;
 				char *start, *end;
-				if ( start = strstr( response, "#CMD:OK,VAL:" ) ){
+				if ( (start = strstr( response, "#CMD:OK,VAL:" )) ){
 					start += strlen( "#CMD:OK,VAL:" );
-					if ( end = strstr( start, "\r\n" ) )
+					if ( (end = strstr( start, "\r\n" )) )
 					{
 						target = ( char * )malloc( end - start + 1 );
 						memcpy( target, start, end - start );
@@ -686,9 +686,9 @@ static void *monitoring_thread(void *arg)
 					// Strip the returned value from response string
 					char *target = NULL;
 					char *start, *end;
-					if ( start = strstr( response, "#CMD:OK,VAL:" ) ){
+					if ( (start = strstr( response, "#CMD:OK,VAL:" )) ){
 						start += strlen( "#CMD:OK,VAL:" );
-						if ( end = strstr( start, "\r\n" ) )
+						if (( end = strstr( start, "\r\n" )) )
 						{
 							target = ( char * )malloc( end - start + 1 );
 							memcpy( target, start, end - start );
@@ -742,9 +742,9 @@ static void *monitoring_thread(void *arg)
 			// Strip the returned value from response string
 			char *target = NULL;
 			char *start, *end;
-			if ( start = strstr( response, "#CMD:OK,VAL:+" ) ){
+			if ( (start = strstr( response, "#CMD:OK,VAL:+" )) ){
 				start += strlen( "#CMD:OK,VAL:" );
-				if ( end = strstr( start, "\r\n" ) )
+				if ( (end = strstr( start, "\r\n" )) )
 				{
 					target = ( char * )malloc( end - start + 1 );
 					memcpy( target, start, end - start );
@@ -777,9 +777,9 @@ static void *monitoring_thread(void *arg)
 					// Strip the returned value from response string
 					char *target = NULL;
 					char *start, *end;
-					if ( start = strstr( response, "#CMD:OK,VAL:" ) ){
+					if ( (start = strstr( response, "#CMD:OK,VAL:" ) )){
 						start += strlen( "#CMD:OK,VAL:" );
-						if ( end = strstr( start, "\r\n" ) )
+						if ( (end = strstr( start, "\r\n" )) )
 						{
 							target = ( char * )malloc( end - start + 1 );
 							memcpy( target, start, end - start );
@@ -1214,7 +1214,7 @@ static void *command_thread(void *arg){
 					command_status_response_json (msg_id,99,reply);
 				}
 				else if(lv_connected){	
-					char *board_dev = "/dev/ttyUL4";
+					char board_dev[64] = "/dev/ttyUL4";
 					//Command conversion
 					char hvlvcmd[40] =  "$BD:0,$CMD:";
 					rc = hv_lv_command_translation(hvlvcmd, cmd, i);
@@ -1224,7 +1224,8 @@ static void *command_thread(void *arg){
 					rc = hv_lv_command_response(board_response,reply,msg_id,cmd);
 				}
 				else{
-					rc = hv_lv_command_response("ERROR: READ operation not successful",reply,msg_id,cmd);
+					strcpy(board_response,"ERROR: READ operation not successful");
+					rc = hv_lv_command_response(board_response,reply,msg_id,cmd);
 				}
 			}
 			else if(!strcmp(cmd[1],"HV")){
@@ -1248,7 +1249,7 @@ static void *command_thread(void *arg){
 					command_status_response_json (msg_id,99,reply);
 				}
 				else if(hv_connected){
-					char *board_dev = "/dev/ttyUL3";
+					char board_dev[64] = "/dev/ttyUL3";
 					//Command conversion
 					char hvlvcmd[40] =  "$BD:1,$CMD:";
 					rc = hv_lv_command_translation(hvlvcmd, cmd, i);
@@ -1258,7 +1259,8 @@ static void *command_thread(void *arg){
 					rc = hv_lv_command_response(board_response,reply,msg_id,cmd);
 				}
 				else{
-					rc = hv_lv_command_response("ERROR: READ operation not successful",reply,msg_id,cmd);
+					strcpy(board_response,"ERROR: READ operation not successful");
+					rc = hv_lv_command_response(board_response,reply,msg_id,cmd);
 				}
 			}
 			else if(!strcmp(cmd[1],"Dig0")){
@@ -1331,7 +1333,6 @@ int main(int argc, char *argv[]){
 	//Enable Main CPUs of both HV and LV
 	write_GPIO(LV_MAIN_CPU_GPIO_OFFSET,1);
 	write_GPIO(HV_MAIN_CPU_GPIO_OFFSET,1);
-
 
 	key_t sharedMemoryKey = MEMORY_KEY;
 	memoryID = shmget(sharedMemoryKey, sizeof(struct wrapper), IPC_CREAT | 0600);
@@ -1407,7 +1408,7 @@ int main(int argc, char *argv[]){
 		lv_connected = 1;
 	}
 	close(serial_port_UL4);
-	
+
 	sem_init(&thread_sync,0,0);
 
 	/* Block all real time signals so they can be used for the timers.
