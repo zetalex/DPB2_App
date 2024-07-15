@@ -875,6 +875,8 @@ static void *i2c_alarms_thread(void *arg){
 		printf("Error\r\n");
 		return NULL;
 	}
+	int hv_alarms_period = 700000/periods[1]; //in us
+	int hv_count = 0;
 	sem_post(&thread_sync);
 	while(1){
 		rc = eth_down_alarm("eth0",&eth0_flag);
@@ -957,9 +959,12 @@ static void *i2c_alarms_thread(void *arg){
 		}
 		sem_post(&i2c_sync); //Free semaphore to sync I2C usage
 
-		//HV alarm parsing
-		if(hv_connected)
+		//HV alarm parsing only each certain period multiple of alarm thread period
+		hv_count++;
+		if(hv_connected && hv_count == hv_alarms_period ){
+			hv_count = 0;
 			hv_read_alarms();
+		}
 
 		wait_period(&info);
 	}
