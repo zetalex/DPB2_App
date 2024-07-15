@@ -761,6 +761,7 @@ static void *monitoring_thread(void *arg)
 				switch(j){
 					case 0: // Serial number
 						parsing_mon_environment_string_into_object(jhv,hv_mag_names[j], mag_str);
+						break;
 					case 1: // Board Temperature
 						mag_value = atof(mag_str);
 						parsing_mon_environment_data_into_object(jhv,hv_mag_names[j], mag_value);
