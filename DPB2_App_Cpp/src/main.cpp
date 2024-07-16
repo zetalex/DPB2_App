@@ -1,7 +1,7 @@
 /*
  *
  * @date   12-04-2024
- * @author Borja Martínez Sánchez
+ * @author Borja Martínez Sánchez , Alejandro Gómez Gambín
  */
 
 /************************** Libraries includes *****************************/
@@ -55,10 +55,13 @@ pthread_t t_2;
 pthread_t t_3;
 /** @brief Command Handling Thread */
 pthread_t t_4;
-/** @} */
-
+/** @brief periods for each of the threads in order (1 = AMS alarms 2= Other alarms 3= Monitoring 4 = Command handling) */
 int periods[4];
 
+/** @} */
+
+int break_flag = 0;
+struct DPB_I2cSensors data;
 /******************************************************************************
 *Threads timers (ms).
 ****************************************************************************/
@@ -143,31 +146,45 @@ int iio_event_monitor_up() {
     }
     return 0;
 }
+/** @} */
 
 /************************** Signal Handling function declaration ******************************/
+/** @defgroup  sighandler Signal Handlers implementation
+ *  All the dpb slow control application signal handlers for different termination and error signals
+ *  @{
+ */
 /**
  * Handles termination signals, kills every subprocess
  *
- * @param int signum: Signal ID
+ * @param signum Signal ID
  *
  * @return void
  */
 void sighandler(int signum) {
    kill(child_pid,SIGKILL);
-   pthread_cancel(t_1); //End threads
-   pthread_cancel(t_2); //End threads
+   //End threads
+   pthread_cancel(t_1);
+   pthread_cancel(t_2);
+   pthread_cancel(t_4);
+   pthread_cancel(t_3);
 
-   pthread_cancel(t_4); //End threads
-   pthread_cancel(t_3); //End threads
    pthread_join(t_1,NULL);
    pthread_join(t_2,NULL);
    pthread_join(t_3,NULL);
    pthread_join(t_4,NULL);
-   lib_close();
+
+   dpbsc_lib_close(&data);
    break_flag = 1;
    return ;
 }
 
+/**
+ * Handles segmentation fault signals, prints backtrace
+ *
+ * @param sig Signal ID, should be -11 (SEGV)
+ *
+ * @return this function should not return,it quits the program executing exit
+ */
 void segmentation_handler(int sig) {
 	void *array[10];
 	  size_t size;
@@ -182,14 +199,14 @@ void segmentation_handler(int sig) {
 }
 /** @} */
 /************************** Threads declaration ******************************/
-/** @defgroup threads All the dpb slow control application threads implementation
- *  Threads implementation
+/** @defgroup threads Threads implementation
+ *  All the dpb slow control application threads implementation
  *  @{
  */
 /**
  * Periodic thread that every x seconds reads every magnitude of every sensor available and stores it.
  *
- * @param void *arg: must contain a struct with every I2C device that wants to be monitored
+ * @param arg must contain a struct with every I2C device that wants to be monitored
  *
  * @return NULL (if exits is because of an error).
  */
@@ -891,7 +908,7 @@ static void *monitoring_thread(void *arg)
  * Periodic thread that every x seconds reads every alarm of every I2C sensor available and handles the interruption.
  * It also deals with Ethernet and GPIO Alarms.
  *
- * @param void *arg: must contain a struct with every I2C device that wants to be monitored
+ * @param arg must contain a struct with every I2C device that wants to be monitored
  *
  * @return  NULL (if exits is because of an error).
  */
@@ -1006,7 +1023,7 @@ static void *i2c_alarms_thread(void *arg){
  * Periodic thread that is waiting for an alarm from any Xilinx AMS channel, the alarm is presented as an event,
  * events are reported by IIO EVENT MONITOR through shared memory.
  *
- * @param void *arg: NULL
+ * @param arg must be NULL
  *
  * @return  NULL (if exits is because of an error).
  */
@@ -1110,7 +1127,7 @@ static void *ams_alarms_thread(void *arg){
 /**
  * Periodic thread that is waiting for a command from the DAQ and handling it
  *
- * @param void *arg: NULL
+ * @param arg must be NULL
  *
  * @return  NULL (if exits is because of an error).
  */
@@ -1327,7 +1344,6 @@ int main(int argc, char *argv[]){
 	sigset_t alarm_sig;
 	int i;
 	int rc;
-	struct DPB_I2cSensors data;
 	int serial_port_UL3;
 	int serial_port_UL4;
 	int	n;
@@ -1352,64 +1368,27 @@ int main(int argc, char *argv[]){
 			periods[i-1] = atoi(argv[i]);
 	}
 
-	populate_lv_hash_table(LV_CMD_TABLE_SIZE,lv_daq_words,lv_board_words);
-	populate_hv_hash_table(HV_CMD_TABLE_SIZE,hv_daq_words,hv_board_words);
-	rc = init_semaphores();
-	if(rc)
-		exit(1);
+	rc = dpbsc_lib_init(&data);
+	if(rc){
+		goto end;
+	}
 
-	get_GPIO_base_address(&GPIO_BASE_ADDRESS);
+	rc = iio_event_monitor_up(); //Initialize iio event monitor
+	if (rc) {
+		printf("Error\r\n");
+		return rc;
+	}
 	// Enable HV LV driver
 	write_GPIO(HVLV_DRV_ENABLE_GPIO_OFFSET,1);
 	//Enable Main CPUs of both HV and LV
 	write_GPIO(LV_MAIN_CPU_GPIO_OFFSET,1);
 	write_GPIO(HV_MAIN_CPU_GPIO_OFFSET,1);
 
-	key_t sharedMemoryKey = MEMORY_KEY;
-	memoryID = shmget(sharedMemoryKey, sizeof(struct wrapper), IPC_CREAT | 0600);
-	if (memoryID == -1) {
-	     perror("shmget():");
-	     exit(1);
-	}
-
-	memory = static_cast<wrapper *>(shmat(memoryID, NULL, 0));
-	if (memory == (void *) -1) {
-	    perror("shmat():");
-	    exit(1);
-	}
-
-	strcpy(memory->ev_type,"");
-	strcpy(memory->ch_type,"");
-	sem_init(&memory->ams_sync, 1, 0);
-	sem_init(&memory->empty, 1, 1);
-	sem_init(&memory->full, 1, 0);
-	memory->chn = 0;
-	memory->tmpstmp = 0;
-
-	if (memoryID == -1) {
-	    perror("shmget(): ");
-	    exit(1);
-	 }
-	rc = zmq_socket_init(); //Initialize ZMQ Sockets
-	if (rc) {
-		printf("Error\r\n");
-		goto end;
-	}
-	rc = init_I2cSensors(&data); //Initialize i2c sensors
-	if (rc) {
-		printf("Error\r\n");
-		goto end;
-	}
-	rc = iio_event_monitor_up(); //Initialize iio event monitor
-	if (rc) {
-		printf("Error\r\n");
-		goto end;
-	}
-
+	// Create Signal handlers
 	signal(SIGTERM, sighandler);
 	signal(SIGINT, sighandler);
-
 	signal(SIGSEGV, segmentation_handler);
+
 	// Check if HV and LV are there
 	char buffer[40];
 
@@ -1468,12 +1447,5 @@ int main(int argc, char *argv[]){
 		}
 	}
 end:
-    zmq_close(mon_publisher);
-    zmq_close(alarm_publisher);
-    zmq_close(cmd_router);
-    zmq_ctx_shutdown(zmq_context);
-    zmq_ctx_destroy(zmq_context);
-	stop_I2cSensors(&data);
-
 	return 0;
 }
