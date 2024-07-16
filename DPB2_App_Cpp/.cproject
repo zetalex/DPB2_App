@@ -75,11 +75,11 @@
                                     								
                                 </option>
                                 								
-                                <option id="xilinx.gnu.compiler.misc.other.1485449645" name="Other flags" superClass="xilinx.gnu.compiler.misc.other" useByScannerDiscovery="false" value="-c -fmessage-length=0 -MT&quot;$@&quot; -fpermissive" valueType="string"/>
+                                <option id="xilinx.gnu.compiler.misc.other.1485449645" name="Other flags" superClass="xilinx.gnu.compiler.misc.other" useByScannerDiscovery="false" value="-c -fmessage-length=0 -MT&quot;$@&quot;" valueType="string"/>
                                 								
                                 <option id="xilinx.gnu.compiler.option.optimization.flags.766111201" name="Other optimization flags" superClass="xilinx.gnu.compiler.option.optimization.flags" useByScannerDiscovery="false" value="-fpermissive" valueType="string"/>
                                 								
-                                <option id="xilinx.gnu.compiler.dircategory.includes.423823546" superClass="xilinx.gnu.compiler.dircategory.includes" useByScannerDiscovery="false" valueType="includePath">
+                                <option id="xilinx.gnu.compiler.dircategory.includes.423823546" name="Include Paths" superClass="xilinx.gnu.compiler.dircategory.includes" useByScannerDiscovery="false" valueType="includePath">
                                     									
                                     <listOptionValue builtIn="false" value="&quot;${workspace_loc:/DBP2_Platform/export/DBP2_Platform/sw/DBP2_Platform/linux_domain/sysroot/cortexa72-cortexa53-xilinx-linux/usr/include}&quot;"/>
                                     								
@@ -148,6 +148,8 @@
                                     <listOptionValue builtIn="false" value="&quot;${workspace_loc:/DBP2_Platform/export/DBP2_Platform/sw/DBP2_Platform/linux_domain/sysroot/cortexa72-cortexa53-xilinx-linux/usr/lib}&quot;"/>
                                     								
                                 </option>
+                                								
+                                <option id="xilinx.gnu.c.link.option.ldflags.144067781" name="Linker Flags" superClass="xilinx.gnu.c.link.option.ldflags" useByScannerDiscovery="false" value="" valueType="string"/>
                                 								
                                 <inputType id="xilinx.gnu.linker.input.856055998" superClass="xilinx.gnu.linker.input">
                                     									
@@ -253,11 +255,13 @@
                                     								
                                 </option>
                                 								
-                                <option id="xilinx.gnu.compiler.dircategory.includes.242932502" superClass="xilinx.gnu.compiler.dircategory.includes" useByScannerDiscovery="false" valueType="includePath">
+                                <option id="xilinx.gnu.compiler.dircategory.includes.242932502" name="Include Paths" superClass="xilinx.gnu.compiler.dircategory.includes" useByScannerDiscovery="false" valueType="includePath">
                                     									
                                     <listOptionValue builtIn="false" value="&quot;${workspace_loc:/DBP2_Platform/export/DBP2_Platform/sw/DBP2_Platform/linux_domain/sysroot/cortexa72-cortexa53-xilinx-linux/usr/include}&quot;"/>
                                     								
                                 </option>
+                                								
+                                <option id="xilinx.gnu.compiler.misc.other.365235648" name="Other flags" superClass="xilinx.gnu.compiler.misc.other" useByScannerDiscovery="false" value="-c -fmessage-length=0 -MT&quot;$@&quot;" valueType="string"/>
                                 								
                                 <inputType id="xilinx.gnu.arm.a53.linux.cxx.compiler.input.791647254" name="C++ source files" superClass="xilinx.gnu.arm.a53.linux.cxx.compiler.input"/>
                                 							
@@ -322,6 +326,8 @@
                                     <listOptionValue builtIn="false" value="&quot;${workspace_loc:/DBP2_Platform/export/DBP2_Platform/sw/DBP2_Platform/linux_domain/sysroot/cortexa72-cortexa53-xilinx-linux/usr/lib}&quot;"/>
                                     								
                                 </option>
+                                								
+                                <option id="xilinx.gnu.c.link.option.ldflags.2003935937" name="Linker Flags" superClass="xilinx.gnu.c.link.option.ldflags" useByScannerDiscovery="false" value="" valueType="string"/>
                                 								
                                 <inputType id="xilinx.gnu.linker.input.260791404" superClass="xilinx.gnu.linker.input">
                                     									

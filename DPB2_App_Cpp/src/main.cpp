@@ -21,7 +21,7 @@ extern "C"
 #include <signal.h>
 #include <regex.h>
 #include "linux/errno.h"
-
+#include <execinfo.h>
 }
 
 #include <dpb2sc.h>
@@ -72,6 +72,7 @@ int periods[4];
 
 int iio_event_monitor_up();
 void sighandler(int );
+void segmentation_handler(int );
 static void *monitoring_thread(void *);
 static void *i2c_alarms_thread(void *);
 static void *ams_alarms_thread(void *);
@@ -165,6 +166,19 @@ void sighandler(int signum) {
    lib_close();
    break_flag = 1;
    return ;
+}
+
+void segmentation_handler(int sig) {
+	void *array[10];
+	  size_t size;
+
+	  // get void*'s for all entries on the stack
+	  size = backtrace(array, 10);
+
+	  // print out all the frames to stderr
+	  fprintf(stderr, "Error: signal %d:\n", sig);
+	  backtrace_symbols_fd(array, size, STDERR_FILENO);
+	  exit(1);
 }
 /** @} */
 /************************** Threads declaration ******************************/
@@ -630,9 +644,14 @@ static void *monitoring_thread(void *arg)
 					if ( (end = strstr( start, "\r\n" )) )
 					{
 						target = ( char * )malloc( end - start + 1 );
-						memcpy( target, start, end - start );
-						target[end - start] = '\0';
-						strcpy(mag_str,target);
+						if(target){
+							memcpy( target, start, end - start );
+							target[end - start] = '\0';
+							strcpy(mag_str,target);
+						}
+						else{
+							strcpy(mag_str,"ERROR");
+						}
 						free(target);
 					}
 					else {
@@ -693,7 +712,8 @@ static void *monitoring_thread(void *arg)
 							target = ( char * )malloc( end - start + 1 );
 							memcpy( target, start, end - start );
 							target[end - start] = '\0';
-							strcpy(mag_str,target);
+							if(target)
+								strcpy(mag_str,target);
 							free(target);
 						}
 						else {
@@ -747,9 +767,14 @@ static void *monitoring_thread(void *arg)
 				if ( (end = strstr( start, "\r\n" )) )
 				{
 					target = ( char * )malloc( end - start + 1 );
-					memcpy( target, start, end - start );
-					target[end - start] = '\0';
-					strcpy(mag_str,target);
+					if(target){
+						memcpy( target, start, end - start );
+						target[end - start] = '\0';
+						strcpy(mag_str,target);
+					}
+					else{
+						strcpy(mag_str,"ERROR");
+					}
 					free(target);
 				}
 				else {
@@ -782,10 +807,16 @@ static void *monitoring_thread(void *arg)
 						if ( (end = strstr( start, "\r\n" )) )
 						{
 							target = ( char * )malloc( end - start + 1 );
-							memcpy( target, start, end - start );
-							target[end - start] = '\0';
-							strcpy(mag_str,target);
+							if(target){
+								memcpy( target, start, end - start );
+								target[end - start] = '\0';
+								strcpy(mag_str,target);
+							}
+							else{
+								strcpy(mag_str,"ERROR");
+							}
 							free(target);
+
 						}
 						else {
 							strcpy(mag_str,"ERROR");
@@ -1378,6 +1409,7 @@ int main(int argc, char *argv[]){
 	signal(SIGTERM, sighandler);
 	signal(SIGINT, sighandler);
 
+	signal(SIGSEGV, segmentation_handler);
 	// Check if HV and LV are there
 	char buffer[40];
 
