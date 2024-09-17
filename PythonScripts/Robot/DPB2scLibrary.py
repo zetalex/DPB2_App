@@ -11,7 +11,8 @@ import time
 import subprocess
 from robot.api import logger
 from robotremoteserver import RobotRemoteServer
-
+import faulthandler
+faulthandler.enable()
 
 class DPB2scLibrary(object):
     def find_and_load_library(self,pattern, directory):
@@ -129,7 +130,7 @@ class DPB2scLibrary(object):
         """Destroys class
         """ 
         # Send termination signal to the libdpb2sc library
-        self.dpb2sc.lib_close(ctypes.c_int(15))
+        self.dpb2sc.dpbsc_lib_close(self.structure_i2c)
         # Close iio_monitor
         os.killpg(os.getpgid(self.iio_command.pid), signal.SIGTERM)
         # Set all ethernet interfaces to ON
@@ -825,7 +826,7 @@ class DPB2scLibrary(object):
             output = result.stdout
 
             # Busca la expresión IIO_MONITOR en la salida utilizando una expresión regular
-            if not re.search(r'IIO_MONITOR -a /dev/iio:device0', output):
+            if not re.search(r'\bIIO_MONITOR -a /dev/iio:device0\b', output):
                 raise AssertionError('Failed to run IIO Event Monitor')
 
         except subprocess.SubprocessError as e:
