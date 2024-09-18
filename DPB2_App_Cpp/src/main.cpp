@@ -22,10 +22,9 @@ extern "C"
 #include <regex.h>
 #include "linux/errno.h"
 #include <execinfo.h>
-}
+
 
 #include <dpb2sc.h>
-#include <iostream>
 
 /******************************************************************************
 *Local Semaphores.
@@ -1448,4 +1447,5 @@ int main(int argc, char *argv[]){
 	}
 end:
 	return 0;
+}
 }
