@@ -900,7 +900,7 @@ static void *monitoring_thread(void *arg)
 		json_object_put(jdata);
 		wait_period(&info);
 	}
-	//stop_I2cSensors(&data);
+	//stop_I2cSensors(&data);//
 	return NULL;
 }
 /**
