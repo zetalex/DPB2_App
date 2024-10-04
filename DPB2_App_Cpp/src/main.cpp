@@ -5,6 +5,10 @@
  */
 
 /************************** Libraries includes *****************************/
+// COPacket includes
+#include <common/protocols/COPacket/COPacket.hpp>
+#include <COPacketCmdHkDig.h>
+
 extern "C"
 {
 #include <stdio.h>
@@ -61,6 +65,7 @@ int periods[4];
 
 int break_flag = 0;
 struct DPB_I2cSensors data;
+extern _COPacketCmdList HkDigCmdList;
 /******************************************************************************
 *Threads timers (ms).
 ****************************************************************************/
@@ -1113,9 +1118,9 @@ int main(int argc, char *argv[]){
 	sigset_t alarm_sig;
 	int i;
 	int rc;
-	int serial_port_UL3;
-	int serial_port_UL4;
+	int serial_port_fd;
 	int	n;
+	CCOPacket pkt(COPKT_DEFAULT_START, COPKT_DEFAULT_STOP, COPKT_DEFAULT_SEP);
 
 	for(int i = 1 ; i < 5; i++) {
 		if(argc <= i)
@@ -1157,15 +1162,52 @@ int main(int argc, char *argv[]){
 	signal(SIGTERM, sighandler);
 	signal(SIGINT, sighandler);
 	signal(SIGSEGV, segmentation_handler);
-
-	// Check if HV and LV are there
+	// Check if Dig0 and Dig1 are there
 	char buffer[40];
 
-	serial_port_UL3 = open("/dev/ttyUL3",O_RDWR);
-	setup_serial_port(serial_port_UL3);
-	write(serial_port_UL3, "$BD:1,$CMD:MON,PAR:BDSNUM\r\n", strlen("$BD:1,$CMD:MON,PAR:BDSNUM\r\n"));
+	serial_port_fd = open("/dev/ttyUL1",O_RDWR);
+	setup_serial_port(serial_port_fd);
+	pkt.CreatePacket(buffer, HkDigCmdList.CmdList[HKDIG_GET_GW_VER].CmdString);
+	write(serial_port_fd, buffer, strlen(buffer));
 	usleep(1000000);
-	n = read(serial_port_UL3, buffer, sizeof(buffer));
+	n = read(serial_port_fd, buffer, sizeof(buffer));
+	if(n){
+		pkt.LoadString(buffer);
+		int16_t cmd_id = pkt.GetNextFiedlAsCOMMAND(HkDigCmdList);
+		uint16_t gw_ver;
+		pkt.GetNextFieldAsUINT16(gw_ver);
+		sprintf(DIG0_SN,"%d",gw_ver);
+		printf("Digitizer 0 has been detected: GW Version %s \n",DIG0_SN);
+		dig0_connected = 1;
+	}
+	close(serial_port_fd);
+	
+	serial_port_fd = open("/dev/ttyUL2",O_RDWR);
+	setup_serial_port(serial_port_fd);
+	pkt.CreatePacket(buffer, HkDigCmdList.CmdList[HKDIG_GET_GW_VER].CmdString);
+	write(serial_port_fd, buffer, strlen(buffer));
+	usleep(1000000);
+	n = read(serial_port_fd, buffer, sizeof(buffer));
+	if(n){
+		pkt.LoadString(buffer);
+		int16_t cmd_id = pkt.GetNextFiedlAsCOMMAND(HkDigCmdList);
+		if(cmd_id == HKDIG_GET_GW_VER){	
+			uint16_t gw_ver;
+			pkt.GetNextFieldAsUINT16(gw_ver);
+			sprintf(DIG1_SN,"%d",gw_ver);
+			printf("Digitizer 1 has been detected: S/N %s \n",DIG1_SN);
+			dig1_connected = 1;
+		}
+	}
+	close(serial_port_fd);
+
+	// Check if HV and LV are there
+
+	serial_port_fd = open("/dev/ttyUL3",O_RDWR);
+	setup_serial_port(serial_port_fd);
+	write(serial_port_fd, "$BD:1,$CMD:MON,PAR:BDSNUM\r\n", strlen("$BD:1,$CMD:MON,PAR:BDSNUM\r\n"));
+	usleep(1000000);
+	n = read(serial_port_fd, buffer, sizeof(buffer));
 	if(n){
 		for(int i = 12; i <=16; i++ ){ // Take just serial number from the response
 			HV_SN[i-12] = buffer[i];
@@ -1173,13 +1215,13 @@ int main(int argc, char *argv[]){
 		printf("HV has been detected: S/N %s \n",HV_SN);
 		hv_connected = 1;
 	}
-	close(serial_port_UL3);
+	close(serial_port_fd);
 
-	serial_port_UL4 = open("/dev/ttyUL4",O_RDWR);
-	setup_serial_port(serial_port_UL4);
-	write(serial_port_UL4, "$BD:0,$CMD:MON,PAR:BDSNUM\r\n", strlen("$BD:0,$CMD:MON,PAR:BDSNUM\r\n"));
+	serial_port_fd = open("/dev/ttyUL4",O_RDWR);
+	setup_serial_port(serial_port_fd);
+	write(serial_port_fd, "$BD:0,$CMD:MON,PAR:BDSNUM\r\n", strlen("$BD:0,$CMD:MON,PAR:BDSNUM\r\n"));
 	usleep(1000000);
-	n = read(serial_port_UL4, buffer, sizeof(buffer));
+	n = read(serial_port_fd, buffer, sizeof(buffer));
 	if(n){
 		for(int i = 12; i <=16; i++ ){ // Take just serial number from the response
 			LV_SN[i-12] = buffer[i];
@@ -1187,7 +1229,7 @@ int main(int argc, char *argv[]){
 		printf("LV has been detected: S/N %s \n", LV_SN);
 		lv_connected = 1;
 	}
-	close(serial_port_UL4);
+	close(serial_port_fd);
 
 	sem_init(&thread_sync,0,0);
 
