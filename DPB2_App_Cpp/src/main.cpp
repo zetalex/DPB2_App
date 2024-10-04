@@ -1076,10 +1076,17 @@ static void *command_thread(void *arg){
 					//Command conversion
 					char hvlvcmd[40] =  "$BD:1,$CMD:";
 					rc = hv_lv_command_translation(hvlvcmd, cmd, words_n);
+					if(rc){
+						printf("HV/LV Command not valid \n");
+						strcpy(board_response,"ERROR: READ operation not successful");
+						rc = hv_lv_command_response(board_response,reply,msg_id,cmd);
+					}
+					else{
 					//RS485 communication
 					rc = hv_lv_command_handling(board_dev,hvlvcmd, board_response);
 					// Generate the JSON message depending on reading or setting
 					rc = hv_lv_command_response(board_response,reply,msg_id,cmd);
+					}
 				}
 				else{
 					strcpy(board_response,"ERROR: READ operation not successful");
@@ -1091,10 +1098,18 @@ static void *command_thread(void *arg){
 				char board_response[32];
 				//Command conversion
 				rc = dig_command_translation(digcmd, cmd, words_n);
-				//Serial Port Communication
-				rc = dig_command_handling(0, digcmd, board_response);
-				// Generate the JSON message depending on reading or setting
-				rc = dig_command_response(board_response,reply,msg_id,cmd);
+				if(rc){
+					printf("DIG0 Command not valid \n");
+					strcpy(board_response,"ERROR: READ operation not successful");
+					rc = hv_lv_command_response(board_response,reply,msg_id,cmd);
+				}
+				else{
+					//Serial Port Communication
+					rc = dig_command_handling(0, digcmd, board_response);
+					// Generate the JSON message depending on reading or setting
+					rc = dig_command_response(board_response,reply,msg_id,cmd);
+					printf("%s\n",reply);
+				}
 
 			}
 			else if(!strcmp(cmd[1],"DIG1")){
@@ -1102,10 +1117,17 @@ static void *command_thread(void *arg){
 				char board_response[32];
 				//Command conversion
 				rc = dig_command_translation(digcmd, cmd, words_n);
-				//Serial Port Communication
-				rc = dig_command_handling(1, digcmd, board_response);
-				// Generate the JSON message depending on reading or setting
-				rc = dig_command_response(board_response,reply,msg_id,cmd);
+				if(rc){
+					printf("DIG1 Command not valid \n");
+					strcpy(board_response,"ERROR: READ operation not successful");
+					rc = hv_lv_command_response(board_response,reply,msg_id,cmd);
+				}
+				else{
+					//Serial Port Communication
+					rc = dig_command_handling(1, digcmd, board_response);
+					// Generate the JSON message depending on reading or setting
+					rc = dig_command_response(board_response,reply,msg_id,cmd);
+				}
 			}
 			else{ //DPB
 				rc = dpb_command_handling(data,cmd,msg_id,reply);
