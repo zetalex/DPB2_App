@@ -1009,6 +1009,7 @@ static void *command_thread(void *arg){
 		}
 		//Check JSON schema valid
 		serialized_json = json_object_to_json_string(jobj);
+		// TODO: Add digitizer commands to the JSON schema before removing this comment
 		//rc = json_schema_validate("JSONSchemaCommandRequest.json",serialized_json, "cmd_temp.json");
 		rc= 0;
 		if(rc){
@@ -1093,7 +1094,7 @@ static void *command_thread(void *arg){
 					command_response_string_json(msg_id,board_response,reply);
 				}
 			}
-			else if(!strcmp(cmd[1],"DIG0")){
+			else if(!strcmp(cmd[1],"DIG0")){ //Digitizer 0
 				char digcmd[32];
 				char board_response[32];
 				//Command conversion
@@ -1111,7 +1112,7 @@ static void *command_thread(void *arg){
 				}
 
 			}
-			else if(!strcmp(cmd[1],"DIG1")){
+			else if(!strcmp(cmd[1],"DIG1")){ //Digitizer 1
 				char digcmd[32];
 				char board_response[32];
 				//Command conversion
