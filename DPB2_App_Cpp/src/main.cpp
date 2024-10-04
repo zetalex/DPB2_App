@@ -1079,7 +1079,7 @@ static void *command_thread(void *arg){
 					if(rc){
 						printf("HV/LV Command not valid \n");
 						strcpy(board_response,"ERROR: READ operation not successful");
-						rc = hv_lv_command_response(board_response,reply,msg_id,cmd);
+						command_response_string_json(msg_id,board_response,reply);
 					}
 					else{
 					//RS485 communication
@@ -1090,7 +1090,7 @@ static void *command_thread(void *arg){
 				}
 				else{
 					strcpy(board_response,"ERROR: READ operation not successful");
-					rc = hv_lv_command_response(board_response,reply,msg_id,cmd);
+					command_response_string_json(msg_id,board_response,reply);
 				}
 			}
 			else if(!strcmp(cmd[1],"DIG0")){
@@ -1101,14 +1101,13 @@ static void *command_thread(void *arg){
 				if(rc){
 					printf("DIG0 Command not valid \n");
 					strcpy(board_response,"ERROR: READ operation not successful");
-					rc = hv_lv_command_response(board_response,reply,msg_id,cmd);
+					command_response_string_json(msg_id,board_response,reply);
 				}
 				else{
 					//Serial Port Communication
 					rc = dig_command_handling(0, digcmd, board_response);
 					// Generate the JSON message depending on reading or setting
 					rc = dig_command_response(board_response,reply,msg_id,cmd);
-					printf("%s\n",reply);
 				}
 
 			}
@@ -1120,7 +1119,7 @@ static void *command_thread(void *arg){
 				if(rc){
 					printf("DIG1 Command not valid \n");
 					strcpy(board_response,"ERROR: READ operation not successful");
-					rc = hv_lv_command_response(board_response,reply,msg_id,cmd);
+					command_response_string_json(msg_id,board_response,reply);
 				}
 				else{
 					//Serial Port Communication
