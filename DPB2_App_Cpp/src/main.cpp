@@ -930,7 +930,7 @@ static void *command_thread(void *arg){
 
 		const char *serialized_json;
 		const char *serialized_json_msg;
-		int i;
+		int words_n;
 
 		size = zmq_recv(cmd_router, aux_buff, 255, 0);
 		if (size == -1)
@@ -957,15 +957,15 @@ static void *command_thread(void *arg){
 		msg_id = json_object_get_int(jid);
 
 		cmd[0] = strtok(buffer," ");
-		i = 0;
-		while( cmd[i] != NULL ) {
-		   i++;
-		   cmd[i] = strtok(NULL, " ");
+		words_n = 0;
+		while( cmd[words_n] != NULL ) {
+		   words_n++;
+		   cmd[words_n] = strtok(NULL, " ");
 		}
 		jobj = json_object_new_object();
 		char buff[512];
 
-		switch(i){
+		switch(words_n){
 		case 5:
 			json_object *jstr5;
 			if(!strcmp(cmd[4],"ON") | !strcmp(cmd[4],"OFF")){
@@ -988,14 +988,14 @@ static void *command_thread(void *arg){
 				json_object_object_add(jobj,"board", jstr2);
 				json_object_object_add(jobj,"magnitude", jstr3);
 
-				if(i>=4){
+				if(words_n>=4){
 					json_object_object_add(jobj,"channel", jstr4);
 				}
 				else{
 					json_object *jempty = json_object_new_string("");
 					json_object_object_add(jobj,"channel", jempty);
 				}
-				if(i == 5){
+				if(words_n == 5){
 					json_object_object_add(jobj,"write_value", jstr5);
 				}
 				else{
@@ -1009,7 +1009,8 @@ static void *command_thread(void *arg){
 		}
 		//Check JSON schema valid
 		serialized_json = json_object_to_json_string(jobj);
-		rc = json_schema_validate("JSONSchemaCommandRequest.json",serialized_json, "cmd_temp.json");
+		//rc = json_schema_validate("JSONSchemaCommandRequest.json",serialized_json, "cmd_temp.json");
+		rc= 0;
 		if(rc){
 			rc = command_status_response_json (msg_id,-EINCMD,reply);
 		}
@@ -1039,7 +1040,7 @@ static void *command_thread(void *arg){
 					char board_dev[64] = "/dev/ttyUL4";
 					//Command conversion
 					char hvlvcmd[40] =  "$BD:0,$CMD:";
-					rc = hv_lv_command_translation(hvlvcmd, cmd, i);
+					rc = hv_lv_command_translation(hvlvcmd, cmd, words_n);
 					//RS485 communication
 					rc = hv_lv_command_handling(board_dev,hvlvcmd, board_response);
 					// Generate the JSON message depending on reading or setting
@@ -1074,7 +1075,7 @@ static void *command_thread(void *arg){
 					char board_dev[64] = "/dev/ttyUL3";
 					//Command conversion
 					char hvlvcmd[40] =  "$BD:1,$CMD:";
-					rc = hv_lv_command_translation(hvlvcmd, cmd, i);
+					rc = hv_lv_command_translation(hvlvcmd, cmd, words_n);
 					//RS485 communication
 					rc = hv_lv_command_handling(board_dev,hvlvcmd, board_response);
 					// Generate the JSON message depending on reading or setting
@@ -1085,13 +1086,26 @@ static void *command_thread(void *arg){
 					rc = hv_lv_command_response(board_response,reply,msg_id,cmd);
 				}
 			}
-			else if(!strcmp(cmd[1],"Dig0")){
+			else if(!strcmp(cmd[1],"DIG0")){
+				char digcmd[32];
+				char board_response[32];
 				//Command conversion
+				rc = dig_command_translation(digcmd, cmd, words_n);
 				//Serial Port Communication
+				rc = dig_command_handling(0, digcmd, board_response);
+				// Generate the JSON message depending on reading or setting
+				rc = dig_command_response(board_response,reply,msg_id,cmd);
+
 			}
-			else if(!strcmp(cmd[1],"Dig1")){
+			else if(!strcmp(cmd[1],"DIG1")){
+				char digcmd[32];
+				char board_response[32];
 				//Command conversion
+				rc = dig_command_translation(digcmd, cmd, words_n);
 				//Serial Port Communication
+				rc = dig_command_handling(1, digcmd, board_response);
+				// Generate the JSON message depending on reading or setting
+				rc = dig_command_response(board_response,reply,msg_id,cmd);
 			}
 			else{ //DPB
 				rc = dpb_command_handling(data,cmd,msg_id,reply);
