@@ -447,21 +447,54 @@ static void *monitoring_thread(void *arg)
 				dig_command_handling(DIGITIZER_0,digcmd,dig_response);
 				pktError = pkt.LoadString(dig_response);
 				int16_t cmdIdx = pkt.GetNextFiedlAsCOMMAND(HkDigCmdList);
-				if(cmdIdx == HKDIG_ERRO){
-					strcpy(dig_mag_str, "ERROR");
-				}
-				else{
-					dig_mag_str = pkt.GetNextField();
-					if(cmdIdx == HKDIG_GET_CLOCK){
+				switch(cmdIdx){
+					//String
+					case HKDIG_GET_GW_VER:
+    				case HKDIG_GET_SW_VER:
+    				case HKDIG_GET_BOARD_STATUS:
+    				case HKDIG_GET_BOARD_CNTRL:
+					case HKDIG_GET_RMON_T:
+					case HKDIG_GET_TLNK_LOCK:
+						dig_mag_str = pkt.GetNextField();
+						parsing_mon_environment_string_into_object(jdig0, dig_monitor_mag_board_names[i],dig_mag_str);
+						break;
+					//Float
+					case HKDIG_GET_BOARD_3V3A:
+					case HKDIG_GET_BOARD_12VA:
+					case HKDIG_GET_BOARD_I12V:
+					case HKDIG_GET_BOARD_5V0A:
+					case HKDIG_GET_BOARD_5V0F:
+					case HKDIG_GET_BOARD_C12V:
+					case HKDIG_GET_BOARD_I5VF:
+					case HKDIG_GET_BOARD_I3V3A:
+					case HKDIG_GET_BOARD_I12VA:
+					case HKDIG_GET_BOARD_TU40:
+					case HKDIG_GET_BOARD_TU41:
+					case HKDIG_GET_BOARD_TU45:
+					// BME280 commands
+					case HKDIG_GET_BME_TCAL:
+					case HKDIG_GET_BME_HCAL:				
+					case HKDIG_GET_BME_PCAL:
+						pkt.GetNextFieldAsFLOAT(dig_value);
+						parsing_mon_environment_data_into_object(jdig0, dig_monitor_mag_board_names[i],dig_value);
+						break;				
+					//Clock
+					case HKDIG_GET_CLOCK:
 						if(!strcmp(dig_mag_str,"0")){
 							strcpy(dig_mag_str,"Local");
 						}
 						else{
 							strcpy(dig_mag_str,"DPB");
 						}
-					}
+						parsing_mon_environment_string_into_object(jdig0, dig_monitor_mag_board_names[i],dig_mag_str);
+						break;
+					//Error
+					case HKDIG_ERRO:
+					default:
+						strcpy(dig_mag_str, "ERROR");
+						parsing_mon_environment_string_into_object(jdig0, dig_monitor_mag_board_names[i],dig_mag_str);
+						break;
 				}
-				parsing_mon_environment_string_into_object(jdig0, dig_monitor_mag_board_names[i],dig_mag_str);
 			}
 
 			// Channel parameters
@@ -472,13 +505,30 @@ static void *monitoring_thread(void *arg)
 					dig_command_handling(DIGITIZER_0,digcmd,dig_response);
 					pktError = pkt.LoadString(dig_response);
 					int16_t cmdIdx = pkt.GetNextFiedlAsCOMMAND(HkDigCmdList);
-					if(cmdIdx == HKDIG_ERRO){
-						strcpy(dig_mag_str,"ERROR");
+
+					switch(cmdIdx){
+
+						//Float
+						case HKDIG_GET_THR_NUM:
+						case HKDIG_GET_IT_NUM:
+						case HKDIG_GET_DT_NUM:
+							pkt.GetNextFieldAsFLOAT(dig_value);
+							parsing_mon_channel_data_into_object(jdig0channels,j, dig_monitor_mag_chan_names[i],dig_value);
+							break;
+
+						//String 
+						case HKDIG_GET_CHN_STATUS:
+						case HKDIG_GET_CHN_CNTRL:
+						case HKDIG_GET_PED_TYPE:
+							dig_mag_str = pkt.GetNextField();
+							parsing_mon_channel_string_into_object(jdig0channels,j, dig_monitor_mag_chan_names[i],dig_mag_str);
+						//Error
+						case HKDIG_ERRO:
+						default:
+							strcpy(dig_mag_str, "ERROR");
+							parsing_mon_channel_string_into_object(jdig0channels,j, dig_monitor_mag_chan_names[i],dig_mag_str);
+							break;
 					}
-					else{
-						dig_mag_str = pkt.GetNextField();
-					}
-					parsing_mon_channel_string_into_object(jdig0channels,j, dig_monitor_mag_chan_names[i],dig_mag_str);
 				}
 			}
 			json_object_object_add(jdig0,"channels",jdig0channels);
@@ -491,21 +541,54 @@ static void *monitoring_thread(void *arg)
 				dig_command_handling(DIGITIZER_1,digcmd,dig_response);
 				pktError = pkt.LoadString(dig_response);
 				int16_t cmdIdx = pkt.GetNextFiedlAsCOMMAND(HkDigCmdList);
-				if(cmdIdx == HKDIG_ERRO){
-					strcpy(dig_mag_str,"ERROR");
-				}
-				else{
-					dig_mag_str = pkt.GetNextField();
-					if(cmdIdx == HKDIG_GET_CLOCK){
+				switch(cmdIdx){
+					//String
+					case HKDIG_GET_GW_VER:
+    				case HKDIG_GET_SW_VER:
+    				case HKDIG_GET_BOARD_STATUS:
+    				case HKDIG_GET_BOARD_CNTRL:
+					case HKDIG_GET_RMON_T:
+					case HKDIG_GET_TLNK_LOCK:
+						dig_mag_str = pkt.GetNextField();
+						parsing_mon_environment_string_into_object(jdig1, dig_monitor_mag_board_names[i],dig_mag_str);
+						break;
+					//Float
+					case HKDIG_GET_BOARD_3V3A:
+					case HKDIG_GET_BOARD_12VA:
+					case HKDIG_GET_BOARD_I12V:
+					case HKDIG_GET_BOARD_5V0A:
+					case HKDIG_GET_BOARD_5V0F:
+					case HKDIG_GET_BOARD_C12V:
+					case HKDIG_GET_BOARD_I5VF:
+					case HKDIG_GET_BOARD_I3V3A:
+					case HKDIG_GET_BOARD_I12VA:
+					case HKDIG_GET_BOARD_TU40:
+					case HKDIG_GET_BOARD_TU41:
+					case HKDIG_GET_BOARD_TU45:
+					// BME280 commands
+					case HKDIG_GET_BME_TCAL:
+					case HKDIG_GET_BME_HCAL:				
+					case HKDIG_GET_BME_PCAL:
+						pkt.GetNextFieldAsFLOAT(dig_value);
+						parsing_mon_environment_data_into_object(jdig1, dig_monitor_mag_board_names[i],dig_value);
+						break;				
+					//Clock
+					case HKDIG_GET_CLOCK:
 						if(!strcmp(dig_mag_str,"0")){
 							strcpy(dig_mag_str,"Local");
 						}
 						else{
 							strcpy(dig_mag_str,"DPB");
-						}					
-					}
+						}
+						parsing_mon_environment_string_into_object(jdig1, dig_monitor_mag_board_names[i],dig_mag_str);
+						break;
+					//Error
+					case HKDIG_ERRO:
+					default:
+						strcpy(dig_mag_str, "ERROR");
+						parsing_mon_environment_string_into_object(jdig1, dig_monitor_mag_board_names[i],dig_mag_str);
+						break;
 				}
-				parsing_mon_environment_string_into_object(jdig0, dig_monitor_mag_board_names[i],dig_mag_str);
 			}
 
 			// Channel parameters
@@ -516,13 +599,30 @@ static void *monitoring_thread(void *arg)
 					dig_command_handling(DIGITIZER_1,digcmd,dig_response);
 					pktError = pkt.LoadString(dig_response);
 					int16_t cmdIdx = pkt.GetNextFiedlAsCOMMAND(HkDigCmdList);
-					if(cmdIdx == HKDIG_ERRO){
-						strcpy(dig_mag_str,"ERROR");
+
+					switch(cmdIdx){
+
+						//Float
+						case HKDIG_GET_THR_NUM:
+						case HKDIG_GET_IT_NUM:
+						case HKDIG_GET_DT_NUM:
+							pkt.GetNextFieldAsFLOAT(dig_value);
+							parsing_mon_channel_data_into_object(jdig1channels,j, dig_monitor_mag_chan_names[i],dig_value);
+							break;
+
+						//String 
+						case HKDIG_GET_CHN_STATUS:
+						case HKDIG_GET_CHN_CNTRL:
+						case HKDIG_GET_PED_TYPE:
+							dig_mag_str = pkt.GetNextField();
+							parsing_mon_channel_string_into_object(jdig1channels,j, dig_monitor_mag_chan_names[i],dig_mag_str);
+						//Error
+						case HKDIG_ERRO:
+						default:
+							strcpy(dig_mag_str, "ERROR");
+							parsing_mon_channel_string_into_object(jdig1channels,j, dig_monitor_mag_chan_names[i],dig_mag_str);
+							break;
 					}
-					else{
-						dig_mag_str = pkt.GetNextField();
-					}
-					parsing_mon_channel_string_into_object(jdig1channels,j, dig_monitor_mag_chan_names[i],dig_mag_str);
 				}
 			}
 			json_object_object_add(jdig1,"channels",jdig1channels);
