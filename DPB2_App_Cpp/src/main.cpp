@@ -258,7 +258,6 @@ static void *monitoring_thread(void *arg)
 	}
 	sem_post(&thread_sync);
 	while (1) {
-		printf("Comenzando DPB");
 		// DPB Slow Control Monitoring
 		sem_wait(&i2c_sync); //Semaphore to sync I2C usage
 		rc = mcp9844_read_temperature(data,temp);
@@ -435,7 +434,6 @@ static void *monitoring_thread(void *arg)
 		}
 
 		//Digitizer 0 Slow Control Monitoring
-		printf("Comenzando Dig0\n");
 		CCOPacket pkt(COPKT_DEFAULT_START, COPKT_DEFAULT_STOP, COPKT_DEFAULT_SEP);
 		COPacketResponse_type	pktError=COPACKET_NOERR;
 		char digcmd[32];
@@ -443,14 +441,11 @@ static void *monitoring_thread(void *arg)
 		char *dig_mag_str;
 		float dig_value;
 		if(dig0_connected){
-			printf("Dig0 Conectada \n");
 			// Board parameters
 			for(int i = 0; i < DIG_MON_BOARD_CODES_SIZE; i++){
-				printf("Creando paquete \n");
 				pkt.CreatePacket(digcmd, HkDigCmdList.CmdList[dig_monitor_mag_board_codes[i]].CmdString);
 				dig_command_handling(DIGITIZER_0,digcmd,dig_response);
 				pktError = pkt.LoadString(dig_response);
-				printf("Respuesta recibida %s\n",dig_response);
 				int16_t cmdIdx = pkt.GetNextFiedlAsCOMMAND(HkDigCmdList);
 				if(cmdIdx == HKDIG_ERRO){
 					strcpy(dig_mag_str, "ERROR");
@@ -470,31 +465,26 @@ static void *monitoring_thread(void *arg)
 			}
 
 			// Channel parameters
-			printf("Comenzando Dig0 Canales\n");
 			json_object *jdig0channels = json_object_new_array();
 			for(int i = 0; i < DIG_MON_CHAN_CODES_SIZE; i++){
 					for(int j = 0; j < 12; j++){
-					printf("Creando paquete Canal\n");
 					pkt.CreatePacket(digcmd, HkDigCmdList.CmdList[dig_monitor_mag_chan_codes[i]].CmdString,(uint32_t) j);
 					dig_command_handling(DIGITIZER_0,digcmd,dig_response);
 					pktError = pkt.LoadString(dig_response);
-					printf("Respuesta recibida canal %s\n",dig_response);
 					int16_t cmdIdx = pkt.GetNextFiedlAsCOMMAND(HkDigCmdList);
 					if(cmdIdx == HKDIG_ERRO){
-						dig_value = -1;
+						strcpy(dig_mag_str,"ERROR");
 					}
 					else{
 						dig_mag_str = pkt.GetNextField();
-						dig_value = atof(dig_mag_str);
 					}
-					parsing_mon_channel_data_into_object(jdig0channels,j, dig_monitor_mag_chan_names[i],dig_value);
+					parsing_mon_channel_string_into_object(jdig0channels,j, dig_monitor_mag_chan_names[i],dig_mag_str);
 				}
 			}
 			json_object_object_add(jdig0,"channels",jdig0channels);
 		}
 		//Digitizer 1 Slow Control Monitoring
 		if(dig1_connected){
-			printf("Dig1 Conectada");
 			// Board parameters
 			for(int i = 0; i < DIG_MON_BOARD_CODES_SIZE; i++){
 				pkt.CreatePacket(digcmd, HkDigCmdList.CmdList[dig_monitor_mag_board_codes[i]].CmdString);
@@ -527,13 +517,12 @@ static void *monitoring_thread(void *arg)
 					pktError = pkt.LoadString(dig_response);
 					int16_t cmdIdx = pkt.GetNextFiedlAsCOMMAND(HkDigCmdList);
 					if(cmdIdx == HKDIG_ERRO){
-						dig_value = -1;
+						strcpy(dig_mag_str,"ERROR");
 					}
 					else{
 						dig_mag_str = pkt.GetNextField();
-						dig_value = atof(dig_mag_str);
 					}
-					parsing_mon_channel_data_into_object(jdig1channels,j, dig_monitor_mag_chan_names[i],dig_value);
+					parsing_mon_channel_string_into_object(jdig1channels,j, dig_monitor_mag_chan_names[i],dig_mag_str);
 				}
 			}
 			json_object_object_add(jdig1,"channels",jdig1channels);
