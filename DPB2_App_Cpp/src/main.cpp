@@ -443,7 +443,7 @@ static void *monitoring_thread(void *arg)
 		// Board parameters
 		for(int i = 0; i < sizeof(dig_monitor_mag_board_codes); i++){
 			pkt.CreatePacket(digcmd, HkDigCmdList.CmdList[dig_monitor_mag_board_codes[i]].CmdString);
-			dig_command_handling(0,digcmd,dig_response);
+			dig_command_handling(DIGITIZER_0,digcmd,dig_response);
 			pktError = pkt.LoadString(dig_response);
 			int16_t cmdIdx = pkt.GetNextFiedlAsCOMMAND(HkDigCmdList);
 			if(cmdIdx == HKDIG_ERRO){
@@ -467,7 +467,7 @@ static void *monitoring_thread(void *arg)
 		for(int i = 0; i < sizeof(dig_monitor_mag_chan_codes); i++){
 				for(int j = 0; j < 12; j++){
 				pkt.CreatePacket(digcmd, HkDigCmdList.CmdList[dig_monitor_mag_chan_codes[i]].CmdString,(uint32_t) j);
-				dig_command_handling(0,digcmd,dig_response);
+				dig_command_handling(DIGITIZER_0,digcmd,dig_response);
 				pktError = pkt.LoadString(dig_response);
 				int16_t cmdIdx = pkt.GetNextFiedlAsCOMMAND(HkDigCmdList);
 				if(cmdIdx == HKDIG_ERRO){
@@ -487,7 +487,7 @@ static void *monitoring_thread(void *arg)
 		// Board parameters
 		for(int i = 0; i < sizeof(dig_monitor_mag_board_codes); i++){
 			pkt.CreatePacket(digcmd, HkDigCmdList.CmdList[dig_monitor_mag_board_codes[i]].CmdString);
-			dig_command_handling(1,digcmd,dig_response);
+			dig_command_handling(DIGITIZER_1,digcmd,dig_response);
 			pktError = pkt.LoadString(dig_response);
 			int16_t cmdIdx = pkt.GetNextFiedlAsCOMMAND(HkDigCmdList);
 			if(cmdIdx == HKDIG_ERRO){
@@ -511,7 +511,7 @@ static void *monitoring_thread(void *arg)
 		for(int i = 0; i < sizeof(dig_monitor_mag_chan_codes); i++){
 				for(int j = 0; j < 12; j++){
 				pkt.CreatePacket(digcmd, HkDigCmdList.CmdList[dig_monitor_mag_chan_codes[i]].CmdString,(uint32_t) j);
-				dig_command_handling(1,digcmd,dig_response);
+				dig_command_handling(DIGITIZER_1,digcmd,dig_response);
 				pktError = pkt.LoadString(dig_response);
 				int16_t cmdIdx = pkt.GetNextFiedlAsCOMMAND(HkDigCmdList);
 				if(cmdIdx == HKDIG_ERRO){
