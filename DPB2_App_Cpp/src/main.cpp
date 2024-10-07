@@ -453,8 +453,13 @@ static void *monitoring_thread(void *arg)
     				case HKDIG_GET_SW_VER:
     				case HKDIG_GET_BOARD_STATUS:
     				case HKDIG_GET_BOARD_CNTRL:
+					case HKDIG_GET_UPTIME:
 					case HKDIG_GET_RMON_T:
 					case HKDIG_GET_TLNK_LOCK:
+					// BME280 commands
+					case HKDIG_GET_BME_TCAL:
+					case HKDIG_GET_BME_HCAL:				
+					case HKDIG_GET_BME_PCAL:
 						dig_mag_str = pkt.GetNextField();
 						parsing_mon_environment_string_into_object(jdig0, dig_monitor_mag_board_names[i],dig_mag_str);
 						break;
@@ -471,10 +476,6 @@ static void *monitoring_thread(void *arg)
 					case HKDIG_GET_BOARD_TU40:
 					case HKDIG_GET_BOARD_TU41:
 					case HKDIG_GET_BOARD_TU45:
-					// BME280 commands
-					case HKDIG_GET_BME_TCAL:
-					case HKDIG_GET_BME_HCAL:				
-					case HKDIG_GET_BME_PCAL:
 						pkt.GetNextFieldAsFLOAT(dig_value);
 						parsing_mon_environment_data_into_object(jdig0, dig_monitor_mag_board_names[i],dig_value);
 						break;				
@@ -513,6 +514,7 @@ static void *monitoring_thread(void *arg)
 						case HKDIG_GET_IT_NUM:
 						case HKDIG_GET_DT_NUM:
 							pkt.GetNextFieldAsFLOAT(dig_value);
+							pkt.GetNextFieldAsFLOAT(dig_value);
 							parsing_mon_channel_data_into_object(jdig0channels,j, dig_monitor_mag_chan_names[i],dig_value);
 							break;
 
@@ -520,6 +522,7 @@ static void *monitoring_thread(void *arg)
 						case HKDIG_GET_CHN_STATUS:
 						case HKDIG_GET_CHN_CNTRL:
 						case HKDIG_GET_PED_TYPE:
+							dig_mag_str = pkt.GetNextField();
 							dig_mag_str = pkt.GetNextField();
 							parsing_mon_channel_string_into_object(jdig0channels,j, dig_monitor_mag_chan_names[i],dig_mag_str);
 						//Error
@@ -547,8 +550,13 @@ static void *monitoring_thread(void *arg)
     				case HKDIG_GET_SW_VER:
     				case HKDIG_GET_BOARD_STATUS:
     				case HKDIG_GET_BOARD_CNTRL:
+					case HKDIG_GET_UPTIME:
 					case HKDIG_GET_RMON_T:
 					case HKDIG_GET_TLNK_LOCK:
+					// BME280 commands
+					case HKDIG_GET_BME_TCAL:
+					case HKDIG_GET_BME_HCAL:				
+					case HKDIG_GET_BME_PCAL:
 						dig_mag_str = pkt.GetNextField();
 						parsing_mon_environment_string_into_object(jdig1, dig_monitor_mag_board_names[i],dig_mag_str);
 						break;
@@ -565,10 +573,6 @@ static void *monitoring_thread(void *arg)
 					case HKDIG_GET_BOARD_TU40:
 					case HKDIG_GET_BOARD_TU41:
 					case HKDIG_GET_BOARD_TU45:
-					// BME280 commands
-					case HKDIG_GET_BME_TCAL:
-					case HKDIG_GET_BME_HCAL:				
-					case HKDIG_GET_BME_PCAL:
 						pkt.GetNextFieldAsFLOAT(dig_value);
 						parsing_mon_environment_data_into_object(jdig1, dig_monitor_mag_board_names[i],dig_value);
 						break;				
@@ -607,6 +611,7 @@ static void *monitoring_thread(void *arg)
 						case HKDIG_GET_IT_NUM:
 						case HKDIG_GET_DT_NUM:
 							pkt.GetNextFieldAsFLOAT(dig_value);
+							pkt.GetNextFieldAsFLOAT(dig_value);
 							parsing_mon_channel_data_into_object(jdig1channels,j, dig_monitor_mag_chan_names[i],dig_value);
 							break;
 
@@ -614,6 +619,7 @@ static void *monitoring_thread(void *arg)
 						case HKDIG_GET_CHN_STATUS:
 						case HKDIG_GET_CHN_CNTRL:
 						case HKDIG_GET_PED_TYPE:
+							dig_mag_str = pkt.GetNextField();
 							dig_mag_str = pkt.GetNextField();
 							parsing_mon_channel_string_into_object(jdig1channels,j, dig_monitor_mag_chan_names[i],dig_mag_str);
 						//Error
