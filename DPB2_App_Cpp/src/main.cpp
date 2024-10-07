@@ -440,33 +440,10 @@ static void *monitoring_thread(void *arg)
 		char dig_response[32];
 		char *dig_mag_str;
 		dig_mag_str = (char*) malloc(16);
-		// Board parameters
-		for(int i = 0; i < sizeof(dig_monitor_mag_board_codes); i++){
-			pkt.CreatePacket(digcmd, HkDigCmdList.CmdList[dig_monitor_mag_board_codes[i]].CmdString);
-			dig_command_handling(DIGITIZER_0,digcmd,dig_response);
-			pktError = pkt.LoadString(dig_response);
-			int16_t cmdIdx = pkt.GetNextFiedlAsCOMMAND(HkDigCmdList);
-			if(cmdIdx == HKDIG_ERRO){
-				strcpy(dig_mag_str,"ERROR");
-			}
-			else{
-				dig_mag_str = pkt.GetNextField();
-				if(cmdIdx == HKDIG_GET_CLOCK)
-					if(!strcmp(dig_mag_str,"0")){
-						strcpy(dig_mag_str,"Local");
-					}
-					else{
-						strcpy(dig_mag_str,"DPB");
-					}
-				parsing_mon_environment_string_into_object(jdig0, dig_monitor_mag_board_names[i],dig_mag_str);
-			}
-		}
-
-		// Channel parameters
-		json_object *jdig0channels = json_object_new_array();
-		for(int i = 0; i < sizeof(dig_monitor_mag_chan_codes); i++){
-				for(int j = 0; j < 12; j++){
-				pkt.CreatePacket(digcmd, HkDigCmdList.CmdList[dig_monitor_mag_chan_codes[i]].CmdString,(uint32_t) j);
+		if(dig0_connected){
+			// Board parameters
+			for(int i = 0; i < sizeof(dig_monitor_mag_board_codes); i++){
+				pkt.CreatePacket(digcmd, HkDigCmdList.CmdList[dig_monitor_mag_board_codes[i]].CmdString);
 				dig_command_handling(DIGITIZER_0,digcmd,dig_response);
 				pktError = pkt.LoadString(dig_response);
 				int16_t cmdIdx = pkt.GetNextFiedlAsCOMMAND(HkDigCmdList);
@@ -475,42 +452,42 @@ static void *monitoring_thread(void *arg)
 				}
 				else{
 					dig_mag_str = pkt.GetNextField();
-					float dig_value = atof(dig_mag_str);
-					parsing_mon_channel_data_into_object(jdig0channels,j, dig_monitor_mag_chan_names[i],dig_value);
+					if(cmdIdx == HKDIG_GET_CLOCK)
+						if(!strcmp(dig_mag_str,"0")){
+							strcpy(dig_mag_str,"Local");
+						}
+						else{
+							strcpy(dig_mag_str,"DPB");
+						}
+					parsing_mon_environment_string_into_object(jdig0, dig_monitor_mag_board_names[i],dig_mag_str);
 				}
 			}
-		}
-		json_object_object_add(jdig0,"channels",jdig0channels);
 
-		//Digitizer 1 Slow Control Monitoring
-
-		// Board parameters
-		for(int i = 0; i < sizeof(dig_monitor_mag_board_codes); i++){
-			pkt.CreatePacket(digcmd, HkDigCmdList.CmdList[dig_monitor_mag_board_codes[i]].CmdString);
-			dig_command_handling(DIGITIZER_1,digcmd,dig_response);
-			pktError = pkt.LoadString(dig_response);
-			int16_t cmdIdx = pkt.GetNextFiedlAsCOMMAND(HkDigCmdList);
-			if(cmdIdx == HKDIG_ERRO){
-				strcpy(dig_mag_str,"ERROR");
-			}
-			else{
-				dig_mag_str = pkt.GetNextField();
-				if(cmdIdx == HKDIG_GET_CLOCK)
-					if(!strcmp(dig_mag_str,"0")){
-						strcpy(dig_mag_str,"Local");
+			// Channel parameters
+			json_object *jdig0channels = json_object_new_array();
+			for(int i = 0; i < sizeof(dig_monitor_mag_chan_codes); i++){
+					for(int j = 0; j < 12; j++){
+					pkt.CreatePacket(digcmd, HkDigCmdList.CmdList[dig_monitor_mag_chan_codes[i]].CmdString,(uint32_t) j);
+					dig_command_handling(DIGITIZER_0,digcmd,dig_response);
+					pktError = pkt.LoadString(dig_response);
+					int16_t cmdIdx = pkt.GetNextFiedlAsCOMMAND(HkDigCmdList);
+					if(cmdIdx == HKDIG_ERRO){
+						strcpy(dig_mag_str,"ERROR");
 					}
 					else{
-						strcpy(dig_mag_str,"DPB");
+						dig_mag_str = pkt.GetNextField();
+						float dig_value = atof(dig_mag_str);
+						parsing_mon_channel_data_into_object(jdig0channels,j, dig_monitor_mag_chan_names[i],dig_value);
 					}
-				parsing_mon_environment_string_into_object(jdig0, dig_monitor_mag_board_names[i],dig_mag_str);
+				}
 			}
+			json_object_object_add(jdig0,"channels",jdig0channels);
 		}
-
-		// Channel parameters
-		json_object *jdig1channels = json_object_new_array();
-		for(int i = 0; i < sizeof(dig_monitor_mag_chan_codes); i++){
-				for(int j = 0; j < 12; j++){
-				pkt.CreatePacket(digcmd, HkDigCmdList.CmdList[dig_monitor_mag_chan_codes[i]].CmdString,(uint32_t) j);
+		//Digitizer 1 Slow Control Monitoring
+		if(dig1_connected){
+			// Board parameters
+			for(int i = 0; i < sizeof(dig_monitor_mag_board_codes); i++){
+				pkt.CreatePacket(digcmd, HkDigCmdList.CmdList[dig_monitor_mag_board_codes[i]].CmdString);
 				dig_command_handling(DIGITIZER_1,digcmd,dig_response);
 				pktError = pkt.LoadString(dig_response);
 				int16_t cmdIdx = pkt.GetNextFiedlAsCOMMAND(HkDigCmdList);
@@ -519,13 +496,37 @@ static void *monitoring_thread(void *arg)
 				}
 				else{
 					dig_mag_str = pkt.GetNextField();
-					float dig_value = atof(dig_mag_str);
-					parsing_mon_channel_data_into_object(jdig1channels,j, dig_monitor_mag_chan_names[i],dig_value);
+					if(cmdIdx == HKDIG_GET_CLOCK)
+						if(!strcmp(dig_mag_str,"0")){
+							strcpy(dig_mag_str,"Local");
+						}
+						else{
+							strcpy(dig_mag_str,"DPB");
+						}
+					parsing_mon_environment_string_into_object(jdig0, dig_monitor_mag_board_names[i],dig_mag_str);
 				}
 			}
-		}
-		json_object_object_add(jdig1,"channels",jdig1channels);
 
+			// Channel parameters
+			json_object *jdig1channels = json_object_new_array();
+			for(int i = 0; i < sizeof(dig_monitor_mag_chan_codes); i++){
+					for(int j = 0; j < 12; j++){
+					pkt.CreatePacket(digcmd, HkDigCmdList.CmdList[dig_monitor_mag_chan_codes[i]].CmdString,(uint32_t) j);
+					dig_command_handling(DIGITIZER_1,digcmd,dig_response);
+					pktError = pkt.LoadString(dig_response);
+					int16_t cmdIdx = pkt.GetNextFiedlAsCOMMAND(HkDigCmdList);
+					if(cmdIdx == HKDIG_ERRO){
+						strcpy(dig_mag_str,"ERROR");
+					}
+					else{
+						dig_mag_str = pkt.GetNextField();
+						float dig_value = atof(dig_mag_str);
+						parsing_mon_channel_data_into_object(jdig1channels,j, dig_monitor_mag_chan_names[i],dig_value);
+					}
+				}
+			}
+			json_object_object_add(jdig1,"channels",jdig1channels);
+		}
 		//LV Slow Control Monitoring
 		char lv_mon_root[80];
 		char lv_mon_cmd[80];
