@@ -455,6 +455,8 @@ static void *monitoring_thread(void *arg)
 					case HKDIG_GET_UPTIME:
 					case HKDIG_GET_RMON_T:
 					case HKDIG_GET_TLNK_LOCK:
+					case HKDIG_GET_EEPROM_OUI:			// Returns EEPROM OUI code
+					case HKDIG_GET_EEPROM_EID:
 					// BME280 commands
 					case HKDIG_GET_BME_TCAL:
 					case HKDIG_GET_BME_HCAL:				
@@ -1302,6 +1304,7 @@ static void *command_thread(void *arg){
 				char board_response[32];
 				//Command conversion
 				rc = dig_command_translation(digcmd, cmd, words_n);
+				printf("%s\n",digcmd);
 				if(rc){
 					printf("DIG0 Command not valid \n");
 					strcpy(board_response,"ERROR: READ operation not successful");
@@ -1310,8 +1313,10 @@ static void *command_thread(void *arg){
 				else{
 					//Serial Port Communication
 					rc = dig_command_handling(0, digcmd, board_response);
+					printf("%s\n",board_response);
 					// Generate the JSON message depending on reading or setting
 					rc = dig_command_response(board_response,reply,msg_id,cmd);
+					printf("%s\n",reply);
 				}
 
 			}
