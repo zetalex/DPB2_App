@@ -1441,12 +1441,8 @@ int main(int argc, char *argv[]){
 	close(serial_port_fd);
 
 	// Check if HV and LV are there
-	usleep(1000000);
-	printf("Holita");
 	serial_port_fd = open("/dev/ttyUL3",O_RDWR);
 	usleep(1000000);
-	printf("%d\n",serial_port_fd);
-	printf("%d\n",errno);
 	setup_serial_port(serial_port_fd);
 	write(serial_port_fd, "$BD:1,$CMD:MON,PAR:BDSNUM\r\n", strlen("$BD:1,$CMD:MON,PAR:BDSNUM\r\n"));
 	usleep(1000000);
@@ -1461,16 +1457,11 @@ int main(int argc, char *argv[]){
 	}
 	write(serial_port_fd, "$BD:0,$CMD:MON,PAR:BDSNUM\r\n", strlen("$BD:0,$CMD:MON,PAR:BDSNUM\r\n"));
 	usleep(1000000);
-	printf("Hola\n");
 	n = read(serial_port_fd, buffer, sizeof(buffer));
-	printf("Hola2\n");
 	buffer[n] = '\0';
-	printf("Hola3\n");
-	printf("%s\n",buffer);
 	if(n){
 		for(int i = 12; i <=17; i++ ){ // Take just serial number from the response
 			LV_SN[i-12] = buffer[i];
-			printf("Hola4\n");
 		}
 		printf("LV has been detected: S/N %s \n", LV_SN);
 		lv_connected = 1;
