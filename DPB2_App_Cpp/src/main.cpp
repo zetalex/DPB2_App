@@ -1458,11 +1458,6 @@ int main(int argc, char *argv[]){
 		printf("HV has been detected: S/N %s \n",HV_SN);
 		hv_connected = 1;
 	}
-	close(serial_port_fd);
-	serial_port_fd = open("/dev/ttyUL4",O_RDWR);
-	printf("%d\n",serial_port_fd);
-	printf("%d\n",errno);
-	setup_serial_port(serial_port_fd);
 	write(serial_port_fd, "$BD:0,$CMD:MON,PAR:BDSNUM\r\n", strlen("$BD:0,$CMD:MON,PAR:BDSNUM\r\n"));
 	usleep(1000000);
 	printf("Hola\n");
