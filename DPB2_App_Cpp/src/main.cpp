@@ -474,6 +474,10 @@ static void *monitoring_thread(void *arg)
 					case HKDIG_GET_BOARD_I5VF:
 					case HKDIG_GET_BOARD_I3V3A:
 					case HKDIG_GET_BOARD_I12VA:
+						pkt.GetNextFieldAsFLOAT(dig_value);
+						dig_value = dig_value / 1000;  //Convert from mV/mA to V/A
+						parsing_mon_environment_data_into_object(jdig0, dig_monitor_mag_board_names[i],dig_value);
+						break;
 					case HKDIG_GET_BOARD_TU40:
 					case HKDIG_GET_BOARD_TU41:
 					case HKDIG_GET_BOARD_TU45:
@@ -511,7 +515,6 @@ static void *monitoring_thread(void *arg)
 					switch(cmdIdx){
 
 						//Float
-						case HKDIG_GET_THR_NUM:
 						case HKDIG_GET_IT_NUM:
 						case HKDIG_GET_DT_NUM:
 							pkt.GetNextFieldAsFLOAT(dig_value);
@@ -520,6 +523,7 @@ static void *monitoring_thread(void *arg)
 							break;
 
 						//String 
+						case HKDIG_GET_THR_NUM:
 						case HKDIG_GET_CHN_STATUS:
 						case HKDIG_GET_CHN_CNTRL:
 						case HKDIG_GET_PED_TYPE:
