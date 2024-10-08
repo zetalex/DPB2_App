@@ -1150,9 +1150,7 @@ static void *command_thread(void *arg){
 			goto waitmsg;
 		}
 		serialized_json_msg = json_object_to_json_string(jmsg);
-		// TODO: Add digitizer commands to the JSON schema before removing this comment
-		// rc = json_schema_validate("JSONSchemaSlowControl.json",serialized_json_msg, "cmd_temp.json");
-		rc = 0;
+		rc = json_schema_validate("JSONSchemaSlowControl.json",serialized_json_msg, "cmd_temp.json");
 		if(rc){
 			rc = command_status_response_json (0,-EINCMD,reply);
 			goto waitmsg;
@@ -1216,7 +1214,8 @@ static void *command_thread(void *arg){
 		}
 		//Check JSON schema valid
 		serialized_json = json_object_to_json_string(jobj);
-		rc = json_schema_validate("JSONSchemaCommandRequest.json",serialized_json, "cmd_temp.json");
+		// TODO: Add digitizer commands to the JSON schema before removing this comment
+		//rc = json_schema_validate("JSONSchemaCommandRequest.json",serialized_json, "cmd_temp.json");
 		rc= 0;
 		if(rc){
 			rc = command_status_response_json (msg_id,-EINCMD,reply);
