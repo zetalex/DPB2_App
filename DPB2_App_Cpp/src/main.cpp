@@ -195,7 +195,6 @@ void segmentation_handler(int sig) {
 
 	  // get void*'s for all entries on the stack
 	  size = backtrace(array, 10);
-
 	  // print out all the frames to stderr
 	  fprintf(stderr, "Error: signal %d:\n", sig);
 	  backtrace_symbols_fd(array, size, STDERR_FILENO);
@@ -1442,8 +1441,10 @@ int main(int argc, char *argv[]){
 	close(serial_port_fd);
 
 	// Check if HV and LV are there
-
+	usleep(1000000);
+	printf("Holita");
 	serial_port_fd = open("/dev/ttyUL3",O_RDWR);
+	usleep(1000000);
 	printf("%d\n",serial_port_fd);
 	printf("%d\n",errno);
 	setup_serial_port(serial_port_fd);
