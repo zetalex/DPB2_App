@@ -436,9 +436,11 @@ static void *monitoring_thread(void *arg)
 		CCOPacket pkt(COPKT_DEFAULT_START, COPKT_DEFAULT_STOP, COPKT_DEFAULT_SEP);
 		COPacketResponse_type	pktError=COPACKET_NOERR;
 		char digcmd[32];
-		char dig_response[32];
+		char dig_response[64];
+		char bme_data[32];
 		char *dig_mag_str;
 		float dig_value;
+		int32_t tf;
 		if(dig0_connected){
 			// Board parameters
 			for(int i = 0; i < DIG_MON_BOARD_CODES_SIZE; i++){
@@ -457,12 +459,29 @@ static void *monitoring_thread(void *arg)
 					case HKDIG_GET_TLNK_LOCK:
 					case HKDIG_GET_EEPROM_OUI:			// Returns EEPROM OUI code
 					case HKDIG_GET_EEPROM_EID:
+						dig_mag_str=pkt.GetNextField();
+						parsing_mon_environment_string_into_object(jdig0, dig_monitor_mag_board_names[i],dig_mag_str);
+						break;
 					// BME280 commands
+					case HKDIG_GET_BME_DATA:
+						// Just copy data for next iterations
+						dig_mag_str = pkt.GetNextField();
+						strcpy(bme_data,dig_mag_str);
+						break;
 					case HKDIG_GET_BME_TCAL:
-					case HKDIG_GET_BME_HCAL:				
+						dig_mag_str = pkt.GetNextField();
+						bme280_get_temp(bme_data,dig_mag_str,&tf,&dig_value);
+						parsing_mon_environment_data_into_object(jdig0, dig_monitor_mag_board_names[i],dig_value);
+						break;
+					case HKDIG_GET_BME_HCAL:
+						dig_mag_str = pkt.GetNextField();
+						bme280_get_relhum(bme_data,dig_mag_str,&tf,&dig_value);
+						parsing_mon_environment_data_into_object(jdig0, dig_monitor_mag_board_names[i],dig_value);
+						break;				
 					case HKDIG_GET_BME_PCAL:
 						dig_mag_str = pkt.GetNextField();
-						parsing_mon_environment_string_into_object(jdig0, dig_monitor_mag_board_names[i],dig_mag_str);
+						bme280_get_press(bme_data,dig_mag_str,&tf,&dig_value);
+						parsing_mon_environment_data_into_object(jdig0, dig_monitor_mag_board_names[i],dig_value);
 						break;
 					//Float
 					case HKDIG_GET_BOARD_3V3A:
