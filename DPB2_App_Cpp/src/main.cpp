@@ -447,6 +447,7 @@ static void *monitoring_thread(void *arg)
 				pkt.CreatePacket(digcmd, HkDigCmdList.CmdList[dig_monitor_mag_board_codes[i]].CmdString);
 				dig_command_handling(DIGITIZER_0,digcmd,dig_response);
 				pktError = pkt.LoadString(dig_response);
+				printf("%s\n",dig_response);
 				int16_t cmdIdx = pkt.GetNextFiedlAsCOMMAND(HkDigCmdList);
 				switch(cmdIdx){
 					//String
@@ -466,7 +467,11 @@ static void *monitoring_thread(void *arg)
 					case HKDIG_GET_BME_DATA:
 						// Just copy data for next iterations
 						dig_mag_str = pkt.GetNextField();
+						printf("%s\n",dig_mag_str);
 						strcpy(bme_data,dig_mag_str);
+						printf("calT: %s\n",dig0_calT);
+						printf("calH: %s\n",dig0_calH);
+						printf("calP: %s\n",dig0_calP);
 						bme280_get_temp(bme_data,dig0_calT,&tf,&dig_value);
 						parsing_mon_environment_data_into_object(jdig0, "temp",dig_value);
 						bme280_get_relhum(bme_data,dig0_calH,&tf,&dig_value);
@@ -1278,7 +1283,7 @@ static void *command_thread(void *arg){
 					rc = hv_lv_command_response(board_response,reply,msg_id,cmd);
 				}
 				else{
-					strcpy(board_response,"ERROR: READ operation not successful");
+					strcpy(board_response,"ERROR: LV Board not connected");
 					rc = hv_lv_command_response(board_response,reply,msg_id,cmd);
 				}
 			}
@@ -1320,43 +1325,55 @@ static void *command_thread(void *arg){
 					}
 				}
 				else{
-					strcpy(board_response,"ERROR: READ operation not successful");
+					strcpy(board_response,"ERROR: HV board not connected");
 					command_response_string_json(msg_id,board_response,reply);
 				}
 			}
 			else if(!strcmp(cmd[1],"DIG0")){ //Digitizer 0
-				char digcmd[32];
-				char board_response[64];
-				//Command conversion
-				rc = dig_command_translation(digcmd, cmd, words_n);
-				if(rc){
-					printf("DIG0 Command not valid \n");
-					strcpy(board_response,"ERROR: READ operation not successful");
-					command_response_string_json(msg_id,board_response,reply);
+				if(dig0_connected){
+					char digcmd[32];
+					char board_response[64];
+					//Command conversion
+					rc = dig_command_translation(digcmd, cmd, words_n);
+					if(rc){
+						printf("DIG0 Command not valid \n");
+						strcpy(board_response,"ERROR: READ operation not successful");
+						command_response_string_json(msg_id,board_response,reply);
+					}
+					else{
+						//Serial Port Communication
+						rc = dig_command_handling(DIGITIZER_0, digcmd, board_response);
+						// Generate the JSON message depending on reading or setting
+						rc = dig_command_response(board_response,reply,msg_id,cmd);
+					}
 				}
 				else{
-					//Serial Port Communication
-					rc = dig_command_handling(0, digcmd, board_response);
-					// Generate the JSON message depending on reading or setting
-					rc = dig_command_response(board_response,reply,msg_id,cmd);
+					strcpy(board_response,"ERROR: Digitizer 0 not connected");
+					command_response_string_json(msg_id,board_response,reply);
 				}
 
 			}
 			else if(!strcmp(cmd[1],"DIG1")){ //Digitizer 1
-				char digcmd[32];
-				char board_response[32];
-				//Command conversion
-				rc = dig_command_translation(digcmd, cmd, words_n);
-				if(rc){
-					printf("DIG1 Command not valid \n");
-					strcpy(board_response,"ERROR: READ operation not successful");
-					command_response_string_json(msg_id,board_response,reply);
+				if(dig1_connected){
+					char digcmd[32];
+					char board_response[32];
+					//Command conversion
+					rc = dig_command_translation(digcmd, cmd, words_n);
+					if(rc){
+						printf("DIG1 Command not valid \n");
+						strcpy(board_response,"ERROR: READ operation not successful");
+						command_response_string_json(msg_id,board_response,reply);
+					}
+					else{
+						//Serial Port Communication
+						rc = dig_command_handling(DIGITIZER_1, digcmd, board_response);
+						// Generate the JSON message depending on reading or setting
+						rc = dig_command_response(board_response,reply,msg_id,cmd);
+					}
 				}
 				else{
-					//Serial Port Communication
-					rc = dig_command_handling(1, digcmd, board_response);
-					// Generate the JSON message depending on reading or setting
-					rc = dig_command_response(board_response,reply,msg_id,cmd);
+					strcpy(board_response,"ERROR: Digitizer 1 not connected");
+					command_response_string_json(msg_id,board_response,reply);
 				}
 			}
 			else{ //DPB
