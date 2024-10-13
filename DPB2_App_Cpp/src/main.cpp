@@ -467,21 +467,12 @@ static void *monitoring_thread(void *arg)
 						// Just copy data for next iterations
 						dig_mag_str = pkt.GetNextField();
 						strcpy(bme_data,dig_mag_str);
-						break;
-					case HKDIG_GET_BME_TCAL:
-						dig_mag_str = pkt.GetNextField();
-						bme280_get_temp(bme_data,dig_mag_str,&tf,&dig_value);
-						parsing_mon_environment_data_into_object(jdig0, dig_monitor_mag_board_names[i],dig_value);
-						break;
-					case HKDIG_GET_BME_HCAL:
-						dig_mag_str = pkt.GetNextField();
-						bme280_get_relhum(bme_data,dig_mag_str,&tf,&dig_value);
-						parsing_mon_environment_data_into_object(jdig0, dig_monitor_mag_board_names[i],dig_value);
-						break;				
-					case HKDIG_GET_BME_PCAL:
-						dig_mag_str = pkt.GetNextField();
-						bme280_get_press(bme_data,dig_mag_str,&tf,&dig_value);
-						parsing_mon_environment_data_into_object(jdig0, dig_monitor_mag_board_names[i],dig_value);
+						bme280_get_temp(bme_data,dig0_calT,&tf,&dig_value);
+						parsing_mon_environment_data_into_object(jdig0, "temp",dig_value);
+						bme280_get_relhum(bme_data,dig0_calH,&tf,&dig_value);
+						parsing_mon_environment_data_into_object(jdig0, "relathumidity",dig_value);				
+						bme280_get_press(bme_data,dig0_calP,&tf,&dig_value);
+						parsing_mon_environment_data_into_object(jdig0, "pressure",dig_value);
 						break;
 					//Float
 					case HKDIG_GET_BOARD_3V3A:
@@ -578,13 +569,24 @@ static void *monitoring_thread(void *arg)
 					case HKDIG_GET_UPTIME:
 					case HKDIG_GET_RMON_T:
 					case HKDIG_GET_TLNK_LOCK:
-					// BME280 commands
-					case HKDIG_GET_BME_TCAL:
-					case HKDIG_GET_BME_HCAL:				
-					case HKDIG_GET_BME_PCAL:
-						dig_mag_str = pkt.GetNextField();
-						parsing_mon_environment_string_into_object(jdig1, dig_monitor_mag_board_names[i],dig_mag_str);
+					case HKDIG_GET_EEPROM_OUI:			// Returns EEPROM OUI code
+					case HKDIG_GET_EEPROM_EID:
+						dig_mag_str=pkt.GetNextField();
+						parsing_mon_environment_string_into_object(jdig0, dig_monitor_mag_board_names[i],dig_mag_str);
 						break;
+					// BME280 commands
+					case HKDIG_GET_BME_DATA:
+						// Just copy data for next iterations
+						dig_mag_str = pkt.GetNextField();
+						strcpy(bme_data,dig_mag_str);
+						bme280_get_temp(bme_data,dig1_calT,&tf,&dig_value);
+						parsing_mon_environment_data_into_object(jdig1, "temp",dig_value);
+						bme280_get_relhum(bme_data,dig1_calH,&tf,&dig_value);
+						parsing_mon_environment_data_into_object(jdig1, "relathumidity",dig_value);				
+						bme280_get_press(bme_data,dig1_calP,&tf,&dig_value);
+						parsing_mon_environment_data_into_object(jdig1, "pressure",dig_value);
+						break;
+					//Float
 					//Float
 					case HKDIG_GET_BOARD_3V3A:
 					case HKDIG_GET_BOARD_12VA:
@@ -1324,7 +1326,7 @@ static void *command_thread(void *arg){
 			}
 			else if(!strcmp(cmd[1],"DIG0")){ //Digitizer 0
 				char digcmd[32];
-				char board_response[32];
+				char board_response[64];
 				//Command conversion
 				rc = dig_command_translation(digcmd, cmd, words_n);
 				if(rc){
@@ -1459,7 +1461,7 @@ int main(int argc, char *argv[]){
 			uint16_t gw_ver;
 			pkt.GetNextFieldAsUINT16(gw_ver);
 			sprintf(DIG1_SN,"%d",gw_ver);
-			printf("Digitizer 1 has been detected: S/N %s \n",DIG1_SN);
+			printf("Digitizer 1 has been detected: GW Version %s \n",DIG1_SN);
 			dig1_connected = 1;
 		}
 	}
