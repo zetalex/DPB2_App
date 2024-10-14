@@ -447,7 +447,6 @@ static void *monitoring_thread(void *arg)
 				pkt.CreatePacket(digcmd, HkDigCmdList.CmdList[dig_monitor_mag_board_codes[i]].CmdString);
 				dig_command_handling(DIGITIZER_0,digcmd,dig_response);
 				pktError = pkt.LoadString(dig_response);
-				printf("%s\n",dig_response);
 				int16_t cmdIdx = pkt.GetNextFiedlAsCOMMAND(HkDigCmdList);
 				switch(cmdIdx){
 					//String
@@ -467,11 +466,7 @@ static void *monitoring_thread(void *arg)
 					case HKDIG_GET_BME_DATA:
 						// Just copy data for next iterations
 						dig_mag_str = pkt.GetNextField();
-						printf("%s\n",dig_mag_str);
 						strcpy(bme_data,dig_mag_str);
-						printf("calT: %s\n",dig0_calT);
-						printf("calH: %s\n",dig0_calH);
-						printf("calP: %s\n",dig0_calP);
 						bme280_get_temp(bme_data,dig0_calT,&tf,&dig_value);
 						parsing_mon_environment_data_into_object(jdig0, "temp",dig_value);
 						bme280_get_relhum(bme_data,dig0_calH,&tf,&dig_value);
@@ -1401,7 +1396,6 @@ int main(int argc, char *argv[]){
 	sigset_t alarm_sig;
 	int i;
 	int rc;
-	int serial_port_fd;
 	int	n;
 	CCOPacket pkt(COPKT_DEFAULT_START, COPKT_DEFAULT_STOP, COPKT_DEFAULT_SEP);
 
@@ -1435,82 +1429,11 @@ int main(int argc, char *argv[]){
 		printf("Error\r\n");
 		return rc;
 	}
-	// Enable HV LV driver
-	write_GPIO(HVLV_DRV_ENABLE_GPIO_OFFSET,1);
-	//Enable Main CPUs of both HV and LV
-	write_GPIO(LV_MAIN_CPU_GPIO_OFFSET,1);
-	write_GPIO(HV_MAIN_CPU_GPIO_OFFSET,1);
 
 	// Create Signal handlers
 	signal(SIGTERM, sighandler);
 	signal(SIGINT, sighandler);
 	signal(SIGSEGV, segmentation_handler);
-	// Check if Dig0 and Dig1 are there
-	char buffer[40];
-
-	serial_port_fd = open("/dev/ttyUL1",O_RDWR);
-	setup_serial_port(serial_port_fd);
-	pkt.CreatePacket(buffer, HkDigCmdList.CmdList[HKDIG_GET_GW_VER].CmdString);
-	write(serial_port_fd, buffer, strlen(buffer));
-	usleep(1000000);
-	n = read(serial_port_fd, buffer, sizeof(buffer));
-	if(n){
-		pkt.LoadString(buffer);
-		int16_t cmd_id = pkt.GetNextFiedlAsCOMMAND(HkDigCmdList);
-		uint16_t gw_ver;
-		pkt.GetNextFieldAsUINT16(gw_ver);
-		sprintf(DIG0_SN,"%d",gw_ver);
-		printf("Digitizer 0 has been detected: GW Version %s \n",DIG0_SN);
-		dig0_connected = 1;
-	}
-	close(serial_port_fd);
-	
-	serial_port_fd = open("/dev/ttyUL2",O_RDWR);
-	setup_serial_port(serial_port_fd);
-	pkt.CreatePacket(buffer, HkDigCmdList.CmdList[HKDIG_GET_GW_VER].CmdString);
-	write(serial_port_fd, buffer, strlen(buffer));
-	usleep(1000000);
-	n = read(serial_port_fd, buffer, sizeof(buffer));
-	if(n){
-		pkt.LoadString(buffer);
-		int16_t cmd_id = pkt.GetNextFiedlAsCOMMAND(HkDigCmdList);
-		if(cmd_id == HKDIG_GET_GW_VER){	
-			uint16_t gw_ver;
-			pkt.GetNextFieldAsUINT16(gw_ver);
-			sprintf(DIG1_SN,"%d",gw_ver);
-			printf("Digitizer 1 has been detected: GW Version %s \n",DIG1_SN);
-			dig1_connected = 1;
-		}
-	}
-	close(serial_port_fd);
-
-	// Check if HV and LV are there
-	serial_port_fd = open("/dev/ttyUL3",O_RDWR);
-	usleep(1000000);
-	setup_serial_port(serial_port_fd);
-	write(serial_port_fd, "$BD:1,$CMD:MON,PAR:BDSNUM\r\n", strlen("$BD:1,$CMD:MON,PAR:BDSNUM\r\n"));
-	usleep(1000000);
-	n = read(serial_port_fd, buffer, sizeof(buffer));
-	buffer[n] = '\0';
-	if(n){
-		for(int i = 12; i <=17; i++ ){ // Take just serial number from the response
-			HV_SN[i-12] = buffer[i];
-		}
-		printf("HV has been detected: S/N %s \n",HV_SN);
-		hv_connected = 1;
-	}
-	write(serial_port_fd, "$BD:0,$CMD:MON,PAR:BDSNUM\r\n", strlen("$BD:0,$CMD:MON,PAR:BDSNUM\r\n"));
-	usleep(1000000);
-	n = read(serial_port_fd, buffer, sizeof(buffer));
-	buffer[n] = '\0';
-	if(n){
-		for(int i = 12; i <=17; i++ ){ // Take just serial number from the response
-			LV_SN[i-12] = buffer[i];
-		}
-		printf("LV has been detected: S/N %s \n", LV_SN);
-		lv_connected = 1;
-	}
-	close(serial_port_fd);
 
 	sem_init(&thread_sync,0,0);
 
