@@ -3,9 +3,9 @@ import ctypes
 
 class I2cDevice(ctypes.Structure):
     _fields_ = [
-        ('filename', ctypes.c_char_p),
-        ('addr', ctypes.c_uint,16), 
-        ('fd', ctypes.c_int,32)
+        ('filename', ctypes.c_char * 64),
+        ('addr', ctypes.c_uint16), 
+        ('fd', ctypes.c_int32)
     ]
 
 class JsonType(ctypes.c_int):
@@ -27,18 +27,8 @@ class DPB_I2cSensors(ctypes.Structure):
         ('dev_sfp0_2_volt', I2cDevice),
         ('dev_sfp3_5_volt', I2cDevice),
         ('dev_som_volt', I2cDevice),
-        ('dev_sfp0_A0', I2cDevice),
-        ('dev_sfp1_A0', I2cDevice),
-        ('dev_sfp2_A0', I2cDevice),
-        ('dev_sfp3_A0', I2cDevice),
-        ('dev_sfp4_A0', I2cDevice),
-        ('dev_sfp5_A0', I2cDevice),
-        ('dev_sfp0_A2', I2cDevice),
-        ('dev_sfp1_A2', I2cDevice),
-        ('dev_sfp2_A2', I2cDevice),
-        ('dev_sfp3_A2', I2cDevice),
-        ('dev_sfp4_A2', I2cDevice),
-        ('dev_sfp5_A2', I2cDevice)
+        ('dev_sfp_A0', I2cDevice * 6),
+        ('dev_sfp_A2', I2cDevice * 6)
         ]
 
 ctype_map = {
