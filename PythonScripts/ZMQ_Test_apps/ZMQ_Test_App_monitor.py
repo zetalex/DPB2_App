@@ -68,8 +68,8 @@ def main():
     
     for i in range(0, num_points):
         json_data = socket.recv_string()
-        #magnitude[i] = get_environment_magnitude(json_data,"DPB","fpgatemp")
-        magnitude[i] = get_channel_magnitude(json_data,"HV",1,"voltage")
+        magnitude[i] = get_environment_magnitude(json_data,"DPB","fpgatemp")
+        #magnitude[i] = get_channel_magnitude(json_data,"HV",1,"temperature")
         datestrings[i] = str(datetime.datetime.now())
         print(datestrings[i])
     plot_magnitude(datestrings,magnitude)
