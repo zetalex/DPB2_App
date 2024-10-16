@@ -257,6 +257,8 @@ static void *monitoring_thread(void *arg)
 	}
 	sem_post(&thread_sync);
 	while (1) {
+		// Do a preliminary checking for Dig0, Dig1, HV and LV
+		check_board_presence();
 		// DPB Slow Control Monitoring
 		sem_wait(&i2c_sync); //Semaphore to sync I2C usage
 		rc = mcp9844_read_temperature(data,temp);
@@ -445,7 +447,10 @@ static void *monitoring_thread(void *arg)
 			// Board parameters
 			for(int i = 0; i < DIG_MON_BOARD_CODES_SIZE; i++){
 				pkt.CreatePacket(digcmd, HkDigCmdList.CmdList[dig_monitor_mag_board_codes[i]].CmdString);
-				dig_command_handling(DIGITIZER_0,digcmd,dig_response);
+				rc = dig_command_handling(DIGITIZER_0,digcmd,dig_response);
+				if(rc){ // If the function returns error, we cancel reading on this board until check_board_presence() returns that it is available again
+					goto skip_dig0;
+				}
 				pktError = pkt.LoadString(dig_response);
 				int16_t cmdIdx = pkt.GetNextFiedlAsCOMMAND(HkDigCmdList);
 				switch(cmdIdx){
@@ -518,7 +523,10 @@ static void *monitoring_thread(void *arg)
 			for(int i = 0; i < DIG_MON_CHAN_CODES_SIZE; i++){
 					for(int j = 0; j < 12; j++){
 					pkt.CreatePacket(digcmd, HkDigCmdList.CmdList[dig_monitor_mag_chan_codes[i]].CmdString,(uint32_t) j);
-					dig_command_handling(DIGITIZER_0,digcmd,dig_response);
+					rc = dig_command_handling(DIGITIZER_0,digcmd,dig_response);
+					if(rc){ // If the function returns error, we cancel reading on this board until check_board_presence() returns that it is available again
+						goto skip_dig0;
+					}
 					pktError = pkt.LoadString(dig_response);
 					int16_t cmdIdx = pkt.GetNextFiedlAsCOMMAND(HkDigCmdList);
 
@@ -552,12 +560,17 @@ static void *monitoring_thread(void *arg)
 			}
 			json_object_object_add(jdig0,"channels",jdig0channels);
 		}
+
+skip_dig0:
 		//Digitizer 1 Slow Control Monitoring
 		if(dig1_connected){
 			// Board parameters
 			for(int i = 0; i < DIG_MON_BOARD_CODES_SIZE; i++){
 				pkt.CreatePacket(digcmd, HkDigCmdList.CmdList[dig_monitor_mag_board_codes[i]].CmdString);
-				dig_command_handling(DIGITIZER_1,digcmd,dig_response);
+				rc = dig_command_handling(DIGITIZER_1,digcmd,dig_response);
+				if(rc){ // If the function returns error, we cancel reading on this board until check_board_presence() returns that it is available again
+					goto skip_dig1;
+				}
 				pktError = pkt.LoadString(dig_response);
 				int16_t cmdIdx = pkt.GetNextFiedlAsCOMMAND(HkDigCmdList);
 				switch(cmdIdx){
@@ -627,7 +640,10 @@ static void *monitoring_thread(void *arg)
 			for(int i = 0; i < DIG_MON_CHAN_CODES_SIZE; i++){
 					for(int j = 0; j < 12; j++){
 					pkt.CreatePacket(digcmd, HkDigCmdList.CmdList[dig_monitor_mag_chan_codes[i]].CmdString,(uint32_t) j);
-					dig_command_handling(DIGITIZER_1,digcmd,dig_response);
+					rc = dig_command_handling(DIGITIZER_1,digcmd,dig_response);
+					if(rc){ // If the function returns error, we cancel reading on this board until check_board_presence() returns that it is available again
+						goto skip_dig1;
+					}
 					pktError = pkt.LoadString(dig_response);
 					int16_t cmdIdx = pkt.GetNextFiedlAsCOMMAND(HkDigCmdList);
 
@@ -662,6 +678,8 @@ static void *monitoring_thread(void *arg)
 			json_object_object_add(jdig1,"channels",jdig1channels);
 		}
 
+skip_dig1:
+
 		//LV Slow Control Monitoring
 		char lv_mon_root[80];
 		char lv_mon_cmd[80];
@@ -684,7 +702,10 @@ static void *monitoring_thread(void *arg)
 				strcpy(lv_mon_cmd,lv_mon_root);
 				strcat(lv_mon_cmd,lv_board_words[i]);
 				strcat(lv_mon_cmd,"\r\n");
-				hv_lv_command_handling(board_dev,lv_mon_cmd,response);
+				rc = hv_lv_command_handling(board_dev,lv_mon_cmd,response);
+				if(rc){
+					goto skip_lv;
+				}
 				// Strip the returned value from response string
 				char *target = NULL;
 				char *start, *end;
@@ -750,7 +771,10 @@ static void *monitoring_thread(void *arg)
 						strcat(lv_mon_cmd,lv_board_words[j]);
 					}
 					strcat(lv_mon_cmd,"\r\n");
-					hv_lv_command_handling(board_dev,lv_mon_cmd,response);
+					rc = hv_lv_command_handling(board_dev,lv_mon_cmd,response);
+					if(rc){
+						goto skip_lv;
+					}
 					// Strip the returned value from response string
 					char *target = NULL;
 					char *start, *end;
@@ -791,7 +815,7 @@ static void *monitoring_thread(void *arg)
 			}
 			json_object_object_add(jlv,"channels",jlvchannels);
 		}
-
+skip_lv:
 		// HV Slow Control Monitoring
 		char hv_mon_root[80];
 		char hv_mon_cmd[80];
@@ -806,7 +830,10 @@ static void *monitoring_thread(void *arg)
 
 			//Read Board Temperature
 			strcpy(hv_mon_cmd,"$BD:1,$CMD:MON,PAR:BDTEMP\r\n");
-			hv_lv_command_handling(board_dev,hv_mon_cmd,response);
+			rc = hv_lv_command_handling(board_dev,hv_mon_cmd,response);
+			if(rc){
+				goto skip_hv;
+			}
 
 			// Strip the returned value from response string
 			char *target = NULL;
@@ -846,7 +873,10 @@ static void *monitoring_thread(void *arg)
 					strcat(hv_mon_cmd,",PAR:");
 					strcat(hv_mon_cmd,hv_board_words[j]);
 					strcat(hv_mon_cmd,"\r\n");
-					hv_lv_command_handling(board_dev,hv_mon_cmd,response);
+					rc = hv_lv_command_handling(board_dev,hv_mon_cmd,response);
+					if(rc){
+						goto skip_hv;
+					}
 
 					// Strip the returned value from response string
 					char *target = NULL;
@@ -909,7 +939,7 @@ static void *monitoring_thread(void *arg)
 			}
 			json_object_object_add(jhv,"channels",jhvchannels);
 		}
-
+skip_hv:
 		json_object_object_add(jdpb,"SFPs",jsfps);
 
 		json_object_object_add(jdata,"LV", jlv);
