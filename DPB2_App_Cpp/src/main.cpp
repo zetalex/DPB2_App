@@ -692,7 +692,7 @@ skip_dig1:
 		if(lv_connected){
 			json_object *jlvchannels = json_object_new_array();
 			strcpy(lv_mon_root,"$BD:0,$CMD:MON,PAR:");
-			strcpy(board_dev,"/dev/ttyUL4");
+			strcpy(board_dev,"/dev/ttyUL3");
 
 			//Send Serial number
 			parsing_mon_environment_string_into_object(jlv, lv_mag_names[0],LV_SN);
@@ -1296,7 +1296,7 @@ static void *command_thread(void *arg){
 					command_status_response_json (msg_id,99,reply);
 				}
 				else if(lv_connected){	
-					char board_dev[64] = "/dev/ttyUL4";
+					char board_dev[64] = "/dev/ttyUL3";
 					//Command conversion
 					char hvlvcmd[40] =  "$BD:0,$CMD:";
 					rc = hv_lv_command_translation(hvlvcmd, cmd, words_n);
