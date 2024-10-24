@@ -712,7 +712,7 @@ class DPB2scLibrary(object):
         else:
             print(magnitudename)
         
-    def check_ams_voltage_alarm(self,channel):
+    def check_ams_alarm(self,channel):
         """Check AMS voltage alarm triggered after forcing it
 
         Args:
@@ -838,7 +838,127 @@ class DPB2scLibrary(object):
         except subprocess.SubprocessError as e:
             raise AssertionError('Failed opening subprocess')
             return 0
+
+    def check_primary_slave (self):
+        """Check SFP GPIO pins value matches I2C corresponding register value
+
+        Args:
+        chip(string): SFP to be validated.
+
+        """
+        fd = os.open("/sys/devices/virtual/net/daq-bond/bonding/primary", os.O_RDWR)
+        eth_int = fd.read()
+        if not re.search(r'\beth0\b', eth_int, re.IGNORECASE):
+                raise AssertionError("Primary Slave is not correctly selected")
+        print(eth_int)
         
+    def check_active_slave (self):
+        """Check SFP GPIO pins value matches I2C corresponding register value
+
+        Args:
+        chip(string): SFP to be validated.
+
+        """
+        fd = os.open("/sys/devices/virtual/net/daq-bond/bonding/active_slave", os.O_RDWR)
+        eth_int = fd.read()
+        return eth_int
+    
+    def drive_aurora_link(self,dig_str,aurora_link,aurora_status):
+        # Drive Aurora Link up or down 
+        # TODO: Complete how Aurora can be driven up or down
+        return
+    
+    def check_aurora_link(self,dig_str,aurora_link,aurora_status):
+        """Check if the Aurora link statis is the expected one
+
+        Args:
+        dig_str: DIG0 or DIG1 depending on the digitizer selected
+        aurora_link: Main or Backup, for each digitizer
+        aurora_status: value (ON or OFF to compare it to the real value)
+
+        """
+        if(dig_str=="DIG0"):
+            gpio_1 = 0
+        elif(dig_str=="DIG1"):
+            gpio_1 = 2
+        else:
+            raise AssertionError("DIG value not valid")
+        
+        if(aurora_link=="Main"):
+            gpio_2 = 0
+        elif(aurora_link=="Backup"):
+            gpio_2 = 1
+        else:
+            raise AssertionError("Link type not valid")
+        
+        # Check Aurora Link status
+        gpio_address = 40 + gpio_1 + gpio_2
+        Int_pointer = POINTER(c_int)
+        int_array = (ctypes.c_int * 1) (0)
+        int_ptr = ctypes.cast(int_array, Int_pointer)
+
+        c_pin_num = c_int(gpio_address)
+        self.dpb2sc.read_GPIO(c_pin_num,int_ptr)
+        if((aurora_status == "ON") and (int_array[0] != 1)):
+            raise AssertionError("Aurora Link has not been driven up")
+        elif((aurora_status == "OFF") and (int_array[0] != 0)):
+              raise AssertionError("Aurora Link has not been driven down")  
+        return
+
+    def read_pcb_temperature(self):
+        """Wrapper function to get PCB temperature from MCP9844 sensor temperature from DPB
+
+        Args:
+        None
+        Return:
+        float with the PCB temperature value
+
+        """
+        float_pointer = POINTER(c_float)
+        float_array = (ctypes.c_float * 1) (0.0)
+        float_ptr = ctypes.cast(float_array, float_pointer)
+        self.dpb2sc.mcp9844_read_temperature(self.structure_i2c,float_ptr)
+        return float_ptr[0]
+        
+    def send_lv_command(self,lv_cmd):
+        """Send a command to the LV board
+
+        Args:
+        lv_cmd (string): valid CAEN formatted command (starting with $CMD)
+
+        """
+        
+        return response
+    
+    def send_hv_command(self,hv_cmd):
+        """Send a command to the HV board
+
+        Args:
+        hv_cmd (string): valid CAEN formatted command (starting with $CMD)
+
+        """
+        
+        return response
+    
+    def program_digitizer(self,dig_str):
+        """Use the default digitizer bitstream file on the DPB to program the digitizer
+        Args:
+        dig_str(string): DIG0 or DIG1 depending on the digitizer to be programmed
+
+        """
+        
+        return
+    
+    def send_digitizer_command(self,dig_str,dig_cmd):
+        """Send a digitizer slow control command through the serial port
+
+        Args:
+        dig_str(string): DIG0 or DIG1 depending on the digitizer being probed
+        dig_cmd: valid Digitizer (COOPacket) command
+
+        """
+        
+        return response
 if __name__ == '__main__':
     RobotRemoteServer(DPB2scLibrary(), *sys.argv[1:])
     
