@@ -145,9 +145,15 @@ class DPB2scLibrary(object):
         for chan in self.ams_voltage_alarm_upper_defaults:
             self.set_ams_alarms_limit ("Voltage","Upper",chan,self.ams_voltage_alarm_upper_defaults[chan])
             self.set_ams_alarms_limit ("Voltage","Lower",chan,0)
-        poll = self.xvc_process.poll()
-        if(poll is None):
-            self.xvc_process.terminate()
+        # Close remaining XVC processes
+        if(self.xvc_process_dig0 is not None):
+            poll = self.xvc_process_dig0.poll()
+            if(poll is None):
+                self.xvc_process_dig0.terminate()
+        if(self.xvc_process_dig0 is not None):
+            poll = self.xvc_process_dig1.poll()
+            if(poll is None):
+                self.xvc_process_dig1.terminate()
     def initialize_zmq_ethernet_sockets (self):
         """Initializes DPB ZMQ sockets.
         """ 
@@ -449,10 +455,10 @@ class DPB2scLibrary(object):
         Int_pointer = POINTER(c_int)
         int_array = (ctypes.c_int * 1) (0)
         int_ptr = ctypes.cast(int_array, Int_pointer)
-
-        c_pin_num = c_int(pin_num)
+        c_pin_num = c_int(int(pin_num))
         self.dpb2sc.read_GPIO(c_pin_num,int_ptr)
         self._result = int_array[0]
+        return str(int_array[0])
     
     def write_gpio (self, pin_num, value):
         """Write GPIO
@@ -465,8 +471,8 @@ class DPB2scLibrary(object):
 
         """
         pin = int(pin_num)
-        if (pin < 0 or pin > 11) and (pin < 48 or pin > 65):
-            raise AssertionError('Pin number not in valid range. Pin number = %s' % (self._result))
+        if (pin < 0 or pin > 11) and (pin < 48 or pin > 71):
+            raise AssertionError('Pin number not in valid range. Pin number = %s' % (pin))
         if value == "ON":
             c_value = c_int(1)
         elif value == "OFF": 
@@ -495,6 +501,26 @@ class DPB2scLibrary(object):
 
         self.dpb2sc.xlnx_ams_read_volt(int_ptr,c_int(1),float_ptr)
         self._result = float_array[0]
+        return float_array[0]
+        
+    def get_ams_temperature (self, channel):
+        """Get AMS Temperature
+
+        Args:
+        channel (int): Desired channel to get temperature from
+
+        """
+        FloatPointer = ctypes.POINTER(ctypes.c_float)
+        float_array = (ctypes.c_float * 1)(0)
+        float_ptr = ctypes.cast(float_array, FloatPointer)
+
+        IntPointer = ctypes.POINTER(ctypes.c_int)
+        int_array = (ctypes.c_int * 1) (int(channel))
+        int_ptr = ctypes.cast(int_array, IntPointer)
+
+        self.dpb2sc.xlnx_ams_read_temp(int_ptr,c_int(1),float_ptr)
+        self._result = float_array[0]
+        return float_array[0]
 
     def set_ams_alarms_limit (self,magnitude,ev_dir,channel,value):
         """Set AMS alarm limit
@@ -524,6 +550,20 @@ class DPB2scLibrary(object):
 
         self.dpb2sc.xlnx_ams_set_limits(c_int(int(channel)),c_ev_dir,c_magnitude,c_float(float(value)))
 
+    def read_ams_alarm(self,channel_num,dir):
+        if(dir == "Upper"):
+            dir_str="rising"
+        elif(dir=="Lower"):
+            dir_str="falling"
+        else:
+            raise AssertionError("Invalid direction %s" % dir)
+        event_dir = "/sys/bus/iio/devices/iio:device0/events/" + "in_temp" + channel_num + "_thresh_" + dir_str + "_value"
+        with open(event_dir, 'r') as fp:
+            event_value = fp.read()
+        self._result = event_value
+        return event_value
+        
+        
     #########################################################
     #Command functions
     #########################################################
@@ -853,10 +893,11 @@ class DPB2scLibrary(object):
         chip(string): SFP to be validated.
 
         """
-        fd = os.open("/sys/devices/virtual/net/daq-bond/bonding/primary", os.O_RDWR)
-        eth_int = fd.read()
+        with open(r'/sys/devices/virtual/net/daq-bond/bonding/primary', 'r') as fp:
+            eth_int = fp.read()
+        fp.close()
         if not re.search(r'\beth0\b', eth_int, re.IGNORECASE):
-                raise AssertionError("Primary Slave is not correctly selected")
+            raise AssertionError("Primary Slave is not correctly selected")
         print(eth_int)
         
     def check_active_slave (self):
@@ -866,8 +907,9 @@ class DPB2scLibrary(object):
         chip(string): SFP to be validated.
 
         """
-        fd = os.open("/sys/devices/virtual/net/daq-bond/bonding/active_slave", os.O_RDWR)
-        eth_int = fd.read()
+        with open(r'/sys/devices/virtual/net/daq-bond/bonding/active_slave', 'r') as fp:
+            eth_int = fp.read()
+        fp.close()
         return eth_int
     
     def drive_aurora_link(self,dig_str,aurora_link,aurora_status):
@@ -934,13 +976,15 @@ class DPB2scLibrary(object):
         lv_cmd (string): valid CAEN formatted command (starting with $CMD)
 
         """
-        lv_full_command = "$BD:0," + lv_cmd
-        board_dev = ctypes.create_string_buffer(32)
+        lv_full_command = "$BD:0," + lv_cmd + "\r\n"
+        board_dev = ctypes.create_string_buffer(64)
         board_dev.value = b"/dev/ttyUL3"
-        cmd = ctypes.create_string_buffer(32)
+        cmd = ctypes.create_string_buffer(64)
         cmd.value = lv_full_command.encode()
-        response = ctypes.create_string_buffer(32)
+        print(cmd.value.decode())
+        response = ctypes.create_string_buffer(64)
         self.dpb2sc.hv_lv_command_handling(board_dev,cmd,response)
+        print(response.value.decode())
         
         return response.value.decode()
     
@@ -952,13 +996,14 @@ class DPB2scLibrary(object):
 
         """
         
-        hv_full_command = "$BD:1," + hv_cmd
+        hv_full_command = "$BD:1," + hv_cmd + "\r\n"
         board_dev = ctypes.create_string_buffer(32)
         board_dev.value = b"/dev/ttyUL3"
         cmd = ctypes.create_string_buffer(32)
         cmd.value = hv_full_command.encode()
         response = ctypes.create_string_buffer(32)
         self.dpb2sc.hv_lv_command_handling(board_dev,cmd,response)
+        print(response.value.decode())
         
         return response.value.decode()
     
@@ -1009,7 +1054,22 @@ class DPB2scLibrary(object):
         cmd_str.value = dig_cmd.encode()
         response = ctypes.create_string_buffer(32)
         self.dpb2sc.dig_command_handling(dig_num,cmd_str,response)
+        print(response.value.decode())
+        
         return response.value.decode()
+    
+    def should_be_smaller_than(self,expected):
+        if(self._result >= float(expected)):
+            raise AssertionError('%s is not smaller than %s' % (self._result,expected))
+        else:
+            print('%s is smaller than %s' % (self._result,expected))
+        return
+    def should_be_larger_than(self,expected):
+        if(self._result <= float(expected)):
+            raise AssertionError('%s is not larger than %s' % (self._result,expected))
+        else:
+            print('%s is larger than %s' % (self._result,expected))
+        return
 if __name__ == '__main__':
     RobotRemoteServer(DPB2scLibrary(), *sys.argv[1:])
     
