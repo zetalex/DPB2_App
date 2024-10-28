@@ -44,7 +44,12 @@ class DPB2scLibrary(object):
     structure_i2c = DPB_I2cSensors()
     """ I2C Devices Structure
     """ 
-    
+    xvc_process_dig0 = None
+    """ XVC Process for Digitizer 0
+    """ 
+    xvc_process_dig1 = None
+    """ XVC Process for Digitizer 1
+    """ 
     ams_voltage_alarm_upper_defaults = {
     "9"  :  "1.2",         
     "10" :  "1.2",        
@@ -140,7 +145,9 @@ class DPB2scLibrary(object):
         for chan in self.ams_voltage_alarm_upper_defaults:
             self.set_ams_alarms_limit ("Voltage","Upper",chan,self.ams_voltage_alarm_upper_defaults[chan])
             self.set_ams_alarms_limit ("Voltage","Lower",chan,0)
-
+        poll = self.xvc_process.poll()
+        if(poll is None):
+            self.xvc_process.terminate()
     def initialize_zmq_ethernet_sockets (self):
         """Initializes DPB ZMQ sockets.
         """ 
@@ -927,8 +934,15 @@ class DPB2scLibrary(object):
         lv_cmd (string): valid CAEN formatted command (starting with $CMD)
 
         """
+        lv_full_command = "$BD:0," + lv_cmd
+        board_dev = ctypes.create_string_buffer(32)
+        board_dev.value = b"/dev/ttyUL3"
+        cmd = ctypes.create_string_buffer(32)
+        cmd.value = lv_full_command.encode()
+        response = ctypes.create_string_buffer(32)
+        self.dpb2sc.hv_lv_command_handling(board_dev,cmd,response)
         
-        return response
+        return response.value.decode()
     
     def send_hv_command(self,hv_cmd):
         """Send a command to the HV board
@@ -938,15 +952,43 @@ class DPB2scLibrary(object):
 
         """
         
-        return response
+        hv_full_command = "$BD:1," + hv_cmd
+        board_dev = ctypes.create_string_buffer(32)
+        board_dev.value = b"/dev/ttyUL3"
+        cmd = ctypes.create_string_buffer(32)
+        cmd.value = hv_full_command.encode()
+        response = ctypes.create_string_buffer(32)
+        self.dpb2sc.hv_lv_command_handling(board_dev,cmd,response)
+        
+        return response.value.decode()
     
-    def program_digitizer(self,dig_str):
+    def open_digitizer_xvc(self,dig_str):
         """Use the default digitizer bitstream file on the DPB to program the digitizer
         Args:
         dig_str(string): DIG0 or DIG1 depending on the digitizer to be programmed
 
         """
-        
+        if(dig_str == "DIG0"):
+            cmd_xvc = "xvcserver -d /dev/xilinx_xvc_driver_0 -p 2542 &"
+        elif(dig_str == "DIG1"):
+            cmd_xvc = "xvcserver -d /dev/xilinx_xvc_driver_1 -p 2543 &"
+        else:
+            raise AssertionError("Digitizer parameter invalid")
+        fpath = "/home/petalinux/xvc_temp.txt"
+        cmd = "lsmod | grep xvc_server >> " + fpath
+        os.system(cmd)
+        if(os.path.isfile(fpath) and os.path.getsize(fpath) == 0):
+            os.system("modprobe xvc_server")
+        else:
+            print("xvc_server already initialized")
+        if(dig_str == "DIG0"):
+            self.xvc_process_dig0 = subprocess.Popen(cmd_xvc, shell=True,stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            time.sleep(2)
+            self.xvc_process_dig0.stdout.read().decode()
+        elif(dig_str == "DIG1"):
+            self.xvc_process_dig1 = subprocess.Popen(cmd_xvc, shell=True,stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            time.sleep(2)
+            self.xvc_process_dig1.stdout.read().decode()
         return
     
     def send_digitizer_command(self,dig_str,dig_cmd):
@@ -957,8 +999,17 @@ class DPB2scLibrary(object):
         dig_cmd: valid Digitizer (COOPacket) command
 
         """
-        
-        return response
+        if(dig_str == "DIG0"):
+            dig_num = c_int(0)
+        elif(dig_str == "DIG1"):
+            dig_num = c_int(1)
+        else:
+            raise AssertionError("Digitizer parameter invalid")
+        cmd_str = ctypes.create_string_buffer(32)
+        cmd_str.value = dig_cmd.encode()
+        response = ctypes.create_string_buffer(32)
+        self.dpb2sc.dig_command_handling(dig_num,cmd_str,response)
+        return response.value.decode()
 if __name__ == '__main__':
     RobotRemoteServer(DPB2scLibrary(), *sys.argv[1:])
     
