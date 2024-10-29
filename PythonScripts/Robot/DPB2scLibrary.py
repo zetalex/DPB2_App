@@ -2,7 +2,7 @@ from ctypes import *
 from ctypesdata import *
 import ctypes
 import re
-import os
+import os, fcntl
 import signal
 import zmq
 import sys
@@ -136,24 +136,39 @@ class DPB2scLibrary(object):
         """ 
         # Send termination signal to the libdpb2sc library
         self.dpb2sc.dpbsc_lib_close(self.structure_i2c)
+        
         # Close iio_monitor
         os.killpg(os.getpgid(self.iio_command.pid), signal.SIGTERM)
+        
         # Set all ethernet interfaces to ON
         self.set_ethernet_link_status("Main","ON")
         self.set_ethernet_link_status("Backup","ON")
+        
         # Set to a default value the AMS voltage alarms
         for chan in self.ams_voltage_alarm_upper_defaults:
             self.set_ams_alarms_limit ("Voltage","Upper",chan,self.ams_voltage_alarm_upper_defaults[chan])
             self.set_ams_alarms_limit ("Voltage","Lower",chan,0)
+            
         # Close remaining XVC processes
         if(self.xvc_process_dig0 is not None):
             poll = self.xvc_process_dig0.poll()
             if(poll is None):
                 self.xvc_process_dig0.terminate()
-        if(self.xvc_process_dig0 is not None):
+        if(self.xvc_process_dig1 is not None):
             poll = self.xvc_process_dig1.poll()
             if(poll is None):
                 self.xvc_process_dig1.terminate()
+        self.modprobe_xvc_rm = subprocess.Popen("rmmod xvc_driver", shell=True,stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        time.sleep(2)
+        os.system("dmesg | tail -n5 > /home/petalinux/modprobe_temp.txt")
+        with open(r'/home/petalinux/modprobe_temp.txt', 'r') as fp:
+            print(fp.read())
+        os.remove("/home/petalinux/modprobe_temp.txt") 
+        
+        # Turn on only RS485 Main Driver
+        self.write_gpio(68,"ON")
+        self.write_gpio(69,"OFF")
+        
     def initialize_zmq_ethernet_sockets (self):
         """Initializes DPB ZMQ sockets.
         """ 
@@ -560,8 +575,18 @@ class DPB2scLibrary(object):
         event_dir = "/sys/bus/iio/devices/iio:device0/events/" + "in_temp" + channel_num + "_thresh_" + dir_str + "_value"
         with open(event_dir, 'r') as fp:
             event_value = fp.read()
-        self._result = event_value
-        return event_value
+        fp.close()
+        scale_dir = "/sys/bus/iio/devices/iio:device0/" + "in_temp" + channel_num + "_scale"
+        with open(scale_dir, 'r') as fp:
+            scale_value = fp.read()
+        fp.close()
+        offset_dir = "/sys/bus/iio/devices/iio:device0/" + "in_temp" + channel_num + "_offset"
+        with open(offset_dir, 'r') as fp:
+            offset_value = fp.read()
+        fp.close()
+        alarm_value = ((float(event_value) + float(offset_value)) * float(scale_value))/1024
+        self._result = alarm_value
+        return alarm_value
         
         
     #########################################################
@@ -969,7 +994,7 @@ class DPB2scLibrary(object):
         self.dpb2sc.mcp9844_read_temperature(self.structure_i2c,float_ptr)
         return float_ptr[0]
         
-    def send_lv_command(self,lv_cmd):
+    def send_lv_command(self,rs485,lv_cmd):
         """Send a command to the LV board
 
         Args:
@@ -978,7 +1003,12 @@ class DPB2scLibrary(object):
         """
         lv_full_command = "$BD:0," + lv_cmd + "\r\n"
         board_dev = ctypes.create_string_buffer(64)
-        board_dev.value = b"/dev/ttyUL3"
+        if(rs485=="Main"):
+            board_dev.value = b"/dev/ttyUL3"
+        elif(rs485=="Backup"):
+            board_dev.value = b"/dev/ttyUL4"
+        else:
+            raise AssertionError("RS485 value not valid")
         cmd = ctypes.create_string_buffer(64)
         cmd.value = lv_full_command.encode()
         print(cmd.value.decode())
@@ -988,7 +1018,7 @@ class DPB2scLibrary(object):
         
         return response.value.decode()
     
-    def send_hv_command(self,hv_cmd):
+    def send_hv_command(self,rs485,hv_cmd):
         """Send a command to the HV board
 
         Args:
@@ -998,7 +1028,12 @@ class DPB2scLibrary(object):
         
         hv_full_command = "$BD:1," + hv_cmd + "\r\n"
         board_dev = ctypes.create_string_buffer(32)
-        board_dev.value = b"/dev/ttyUL3"
+        if(rs485=="Main"):
+            board_dev.value = b"/dev/ttyUL3"
+        elif(rs485=="Backup"):
+            board_dev.value = b"/dev/ttyUL4"
+        else:
+            raise AssertionError("RS485 value not valid")
         cmd = ctypes.create_string_buffer(32)
         cmd.value = hv_full_command.encode()
         response = ctypes.create_string_buffer(32)
@@ -1014,28 +1049,30 @@ class DPB2scLibrary(object):
 
         """
         if(dig_str == "DIG0"):
-            cmd_xvc = "xvcserver -d /dev/xilinx_xvc_driver_0 -p 2542 &"
+            cmd_xvc = 'xvcserver -d /dev/xilinx_xvc_driver_0 -p 2542'
         elif(dig_str == "DIG1"):
-            cmd_xvc = "xvcserver -d /dev/xilinx_xvc_driver_1 -p 2543 &"
+            cmd_xvc = 'xvcserver -d /dev/xilinx_xvc_driver_1 -p 2543'
         else:
             raise AssertionError("Digitizer parameter invalid")
         fpath = "/home/petalinux/xvc_temp.txt"
-        cmd = "lsmod | grep xvc_server >> " + fpath
+        cmd = "lsmod | grep xvc_driver > " + fpath
         os.system(cmd)
         if(os.path.isfile(fpath) and os.path.getsize(fpath) == 0):
-            os.system("modprobe xvc_server")
+            self.modprobe_xvc = subprocess.Popen("modprobe xvc_driver", shell=True,stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            time.sleep(2)
+            os.system("dmesg | tail -n4 > /home/petalinux/modprobe_temp.txt")
+            with open(r'/home/petalinux/modprobe_temp.txt', 'r') as fp:
+                print(fp.read())
+            os.remove("/home/petalinux/modprobe_temp.txt")       
         else:
             print("xvc_server already initialized")
         if(dig_str == "DIG0"):
             self.xvc_process_dig0 = subprocess.Popen(cmd_xvc, shell=True,stdout=subprocess.PIPE, stderr=subprocess.PIPE)
             time.sleep(2)
-            self.xvc_process_dig0.stdout.read().decode()
         elif(dig_str == "DIG1"):
             self.xvc_process_dig1 = subprocess.Popen(cmd_xvc, shell=True,stdout=subprocess.PIPE, stderr=subprocess.PIPE)
             time.sleep(2)
-            self.xvc_process_dig1.stdout.read().decode()
-        return
-    
+        os.remove(fpath)
     def send_digitizer_command(self,dig_str,dig_cmd):
         """Send a digitizer slow control command through the serial port
 
@@ -1070,6 +1107,9 @@ class DPB2scLibrary(object):
         else:
             print('%s is larger than %s' % (self._result,expected))
         return
+    
+def nonblock(stream):
+    fcntl.fcntl(stream, fcntl.F_SETFL, fcntl.fcntl(stream, fcntl.F_GETFL) | os.O_NONBLOCK)
 if __name__ == '__main__':
     RobotRemoteServer(DPB2scLibrary(), *sys.argv[1:])
     
