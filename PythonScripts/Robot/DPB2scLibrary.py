@@ -70,6 +70,11 @@ class DPB2scLibrary(object):
     "28" :  "2",
     "29" :  "2"
     }
+    ams_temperature_alarm_upper_defaults = {
+        "7"  :  "90",
+        "8"  :  "90",
+        "20"  :  "90"
+    }
     
     #########################################################
     # Initialization functions
@@ -148,6 +153,10 @@ class DPB2scLibrary(object):
         for chan in self.ams_voltage_alarm_upper_defaults:
             self.set_ams_alarms_limit ("Voltage","Upper",chan,self.ams_voltage_alarm_upper_defaults[chan])
             self.set_ams_alarms_limit ("Voltage","Lower",chan,0)
+        
+        # Set to a default value the AMS temperature alarms
+        for chan in self.ams_temperature_alarm_upper_defaults:
+            self.set_ams_alarms_limit ("Temperature","Upper",chan,self.ams_temperature_alarm_upper_defaults[chan])
             
         # Close remaining XVC processes
         if(self.xvc_process_dig0 is not None):
@@ -159,11 +168,6 @@ class DPB2scLibrary(object):
             if(poll is None):
                 self.xvc_process_dig1.terminate()
         self.modprobe_xvc_rm = subprocess.Popen("rmmod xvc_driver", shell=True,stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-        time.sleep(2)
-        os.system("dmesg | tail -n5 > /home/petalinux/modprobe_temp.txt")
-        with open(r'/home/petalinux/modprobe_temp.txt', 'r') as fp:
-            print(fp.read())
-        os.remove("/home/petalinux/modprobe_temp.txt") 
         
         # Turn on only RS485 Main Driver
         self.write_gpio(68,"ON")
@@ -584,7 +588,7 @@ class DPB2scLibrary(object):
         with open(offset_dir, 'r') as fp:
             offset_value = fp.read()
         fp.close()
-        alarm_value = ((float(event_value) + float(offset_value)) * float(scale_value))/1024
+        alarm_value = (float(scale_value) * (float(event_value) + float(offset_value)))/1024
         self._result = alarm_value
         return alarm_value
         
@@ -803,7 +807,8 @@ class DPB2scLibrary(object):
         print("Channel Magnitude: " + str(ch_buffer.value))
         print("Event Direction: " + str(ev_buffer.value))
         if not ((ev_buffer.value == b"either") and (ch_buffer.value == b"voltage") and (chann.value == int(channel))):
-            raise AssertionError(f"The expected alarm was not detected by IIO Event Monitor")
+            if not ((ev_buffer.value == b"rising") and (ch_buffer.value == b"temp") and (chann.value == int(channel))):
+                raise AssertionError(f"The expected alarm was not detected by IIO Event Monitor")
         
     def check_sfp_presence(self):
         """Check all 6 SFPs presence by reading MOD ABS pin of each one
