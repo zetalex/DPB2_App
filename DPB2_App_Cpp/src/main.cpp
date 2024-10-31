@@ -272,26 +272,45 @@ static void *monitoring_thread(void *arg)
 				if(sfp_connected[i]){
 				rc = sfp_avago_read_temperature(data,i,&sfp_temp[i]);
 				if (rc) {
+					// Reset the I2C Expander to avoid timeout errors
+					write_GPIO(I2C_MUX_RESET,1);
+					usleep(100);
+					write_GPIO(I2C_MUX_RESET,0);
 					printf("Reading Error\r\n");
 				}
 				rc = sfp_avago_read_voltage(data,i,&sfp_vcc[i]);
 				if (rc) {
+					write_GPIO(I2C_MUX_RESET,1);
+					usleep(100);
+					write_GPIO(I2C_MUX_RESET,0);
 					printf("Reading Error\r\n");
 				}
 				rc = sfp_avago_read_lbias_current(data,i,&sfp_txbias[i]);
 				if (rc) {
+					write_GPIO(I2C_MUX_RESET,1);
+					usleep(100);
+					write_GPIO(I2C_MUX_RESET,0);
 					printf("Reading Error\r\n");
 				}
 				rc = sfp_avago_read_tx_av_optical_pwr(data,i,&sfp_txpwr[i]);
 				if (rc) {
+					write_GPIO(I2C_MUX_RESET,1);
+					usleep(100);
+					write_GPIO(I2C_MUX_RESET,0);
 					printf("Reading Error\r\n");
 				}
 				rc = sfp_avago_read_rx_av_optical_pwr(data,i,&sfp_rxpwr[i]);
 				if (rc) {
+					write_GPIO(I2C_MUX_RESET,1);
+					usleep(100);
+					write_GPIO(I2C_MUX_RESET,0);
 					printf("Reading Error\r\n");
 				}
 				rc = sfp_avago_read_status(data,i,sfp_status[i]);
 				if (rc) {
+					write_GPIO(I2C_MUX_RESET,1);
+					usleep(100);
+					write_GPIO(I2C_MUX_RESET,0);
 					printf("Reading Error\r\n");
 				
 				}
@@ -1037,6 +1056,10 @@ static void *i2c_alarms_thread(void *arg){
 			if(sfp_connected[i]){
 			rc = sfp_avago_read_alarms(data,i);
 				if (rc) {
+					// Reset I2C mux to avoid stuck bus
+					write_GPIO(I2C_MUX_RESET,1);
+					usleep(100);
+					write_GPIO(I2C_MUX_RESET,0);
 					printf("Error reading alarm\r\n");
 				}
 			}
