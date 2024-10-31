@@ -259,6 +259,8 @@ static void *monitoring_thread(void *arg)
 	while (1) {
 		// Do a preliminary checking for Dig0, Dig1, HV and LV
 		check_board_presence();
+		// Do a preliminary checking for SFPs
+		check_sfp_presence(data);
 		// DPB Slow Control Monitoring
 		sem_wait(&i2c_sync); //Semaphore to sync I2C usage
 		rc = mcp9844_read_temperature(data,temp);
