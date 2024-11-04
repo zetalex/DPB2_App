@@ -325,6 +325,7 @@ class DPB2scLibrary(object):
             channel = 2
         self.dpb2sc.ina3221_get_voltage(byref(self.structure_i2c),c_chip,float_ptr)
         self._result = float_array[channel]
+        return float_array[channel]
 
     def get_bus_current (self,chip):
         """Get Bus Current
@@ -365,6 +366,7 @@ class DPB2scLibrary(object):
             channel = 2
         self.dpb2sc.ina3221_get_current(byref(self.structure_i2c),c_chip,float_ptr)
         self._result = float_array[channel]
+        return float_array[channel]
 
 
     #########################################################
@@ -1100,17 +1102,25 @@ class DPB2scLibrary(object):
         
         return response.value.decode()
     
-    def should_be_smaller_than(self,expected):
-        if(self._result >= float(expected)):
-            raise AssertionError('%s is not smaller than %s' % (self._result,expected))
+    def should_be_smaller_than(self,expected,value=None):
+        if(value is None):
+            compared = self._result
         else:
-            print('%s is smaller than %s' % (self._result,expected))
+            compared = value
+        if(compared >= float(expected)):
+            raise AssertionError('%s is not smaller than %s' % (compared,expected))
+        else:
+            print('%s is smaller than %s' % (compared,expected))
         return
-    def should_be_larger_than(self,expected):
-        if(self._result <= float(expected)):
-            raise AssertionError('%s is not larger than %s' % (self._result,expected))
+    def should_be_larger_than(self,expected,value=None):
+        if(value is None):
+            compared = self._result
         else:
-            print('%s is larger than %s' % (self._result,expected))
+            compared = value
+        if(compared <= float(expected)):
+            raise AssertionError('%s is not larger than %s' % (compared,expected))
+        else:
+            print('%s is larger than %s' % (compared,expected))
         return
     
 def nonblock(stream):
