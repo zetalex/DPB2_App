@@ -481,10 +481,11 @@ static void *monitoring_thread(void *arg)
     				case HKDIG_GET_BOARD_STATUS:
     				case HKDIG_GET_BOARD_CNTRL:
 					case HKDIG_GET_UPTIME:
-					case HKDIG_GET_RMON_T:
+					case HKDIG_GET_RMON_PER:
 					case HKDIG_GET_TLNK_LOCK:
 					case HKDIG_GET_EEPROM_OUI:			// Returns EEPROM OUI code
 					case HKDIG_GET_EEPROM_EID:
+					case HKDIG_GET_RMON_MUX_N:
 						dig_mag_str=pkt.GetNextField();
 						parsing_mon_environment_string_into_object(jdig0, dig_monitor_mag_board_names[i],dig_mag_str);
 						break;
@@ -550,9 +551,7 @@ static void *monitoring_thread(void *arg)
 					}
 					pktError = pkt.LoadString(dig_response);
 					int16_t cmdIdx = pkt.GetNextFiedlAsCOMMAND(HkDigCmdList);
-
 					switch(cmdIdx){
-
 						//Float
 						case HKDIG_GET_IT_NUM:
 						case HKDIG_GET_DT_NUM:
@@ -566,6 +565,9 @@ static void *monitoring_thread(void *arg)
 						case HKDIG_GET_CHN_STATUS:
 						case HKDIG_GET_CHN_CNTRL:
 						case HKDIG_GET_PED_TYPE:
+						case HKDIG_GET_RMON_ADC_N:
+						case HKDIG_GET_RMON_TDC_N:
+						case HKDIG_GET_RMON_FMT_N:
 							dig_mag_str = pkt.GetNextField();
 							dig_mag_str = pkt.GetNextField();
 							parsing_mon_channel_string_into_object(jdig0channels,j, dig_monitor_mag_chan_names[i],dig_mag_str);
@@ -601,10 +603,11 @@ skip_dig0:
     				case HKDIG_GET_BOARD_STATUS:
     				case HKDIG_GET_BOARD_CNTRL:
 					case HKDIG_GET_UPTIME:
-					case HKDIG_GET_RMON_T:
+					case HKDIG_GET_RMON_PER:
 					case HKDIG_GET_TLNK_LOCK:
 					case HKDIG_GET_EEPROM_OUI:			// Returns EEPROM OUI code
 					case HKDIG_GET_EEPROM_EID:
+					case HKDIG_GET_RMON_MUX_N:
 						dig_mag_str=pkt.GetNextField();
 						parsing_mon_environment_string_into_object(jdig0, dig_monitor_mag_board_names[i],dig_mag_str);
 						break;
@@ -667,11 +670,9 @@ skip_dig0:
 					}
 					pktError = pkt.LoadString(dig_response);
 					int16_t cmdIdx = pkt.GetNextFiedlAsCOMMAND(HkDigCmdList);
-
 					switch(cmdIdx){
 
 						//Float
-						case HKDIG_GET_THR_NUM:
 						case HKDIG_GET_IT_NUM:
 						case HKDIG_GET_DT_NUM:
 							pkt.GetNextFieldAsFLOAT(dig_value);
@@ -680,9 +681,13 @@ skip_dig0:
 							break;
 
 						//String 
+						case HKDIG_GET_THR_NUM:
 						case HKDIG_GET_CHN_STATUS:
 						case HKDIG_GET_CHN_CNTRL:
 						case HKDIG_GET_PED_TYPE:
+						case HKDIG_GET_RMON_ADC_N:
+						case HKDIG_GET_RMON_TDC_N:
+						case HKDIG_GET_RMON_FMT_N:
 							dig_mag_str = pkt.GetNextField();
 							dig_mag_str = pkt.GetNextField();
 							parsing_mon_channel_string_into_object(jdig1channels,j, dig_monitor_mag_chan_names[i],dig_mag_str);
@@ -855,7 +860,6 @@ skip_lv:
 			if(rc){
 				goto skip_hv;
 			}
-
 			// Strip the returned value from response string
 			char *target = NULL;
 			char *start, *end;
