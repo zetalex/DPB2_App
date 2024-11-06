@@ -247,7 +247,7 @@ static void *monitoring_thread(void *arg)
 	float sfp_rxpwr[SFP_NUM];
 	float sfp_vcc[SFP_NUM];
 	float sfp_txbias[SFP_NUM];
-	uint8_t sfp_status[2][SFP_NUM];
+	uint8_t sfp_status[SFP_NUM][2];
 
 	printf("Monitoring thread period: %3.4fs\n",((float)periods[2])/1000000);
 	rc = make_periodic(periods[2], &info);
@@ -402,8 +402,8 @@ static void *monitoring_thread(void *arg)
 			parsing_mon_channel_data_into_object(jsfps,i,"txpwr",sfp_txpwr[i]);
 			parsing_mon_channel_data_into_object(jsfps,i,"rxpwr",sfp_rxpwr[i]);
 
-			parsing_mon_channel_status_into_object(jsfps,i,"rxlos",sfp_status[0][i]);
-			parsing_mon_channel_status_into_object(jsfps,i,"txfault",sfp_status[1][i]);
+			parsing_mon_channel_status_into_object(jsfps,i,"rxlos",sfp_status[i][0]);
+			parsing_mon_channel_status_into_object(jsfps,i,"txfault",sfp_status[i][1]);
 			}
 		}
 		parsing_mon_environment_data_into_object(jdpb,"lpdcputemp", ams_temp[0]);
