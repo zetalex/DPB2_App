@@ -486,6 +486,7 @@ static void *monitoring_thread(void *arg)
 					case HKDIG_GET_EEPROM_OUI:			// Returns EEPROM OUI code
 					case HKDIG_GET_EEPROM_EID:
 					case HKDIG_GET_RMON_MUX_N:
+					case HKDIG_GET_RMON_RST_N:
 						dig_mag_str=pkt.GetNextField();
 						parsing_mon_environment_string_into_object(jdig0, dig_monitor_mag_board_names[i],dig_mag_str);
 						break;
@@ -608,6 +609,7 @@ skip_dig0:
 					case HKDIG_GET_EEPROM_OUI:			// Returns EEPROM OUI code
 					case HKDIG_GET_EEPROM_EID:
 					case HKDIG_GET_RMON_MUX_N:
+					case HKDIG_GET_RMON_RST_N:
 						dig_mag_str=pkt.GetNextField();
 						parsing_mon_environment_string_into_object(jdig0, dig_monitor_mag_board_names[i],dig_mag_str);
 						break;
