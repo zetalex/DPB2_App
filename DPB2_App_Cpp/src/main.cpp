@@ -247,12 +247,12 @@ static void *monitoring_thread(void *arg)
 	float sfp_rxpwr[SFP_NUM];
 	float sfp_vcc[SFP_NUM];
 	float sfp_txbias[SFP_NUM];
-	uint8_t sfp_status[2][SFP_NUM];
+	uint8_t sfp_status[SFP_NUM][2];
 
 	printf("Monitoring thread period: %3.4fs\n",((float)periods[2])/1000000);
 	rc = make_periodic(periods[2], &info);
 	if (rc) {
-		printf("Error\r\n");
+		DEBUG_PRINTF("Error\r\n");
 		return NULL;
 	}
 	sem_post(&thread_sync);
@@ -265,7 +265,7 @@ static void *monitoring_thread(void *arg)
 		sem_wait(&i2c_sync); //Semaphore to sync I2C usage
 		rc = mcp9844_read_temperature(data,temp);
 		if (rc) {
-			printf("Reading Error\r\n");
+			DEBUG_PRINTF("Reading Error\r\n");
 		}
 		// SFP monitoring
 		for(int i = 0; i < SFP_NUM;i++){
@@ -276,103 +276,103 @@ static void *monitoring_thread(void *arg)
 					write_GPIO(I2C_MUX_RESET,1);
 					usleep(100);
 					write_GPIO(I2C_MUX_RESET,0);
-					printf("Reading Error\r\n");
+					DEBUG_PRINTF("Reading Error\r\n");
 				}
 				rc = sfp_avago_read_voltage(data,i,&sfp_vcc[i]);
 				if (rc) {
 					write_GPIO(I2C_MUX_RESET,1);
 					usleep(100);
 					write_GPIO(I2C_MUX_RESET,0);
-					printf("Reading Error\r\n");
+					DEBUG_PRINTF("Reading Error\r\n");
 				}
 				rc = sfp_avago_read_lbias_current(data,i,&sfp_txbias[i]);
 				if (rc) {
 					write_GPIO(I2C_MUX_RESET,1);
 					usleep(100);
 					write_GPIO(I2C_MUX_RESET,0);
-					printf("Reading Error\r\n");
+					DEBUG_PRINTF("Reading Error\r\n");
 				}
 				rc = sfp_avago_read_tx_av_optical_pwr(data,i,&sfp_txpwr[i]);
 				if (rc) {
 					write_GPIO(I2C_MUX_RESET,1);
 					usleep(100);
 					write_GPIO(I2C_MUX_RESET,0);
-					printf("Reading Error\r\n");
+					DEBUG_PRINTF("Reading Error\r\n");
 				}
 				rc = sfp_avago_read_rx_av_optical_pwr(data,i,&sfp_rxpwr[i]);
 				if (rc) {
 					write_GPIO(I2C_MUX_RESET,1);
 					usleep(100);
 					write_GPIO(I2C_MUX_RESET,0);
-					printf("Reading Error\r\n");
+					DEBUG_PRINTF("Reading Error\r\n");
 				}
 				rc = sfp_avago_read_status(data,i,sfp_status[i]);
 				if (rc) {
 					write_GPIO(I2C_MUX_RESET,1);
 					usleep(100);
 					write_GPIO(I2C_MUX_RESET,0);
-					printf("Reading Error\r\n");
+					DEBUG_PRINTF("Reading Error\r\n");
 				
 				}
 			}
 		}
 		rc = ina3221_get_voltage(data,0,volt_sfp0_2);
 		if (rc) {
-			printf("Reading Error\r\n");
+			DEBUG_PRINTF("Reading Error\r\n");
 		}
 		rc = ina3221_get_voltage(data,1,volt_sfp3_5);
 		if (rc) {
-			printf("Reading Error\r\n");
+			DEBUG_PRINTF("Reading Error\r\n");
 		}
 		rc = ina3221_get_voltage(data,2,volt_som);
 		if (rc) {
-			printf("Reading Error\r\n");
+			DEBUG_PRINTF("Reading Error\r\n");
 		}
 		rc = ina3221_get_current(data,0,curr_sfp0_2);
 		if (rc) {
-			printf("Reading Error\r\n");
+			DEBUG_PRINTF("Reading Error\r\n");
 		}
 		rc = ina3221_get_current(data,1,curr_sfp3_5);
 		if (rc) {
-			printf("Reading Error\r\n");
+			DEBUG_PRINTF("Reading Error\r\n");
 		}
 		rc = ina3221_get_current(data,2,curr_som);
 		if (rc) {
-			printf("Reading Error\r\n");
+			DEBUG_PRINTF("Reading Error\r\n");
 		}
 		sem_post(&i2c_sync);//Free semaphore to sync I2C usage
 
 		rc = xlnx_ams_read_temp(temp_chan,AMS_TEMP_NUM_CHAN,ams_temp);
 		if (rc) {
-			printf("Reading Error\r\n");
+			DEBUG_PRINTF("Reading Error\r\n");
 		}
 		rc = xlnx_ams_read_volt(volt_chan,AMS_VOLT_NUM_CHAN,ams_volt);
 		if (rc) {
-			printf("Reading Error\r\n");
+			DEBUG_PRINTF("Reading Error\r\n");
 		}
 		rc = eth_link_status("eth0",&eth_status[0]);
 		if (rc) {
-			printf("Reading Error\r\n");
+			DEBUG_PRINTF("Reading Error\r\n");
 		}
 		rc = eth_link_status("eth1",&eth_status[1]);
 		if (rc) {
-			printf("Reading Error\r\n");
+			DEBUG_PRINTF("Reading Error\r\n");
 		}
 		rc = read_GPIO(DIG0_MAIN_AURORA_LINK,&aurora_status[0]);
 		if (rc) {
-			printf("Reading Error\r\n");
+			DEBUG_PRINTF("Reading Error\r\n");
 		}
 		rc = read_GPIO(DIG0_BACKUP_AURORA_LINK,&aurora_status[1]);
 		if (rc) {
-			printf("Reading Error\r\n");
+			DEBUG_PRINTF("Reading Error\r\n");
 		}
 		rc = read_GPIO(DIG1_MAIN_AURORA_LINK,&aurora_status[2]);
 		if (rc) {
-			printf("Reading Error\r\n");
+			DEBUG_PRINTF("Reading Error\r\n");
 		}
 		rc = read_GPIO(DIG1_BACKUP_AURORA_LINK,&aurora_status[3]);
 		if (rc) {
-			printf("Reading Error\r\n");
+			DEBUG_PRINTF("Reading Error\r\n");
 		}
 		//json_object * jobj = json_object_new_object();
 		json_object *jdata = json_object_new_object();
@@ -402,8 +402,8 @@ static void *monitoring_thread(void *arg)
 			parsing_mon_channel_data_into_object(jsfps,i,"txpwr",sfp_txpwr[i]);
 			parsing_mon_channel_data_into_object(jsfps,i,"rxpwr",sfp_rxpwr[i]);
 
-			parsing_mon_channel_status_into_object(jsfps,0,"rxlos",sfp_status[0][i]);
-			parsing_mon_channel_status_into_object(jsfps,0,"txfault",sfp_status[1][i]);
+			parsing_mon_channel_status_into_object(jsfps,i,"rxlos",sfp_status[i][0]);
+			parsing_mon_channel_status_into_object(jsfps,i,"txfault",sfp_status[i][1]);
 			}
 		}
 		parsing_mon_environment_data_into_object(jdpb,"lpdcputemp", ams_temp[0]);
@@ -481,10 +481,12 @@ static void *monitoring_thread(void *arg)
     				case HKDIG_GET_BOARD_STATUS:
     				case HKDIG_GET_BOARD_CNTRL:
 					case HKDIG_GET_UPTIME:
-					case HKDIG_GET_RMON_T:
+					case HKDIG_GET_RMON_PER:
 					case HKDIG_GET_TLNK_LOCK:
 					case HKDIG_GET_EEPROM_OUI:			// Returns EEPROM OUI code
 					case HKDIG_GET_EEPROM_EID:
+					case HKDIG_GET_RMON_MUX_N:
+					case HKDIG_GET_RMON_RST_N:
 						dig_mag_str=pkt.GetNextField();
 						parsing_mon_environment_string_into_object(jdig0, dig_monitor_mag_board_names[i],dig_mag_str);
 						break;
@@ -550,9 +552,7 @@ static void *monitoring_thread(void *arg)
 					}
 					pktError = pkt.LoadString(dig_response);
 					int16_t cmdIdx = pkt.GetNextFiedlAsCOMMAND(HkDigCmdList);
-
 					switch(cmdIdx){
-
 						//Float
 						case HKDIG_GET_IT_NUM:
 						case HKDIG_GET_DT_NUM:
@@ -566,6 +566,9 @@ static void *monitoring_thread(void *arg)
 						case HKDIG_GET_CHN_STATUS:
 						case HKDIG_GET_CHN_CNTRL:
 						case HKDIG_GET_PED_TYPE:
+						case HKDIG_GET_RMON_ADC_N:
+						case HKDIG_GET_RMON_TDC_N:
+						case HKDIG_GET_RMON_FMT_N:
 							dig_mag_str = pkt.GetNextField();
 							dig_mag_str = pkt.GetNextField();
 							parsing_mon_channel_string_into_object(jdig0channels,j, dig_monitor_mag_chan_names[i],dig_mag_str);
@@ -601,10 +604,12 @@ skip_dig0:
     				case HKDIG_GET_BOARD_STATUS:
     				case HKDIG_GET_BOARD_CNTRL:
 					case HKDIG_GET_UPTIME:
-					case HKDIG_GET_RMON_T:
+					case HKDIG_GET_RMON_PER:
 					case HKDIG_GET_TLNK_LOCK:
 					case HKDIG_GET_EEPROM_OUI:			// Returns EEPROM OUI code
 					case HKDIG_GET_EEPROM_EID:
+					case HKDIG_GET_RMON_MUX_N:
+					case HKDIG_GET_RMON_RST_N:
 						dig_mag_str=pkt.GetNextField();
 						parsing_mon_environment_string_into_object(jdig0, dig_monitor_mag_board_names[i],dig_mag_str);
 						break;
@@ -667,11 +672,9 @@ skip_dig0:
 					}
 					pktError = pkt.LoadString(dig_response);
 					int16_t cmdIdx = pkt.GetNextFiedlAsCOMMAND(HkDigCmdList);
-
 					switch(cmdIdx){
 
 						//Float
-						case HKDIG_GET_THR_NUM:
 						case HKDIG_GET_IT_NUM:
 						case HKDIG_GET_DT_NUM:
 							pkt.GetNextFieldAsFLOAT(dig_value);
@@ -680,9 +683,13 @@ skip_dig0:
 							break;
 
 						//String 
+						case HKDIG_GET_THR_NUM:
 						case HKDIG_GET_CHN_STATUS:
 						case HKDIG_GET_CHN_CNTRL:
 						case HKDIG_GET_PED_TYPE:
+						case HKDIG_GET_RMON_ADC_N:
+						case HKDIG_GET_RMON_TDC_N:
+						case HKDIG_GET_RMON_FMT_N:
 							dig_mag_str = pkt.GetNextField();
 							dig_mag_str = pkt.GetNextField();
 							parsing_mon_channel_string_into_object(jdig1channels,j, dig_monitor_mag_chan_names[i],dig_mag_str);
@@ -855,7 +862,6 @@ skip_lv:
 			if(rc){
 				goto skip_hv;
 			}
-
 			// Strip the returned value from response string
 			char *target = NULL;
 			char *start, *end;
@@ -1003,7 +1009,7 @@ static void *i2c_alarms_thread(void *arg){
 	printf("Alarms thread period: %3.4fms\n",((float)periods[1])/1000);
 	rc = make_periodic(periods[1], &info);
 	if (rc) {
-		printf("Error\r\n");
+		DEBUG_PRINTF("Error\r\n");
 		return NULL;
 	}
 	int hv_alarms_period = 700000/periods[1]; //in us
@@ -1012,45 +1018,45 @@ static void *i2c_alarms_thread(void *arg){
 	while(1){
 		rc = eth_down_alarm("eth0",&eth0_flag);
 		if (rc) {
-			printf("Error reading alarm\r\n");
+			DEBUG_PRINTF("Error reading alarm\r\n");
 		}
 		rc = eth_down_alarm("eth1",&eth1_flag);
 		if (rc) {
-			printf("Error reading alarm\r\n");
+			DEBUG_PRINTF("Error reading alarm\r\n");
 		}
 		rc = aurora_down_alarm(0,&dig0_main_flag);
 		if (rc) {
-			printf("Error reading alarm\r\n");
+			DEBUG_PRINTF("Error reading alarm\r\n");
 		}
 		rc = aurora_down_alarm(1,&dig0_backup_flag);
 		if (rc) {
-			printf("Error reading alarm\r\n");
+			DEBUG_PRINTF("Error reading alarm\r\n");
 		}
 		rc = aurora_down_alarm(2,&dig1_main_flag);
 		if (rc) {
-			printf("Error reading alarm\r\n");
+			DEBUG_PRINTF("Error reading alarm\r\n");
 		}
 		rc = aurora_down_alarm(3,&dig1_backup_flag);
 		if (rc) {
-			printf("Error reading alarm\r\n");
+			DEBUG_PRINTF("Error reading alarm\r\n");
 		}
 		sem_wait(&i2c_sync); //Semaphore to sync I2C usage
 
 		rc = mcp9844_read_alarms(data);
 		if (rc) {
-			printf("Error reading alarm\r\n");
+			DEBUG_PRINTF("Error reading alarm\r\n");
 		}
 		rc = ina3221_read_alarms(data,0);
 		if (rc) {
-			printf("Error reading alarm\r\n");
+			DEBUG_PRINTF("Error reading alarm\r\n");
 		}
 		rc = ina3221_read_alarms(data,1);
 		if (rc) {
-			printf("Error reading alarm\r\n");
+			DEBUG_PRINTF("Error reading alarm\r\n");
 		}
 		rc = ina3221_read_alarms(data,2);
 		if (rc) {
-			printf("Error reading alarm\r\n");
+			DEBUG_PRINTF("Error reading alarm\r\n");
 		}
 		for (int i = 0; i < SFP_NUM; i++){
 			if(sfp_connected[i]){
@@ -1060,7 +1066,7 @@ static void *i2c_alarms_thread(void *arg){
 					write_GPIO(I2C_MUX_RESET,1);
 					usleep(100);
 					write_GPIO(I2C_MUX_RESET,0);
-					printf("Error reading alarm\r\n");
+					DEBUG_PRINTF("Error reading alarm\r\n");
 				}
 			}
 		}
@@ -1106,7 +1112,7 @@ static void *ams_alarms_thread(void *arg){
 	printf("AMS Alarms thread period: %3.4fms\n",((float)periods[0])/1000);
 	rc = make_periodic(periods[0], &info);
 	if (rc) {
-		printf("Error\r\n");
+		DEBUG_PRINTF("Error\r\n");
 		return NULL;
 	}
 	sem_post(&thread_sync);
@@ -1137,7 +1143,7 @@ static void *ams_alarms_thread(void *arg){
     		rising = fopen(ris_str,"r");
 
     		if((raw==NULL)|(rising==NULL)){
-    			printf("AMS Voltage file could not be opened!!! \n");/*Any of the files could not be opened*/
+    			DEBUG_PRINTF("AMS Voltage file could not be opened!!! \n");/*Any of the files could not be opened*/
     			}
     		else if(chan >= 7){
     			fseek(raw, 0, SEEK_END);
@@ -1163,7 +1169,6 @@ static void *ams_alarms_thread(void *arg){
 
 
     			rc = alarm_json("DPB",ams_channels[chan-7],ev_type, 99, res[0],timestamp,"warning");
-    			//printf("Chip: AMS. Event type: %s. Timestamp: %lld. Channel type: %s. Channel: %d. Value: %f V\n",ev_type,timestamp,ch_type,chan,res[0]);
     			fclose(raw);
     			fclose(rising);
     		}
@@ -1176,7 +1181,7 @@ static void *ams_alarms_thread(void *arg){
             //printf("Chip: AMS. Event type: %s. Timestamp: %lld. Channel type: %s. Channel: %d. Value: %f ºC\n",ev_type,timestamp,ch_type,chan,res[0]);
         }
 		if (rc) {
-			printf("Error\r\n");
+			DEBUG_PRINTF("Error\r\n");
 		}
 		wait_period(&info);
 	}
@@ -1199,7 +1204,7 @@ static void *command_thread(void *arg){
 	printf("Command thread period: %3.4fms\n",((float)periods[3])/1000);
 	rc = make_periodic(periods[3], &info);
 	if (rc) {
-		printf("Error\r\n");
+		DEBUG_PRINTF("Error\r\n");
 		return NULL;
 	}
 	while(1){
@@ -1361,7 +1366,7 @@ static void *command_thread(void *arg){
 					char hvlvcmd[40] =  "$BD:1,$CMD:";
 					rc = hv_lv_command_translation(hvlvcmd, cmd, words_n);
 					if(rc){
-						printf("HV/LV Command not valid \n");
+						DEBUG_PRINTF("HV/LV Command not valid \n");
 						strcpy(board_response,"ERROR: READ operation not successful");
 						command_response_string_json(msg_id,board_response,reply);
 					}
@@ -1384,7 +1389,7 @@ static void *command_thread(void *arg){
 					//Command conversion
 					rc = dig_command_translation(digcmd, cmd, words_n);
 					if(rc){
-						printf("DIG0 Command not valid \n");
+						DEBUG_PRINTF("DIG0 Command not valid \n");
 						strcpy(board_response,"ERROR: READ operation not successful");
 						command_response_string_json(msg_id,board_response,reply);
 					}
@@ -1408,7 +1413,7 @@ static void *command_thread(void *arg){
 					//Command conversion
 					rc = dig_command_translation(digcmd, cmd, words_n);
 					if(rc){
-						printf("DIG1 Command not valid \n");
+						DEBUG_PRINTF("DIG1 Command not valid \n");
 						strcpy(board_response,"ERROR: READ operation not successful");
 						command_response_string_json(msg_id,board_response,reply);
 					}
@@ -1479,7 +1484,7 @@ int main(int argc, char *argv[]){
 
 	rc = iio_event_monitor_up(); //Initialize iio event monitor
 	if (rc) {
-		printf("Error\r\n");
+		DEBUG_PRINTF("Error\r\n");
 		return rc;
 	}
 
