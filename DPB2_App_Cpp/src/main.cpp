@@ -535,8 +535,9 @@ static void *monitoring_thread(void *arg)
 					//Error
 					case HKDIG_ERRO:
 					default:
-						strcpy(dig_mag_str, "ERROR");
-						parsing_mon_environment_string_into_object(jdig0, dig_monitor_mag_board_names[i],dig_mag_str);
+						char dig_error[8];
+						strcpy(dig_error, "ERROR");
+						parsing_mon_environment_string_into_object(jdig0, dig_monitor_mag_board_names[i],dig_error);
 						break;
 				}
 			}
@@ -576,8 +577,9 @@ static void *monitoring_thread(void *arg)
 						//Error
 						case HKDIG_ERRO:
 						default:
-							strcpy(dig_mag_str, "ERROR");
-							parsing_mon_channel_string_into_object(jdig0channels,j, dig_monitor_mag_chan_names[i],dig_mag_str);
+							char dig_error[8];
+							strcpy(dig_error, "ERROR");
+							parsing_mon_channel_string_into_object(jdig0channels,j, dig_monitor_mag_chan_names[i],dig_error);
 							break;
 					}
 				}
@@ -655,8 +657,9 @@ skip_dig0:
 					//Error
 					case HKDIG_ERRO:
 					default:
-						strcpy(dig_mag_str, "ERROR");
-						parsing_mon_environment_string_into_object(jdig1, dig_monitor_mag_board_names[i],dig_mag_str);
+						char dig_error[8];
+						strcpy(dig_error, "ERROR");
+						parsing_mon_environment_string_into_object(jdig1, dig_monitor_mag_board_names[i],dig_error);
 						break;
 				}
 			}
@@ -697,8 +700,9 @@ skip_dig0:
 						//Error
 						case HKDIG_ERRO:
 						default:
-							strcpy(dig_mag_str, "ERROR");
-							parsing_mon_channel_string_into_object(jdig1channels,j, dig_monitor_mag_chan_names[i],dig_mag_str);
+							char dig_error[8];
+							strcpy(dig_error, "ERROR");
+							parsing_mon_channel_string_into_object(jdig1channels,j, dig_monitor_mag_chan_names[i],dig_error);
 							break;
 					}
 				}
