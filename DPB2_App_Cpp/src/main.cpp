@@ -613,7 +613,7 @@ skip_dig0:
 					case HKDIG_GET_RMON_MUX_N:
 					case HKDIG_GET_RMON_RST_N:
 						dig_mag_str=pkt.GetNextField();
-						parsing_mon_environment_string_into_object(jdig0, dig_monitor_mag_board_names[i],dig_mag_str);
+						parsing_mon_environment_string_into_object(jdig1, dig_monitor_mag_board_names[i],dig_mag_str);
 						break;
 					// BME280 commands
 					case HKDIG_GET_BME_DATA:
