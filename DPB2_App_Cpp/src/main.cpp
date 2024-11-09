@@ -520,6 +520,7 @@ static void *monitoring_thread(void *arg)
 					case HKDIG_GET_BOARD_TU41:
 					case HKDIG_GET_BOARD_TU45:
 						pkt.GetNextFieldAsFLOAT(dig_value);
+						dig_value = dig_value / 100;  //Convert 100ths of degrees to degrees
 						parsing_mon_environment_data_into_object(jdig0, dig_monitor_mag_board_names[i],dig_value);
 						break;				
 					//Clock
@@ -637,9 +638,14 @@ skip_dig0:
 					case HKDIG_GET_BOARD_I5VF:
 					case HKDIG_GET_BOARD_I3V3A:
 					case HKDIG_GET_BOARD_I12VA:
+						pkt.GetNextFieldAsFLOAT(dig_value);
+						dig_value = dig_value / 1000;  //Convert from mV/mA to V/A
+						parsing_mon_environment_data_into_object(jdig1, dig_monitor_mag_board_names[i],dig_value);
+						break;
 					case HKDIG_GET_BOARD_TU40:
 					case HKDIG_GET_BOARD_TU41:
 					case HKDIG_GET_BOARD_TU45:
+						dig_value = dig_value / 100;  //Convert 100ths of degrees to degrees
 						pkt.GetNextFieldAsFLOAT(dig_value);
 						parsing_mon_environment_data_into_object(jdig1, dig_monitor_mag_board_names[i],dig_value);
 						break;				
