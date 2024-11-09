@@ -628,7 +628,6 @@ skip_dig0:
 						parsing_mon_environment_data_into_object(jdig1, "pressure",dig_value);
 						break;
 					//Float
-					//Float
 					case HKDIG_GET_BOARD_3V3A:
 					case HKDIG_GET_BOARD_12VA:
 					case HKDIG_GET_BOARD_I12V:
@@ -980,21 +979,15 @@ skip_hv:
 		json_object_object_add(jdata,"DPB", jdpb);
 
 		const char *serialized_json = json_object_to_json_string(jdata);
-
-		//rc = json_schema_validate("JSONSchemaMonitoring.json",serialized_json, "mon_temp.json");
-		//if (rc) {
-		//	printf("Error validating JSON Schema\r\n");
-		//}
-		//else{ //FIXME DAQ Function HERE. Use the send monitoring data function of DAQ library
+		
+		 //FIXME DAQ Function HERE. Use the send monitoring data function of DAQ library
 			rc2 = zmq_send(mon_publisher, serialized_json, strlen(serialized_json), 0);
-		//	if (rc2 < 0) {
-		//		printf("Error sending JSON\r\n");
-		//	}
-		//}
+			if (rc2 < 0) {
+				printf("Error sending JSON\r\n");
+			}
 		json_object_put(jdata);
 		wait_period(&info);
 	}
-	//stop_I2cSensors(&data);//
 	return NULL;
 }
 /**
