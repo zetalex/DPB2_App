@@ -258,7 +258,8 @@ static void *monitoring_thread(void *arg)
 	sem_post(&thread_sync);
 	while (1) {
 		// Do a preliminary checking for Dig0, Dig1, HV and LV
-		check_board_presence();
+		check_hv_lv_presence();
+		check_digs_presence();
 		// Do a preliminary checking for SFPs
 		check_sfp_presence(data);
 		// DPB Slow Control Monitoring
