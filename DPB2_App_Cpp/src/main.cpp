@@ -1386,12 +1386,12 @@ static void *command_thread(void *arg){
 				}
 			}
 			else if(!strcmp(cmd[1],"DIG0")){ //Digitizer 0
-				if(!strcmp(cmd[3],"AUR0")){
+				if(cmd[3] != NULL && !strcmp(cmd[3],"AUR0")){
 					int aurora_status;
 					read_GPIO(DIG0_MAIN_AURORA_LINK,&aurora_status);
 					command_status_response_json(0,aurora_status,reply);
 				}
-				else if(!strcmp(cmd[3],"AUR1")){
+				else if(cmd[3] != NULL && !strcmp(cmd[3],"AUR1")){
 					int aurora_status;
 					read_GPIO(DIG0_BACKUP_AURORA_LINK,&aurora_status);
 					command_status_response_json(0,aurora_status,reply);
@@ -1422,12 +1422,12 @@ static void *command_thread(void *arg){
 				}
 			}
 			else if(!strcmp(cmd[1],"DIG1")){ //Digitizer 1
-				if(!strcmp(cmd[3],"AUR0")){
+				if(cmd[3] != NULL && !strcmp(cmd[3],"AUR0")){
 					int aurora_status;
 					read_GPIO(DIG1_MAIN_AURORA_LINK,&aurora_status);
 					command_status_response_json(0,aurora_status,reply);
 				}
-				else if(!strcmp(cmd[3],"AUR1")){
+				else if(cmd[3] != NULL && !strcmp(cmd[3],"AUR1")){
 					int aurora_status;
 					read_GPIO(DIG1_BACKUP_AURORA_LINK,&aurora_status);
 					command_status_response_json(0,aurora_status,reply);
