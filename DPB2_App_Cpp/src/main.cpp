@@ -1386,50 +1386,74 @@ static void *command_thread(void *arg){
 				}
 			}
 			else if(!strcmp(cmd[1],"DIG0")){ //Digitizer 0
-				if(dig0_connected){
-					char digcmd[32];
-					char board_response[64];
-					//Command conversion
-					rc = dig_command_translation(digcmd, cmd, words_n);
-					if(rc){
-						DEBUG_PRINTF("DIG0 Command not valid \n");
-						strcpy(board_response,"ERROR: READ operation not successful");
-						command_response_string_json(msg_id,board_response,reply);
+				if(!strcmp(cmd[3],"AUR0")){
+					int aurora_status;
+					read_GPIO(DIG0_MAIN_AURORA_LINK,&aurora_status);
+					command_status_response_json(0,aurora_status,reply);
+				}
+				else if(!strcmp(cmd[3],"AUR1")){
+					int aurora_status;
+					read_GPIO(DIG0_BACKUP_AURORA_LINK,&aurora_status);
+					command_status_response_json(0,aurora_status,reply);
+				}		
+				else {
+					if(dig0_connected){
+						char digcmd[32];
+						char board_response[64];
+						//Command conversion
+						rc = dig_command_translation(digcmd, cmd, words_n);
+						if(rc){
+							DEBUG_PRINTF("DIG0 Command not valid \n");
+							strcpy(board_response,"ERROR: READ operation not successful");
+							command_response_string_json(msg_id,board_response,reply);
+						}
+						else{
+							//Serial Port Communication
+							rc = dig_command_handling(DIGITIZER_0, digcmd, board_response);
+							// Generate the JSON message depending on reading or setting
+							rc = dig_command_response(board_response,reply,msg_id,cmd);
+						}
 					}
 					else{
-						//Serial Port Communication
-						rc = dig_command_handling(DIGITIZER_0, digcmd, board_response);
-						// Generate the JSON message depending on reading or setting
-						rc = dig_command_response(board_response,reply,msg_id,cmd);
+						strcpy(board_response,"ERROR: Digitizer 0 not connected");
+						command_response_string_json(msg_id,board_response,reply);
 					}
-				}
-				else{
-					strcpy(board_response,"ERROR: Digitizer 0 not connected");
-					command_response_string_json(msg_id,board_response,reply);
-				}
 
+				}
 			}
 			else if(!strcmp(cmd[1],"DIG1")){ //Digitizer 1
-				if(dig1_connected){
-					char digcmd[32];
-					char board_response[32];
-					//Command conversion
-					rc = dig_command_translation(digcmd, cmd, words_n);
-					if(rc){
-						DEBUG_PRINTF("DIG1 Command not valid \n");
-						strcpy(board_response,"ERROR: READ operation not successful");
-						command_response_string_json(msg_id,board_response,reply);
+				if(!strcmp(cmd[3],"AUR0")){
+					int aurora_status;
+					read_GPIO(DIG1_MAIN_AURORA_LINK,&aurora_status);
+					command_status_response_json(0,aurora_status,reply);
+				}
+				else if(!strcmp(cmd[3],"AUR1")){
+					int aurora_status;
+					read_GPIO(DIG1_BACKUP_AURORA_LINK,&aurora_status);
+					command_status_response_json(0,aurora_status,reply);
+				}		
+				else {
+					if(dig1_connected){
+						char digcmd[32];
+						char board_response[32];
+						//Command conversion
+						rc = dig_command_translation(digcmd, cmd, words_n);
+						if(rc){
+							DEBUG_PRINTF("DIG1 Command not valid \n");
+							strcpy(board_response,"ERROR: READ operation not successful");
+							command_response_string_json(msg_id,board_response,reply);
+						}
+						else{
+							//Serial Port Communication
+							rc = dig_command_handling(DIGITIZER_1, digcmd, board_response);
+							// Generate the JSON message depending on reading or setting
+							rc = dig_command_response(board_response,reply,msg_id,cmd);
+						}
 					}
 					else{
-						//Serial Port Communication
-						rc = dig_command_handling(DIGITIZER_1, digcmd, board_response);
-						// Generate the JSON message depending on reading or setting
-						rc = dig_command_response(board_response,reply,msg_id,cmd);
+						strcpy(board_response,"ERROR: Digitizer 1 not connected");
+						command_response_string_json(msg_id,board_response,reply);
 					}
-				}
-				else{
-					strcpy(board_response,"ERROR: Digitizer 1 not connected");
-					command_response_string_json(msg_id,board_response,reply);
 				}
 			}
 			else{ //DPB
