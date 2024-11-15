@@ -12,7 +12,9 @@ import subprocess
 from robot.api import logger
 from robotremoteserver import RobotRemoteServer
 from robot.api.deco import not_keyword
+import multiprocessing as mp
 import faulthandler
+from datetime import datetime
 faulthandler.enable()
 
 class DPB2scLibrary(object):
@@ -1268,32 +1270,23 @@ class DPB2scLibrary(object):
 
     # Function decorated with @not_keyword so it is not exposed as a keyword
     @not_keyword
-    def _monitor_edac_mc0(self, log_file):
+    def _read_edac_mc0(self, log_file,date):
         """Monitor EDAC MC0 messages and save the logs to a file."""
-        print(f"Starting EDAC MC0 monitoring with journalctl and saving to {log_file}...")
-        
-        with open(log_file, "w") as f:
+        logger.info(f"Starting EDAC MC0 monitoring with journalctl and saving to {log_file}...")
+        f = open(log_file,"w")
+        f.write("Synopsis RAM Controller Driver Report\n")
+        f.close()
+        cmd = "journalctl --since '" + date + "' | grep 'EDAC MC0'"
+        print(cmd)
+        with open(log_file, "a") as f:
             # Run journalctl in a separate process
-            process = subprocess.Popen(
-                ["journalctl", "-f"], stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True
-            )
-            
-            try:
-                while True:
-                    # Read a line of output from journalctl
-                    line = process.stdout.readline()
-                    if not line:
-                        break  # Exit the loop if there is no more output
-                    
-                    # Filter lines that start with "EDAC MC0"
-                    if line.startswith("EDAC MC0"):
-                        f.write(line)
-                        f.flush()  # Ensure it is saved immediately
-            except KeyboardInterrupt:
-                pass  # Allow exiting with Ctrl+C
-            finally:
-                process.kill()  # Stop the journalctl process
-                print(f"EDAC MC0 logs saved to {log_file}.")
+            process = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True ,shell=True)
+            time.sleep(3) 
+            # Read all contents of output from journalctl
+            content = process.stdout.read()
+            f.write(content)
+            f.close()
+            print(f"EDAC MC0 logs saved to {log_file}.")
     
     # This function will be a Robot Framework keyword
     def run_mem_test(self, memory_base, memory_range):
@@ -1306,10 +1299,11 @@ class DPB2scLibrary(object):
         # Check if the script is run as root (devmem requires elevated permissions)
         if os.geteuid() != 0:
             raise AssertionError("This script must be run as root.")
-        
-        # Start monitoring EDAC MC0
-        self._monitor_edac_mc0(log_file)
+        now = datetime.now()
+        dt_string = now.strftime("%Y-%m-%d %H:%M:%S")
 
+        memory_base = int(memory_base,0)
+        memory_range = int(memory_range,0)
         # Perform memory tests with pattern 0xFFFFFF
         if not self._test_pattern(memory_base, memory_range, 0xFFFFFF):
             raise AssertionError("Memory test failed for pattern 0xFFFFFF.")
@@ -1317,9 +1311,16 @@ class DPB2scLibrary(object):
         # Perform memory tests with pattern 0x000000
         if not self._test_pattern(memory_base, memory_range, 0x000000):
             raise AssertionError("Memory test failed for pattern 0x000000.")
+        # Check monitoring EDAC MC0
+        self._read_edac_mc0(log_file,dt_string)
 
         print("Memory test completed successfully.")
         
+    def read_remote_file(self,file_path):
+        with open(file_path,'r') as f:
+            content = f.read()
+        return content
+      
 def nonblock(stream):
     fcntl.fcntl(stream, fcntl.F_SETFL, fcntl.fcntl(stream, fcntl.F_GETFL) | os.O_NONBLOCK)
 if __name__ == '__main__':
