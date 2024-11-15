@@ -11,6 +11,7 @@ import time
 import subprocess
 from robot.api import logger
 from robotremoteserver import RobotRemoteServer
+from robot.api.deco import not_keyword
 import faulthandler
 faulthandler.enable()
 
@@ -368,7 +369,24 @@ class DPB2scLibrary(object):
         self._result = float_array[channel]
         return float_array[channel]
 
+    #########################################################
+    #PCB Temperature Sensor Functions
+    #########################################################
+    def read_pcb_temperature(self):
+        """Wrapper function to get PCB temperature from MCP9844 sensor temperature from DPB
 
+        Args:
+        None
+        Return:
+        float with the PCB temperature value
+
+        """
+        float_pointer = POINTER(c_float)
+        float_array = (ctypes.c_float * 1) (0.0)
+        float_ptr = ctypes.cast(float_array, float_pointer)
+        self.dpb2sc.mcp9844_read_temperature(self.structure_i2c,float_ptr)
+        return float_ptr[0]
+    
     #########################################################
     #SFPs functions
     #########################################################
@@ -944,6 +962,30 @@ class DPB2scLibrary(object):
         fp.close()
         return eth_int
     
+    def should_be_smaller_than(self,expected,value=None):
+        if(value is None):
+            compared = self._result
+        else:
+            compared = value
+        if(compared >= float(expected)):
+            raise AssertionError('%s is not smaller than %s' % (compared,expected))
+        else:
+            print('%s is smaller than %s' % (compared,expected))
+        return
+    def should_be_larger_than(self,expected,value=None):
+        if(value is None):
+            compared = self._result
+        else:
+            compared = value
+        if(compared <= float(expected)):
+            raise AssertionError('%s is not larger than %s' % (compared,expected))
+        else:
+            print('%s is larger than %s' % (compared,expected))
+        return
+    
+    #########################################################
+    #Aurora Functions
+    #########################################################
     def drive_aurora_link(self,dig_str,aurora_link,aurora_status):
         # Drive Aurora Link up or down 
         # TODO: Complete how Aurora can be driven up or down
@@ -986,21 +1028,11 @@ class DPB2scLibrary(object):
               raise AssertionError("Aurora Link has not been driven down")  
         return
 
-    def read_pcb_temperature(self):
-        """Wrapper function to get PCB temperature from MCP9844 sensor temperature from DPB
-
-        Args:
-        None
-        Return:
-        float with the PCB temperature value
-
-        """
-        float_pointer = POINTER(c_float)
-        float_array = (ctypes.c_float * 1) (0.0)
-        float_ptr = ctypes.cast(float_array, float_pointer)
-        self.dpb2sc.mcp9844_read_temperature(self.structure_i2c,float_ptr)
-        return float_ptr[0]
-        
+    
+  
+    #########################################################
+    #HV and LV Functions
+    #########################################################      
     def send_lv_command(self,rs485,lv_cmd):
         """Send a command to the LV board
 
@@ -1049,6 +1081,9 @@ class DPB2scLibrary(object):
         
         return response.value.decode()
     
+    #########################################################
+    #Digitizer Functions
+    #########################################################
     def open_digitizer_xvc(self,dig_str):
         """Use the default digitizer bitstream file on the DPB to program the digitizer
         Args:
@@ -1101,28 +1136,190 @@ class DPB2scLibrary(object):
         print(response.value.decode())
         
         return response.value.decode()
+
+    #########################################################
+    #QSPI Memory functions
+    #########################################################
+    @not_keyword
+    def write_pattern_to_qspi(self, pattern, qspi_device, size):
+        """
+        Writes a pattern to the entire QSPI flash memory using the flashcp utility.
+        
+        :param pattern: The pattern to write (0xFFFF or 0x0000)
+        :param qspi_device: Path to the QSPI device (e.g., /dev/mtd0)
+        :param size: Size of the QSPI memory to write in bytes
+        """
+        # Create a temporary file with the pattern to write
+        pattern_file = '/tmp/pattern.bin'
+        with open(pattern_file, 'wb') as f:
+            # Write the pattern to the temporary file
+            f.write(bytearray([pattern] * size))  # Write the pattern to the entire memory
+        
+        # Command to copy the pattern file to the QSPI flash memory
+        command = ['flashcp', pattern_file, qspi_device]
+        
+        try:
+            subprocess.run(command, check=True)
+        except subprocess.CalledProcessError as e:
+            raise AssertionError(f"Error writing pattern to flash memory: {e}")
+        finally:
+            # Delete the temporary file
+            os.remove(pattern_file)
+
+    @not_keyword
+    def read_qspi_memory_with_hexdump(self, qspi_device, size):
+        """
+        Reads the content of the QSPI flash memory and returns the first 'size' bytes in hexadecimal format.
+        
+        :param qspi_device: Path to the QSPI device (e.g., /dev/mtd0)
+        :param size: Number of bytes to read
+        :return: Content read from the flash memory in hexadecimal format
+        """
+        command = ['hexdump', '-n', str(size), '-C', qspi_device]
+        
+        try:
+            result = subprocess.run(command, check=True, stdout=subprocess.PIPE)
+            return result.stdout
+        except subprocess.CalledProcessError as e:
+            raise AssertionError(f"Error reading flash memory with hexdump: {e}")
+
+    @not_keyword
+    def verify_pattern_in_qspi(self, pattern, qspi_device, size):
+        """
+        Verifies that a pattern has been correctly written to the QSPI flash memory.
+        
+        :param pattern: The expected pattern (0xFFFF or 0x0000)
+        :param qspi_device: Path to the QSPI device (e.g., /dev/mtd0)
+        :param size: Number of bytes to read and verify
+        """
+        # Read the first 'size' bytes from the QSPI flash memory
+        memory_data = self.read_qspi_memory_with_hexdump(qspi_device, size)
+        
+        if memory_data is None:
+            raise AssertionError("Error reading flash memory, unable to verify the pattern.")
+
+        # Check if all the bytes read match the pattern
+        expected_data = bytearray([pattern] * size)
+        
+        # Convert the hexdump output into a format we can compare
+        hex_bytes = memory_data.replace(b'\n', b'').replace(b' ', b'')  # Clean up the hexdump output
+        
+        expected_hex = ''.join(f'{byte:02x}' for byte in expected_data).encode()
+        
+        if hex_bytes != expected_hex:
+            raise AssertionError(f"Verification failed: The pattern {hex(pattern)} does not match in memory.")
+        
+        # If we reached here, it means verification was successful
+        print(f"Verification successful: The pattern {hex(pattern)} was written correctly.")
+
+    def test_qspi_memory(self, qspi_device, memory_size):
+        """
+        Main function that performs tests on the QSPI flash memory.
+        
+        :param qspi_device: Path to the QSPI device
+        :param memory_size: Size of the QSPI memory in bytes
+        """
+        # Step 1: Write the 0xFFFF pattern to the QSPI flash memory
+        self.write_pattern_to_qspi(0xFF, qspi_device, memory_size)
+
+        # Step 2: Verify that the 0xFFFF pattern was written correctly
+        self.verify_pattern_in_qspi(0xFF, qspi_device, memory_size)
+
+        # Step 3: Write the 0x0000 pattern to the QSPI flash memory
+        self.write_pattern_to_qspi(0x00, qspi_device, memory_size)
+
+        # Step 4: Verify that the 0x0000 pattern was written correctly
+        self.verify_pattern_in_qspi(0x00, qspi_device, memory_size)
     
-    def should_be_smaller_than(self,expected,value=None):
-        if(value is None):
-            compared = self._result
-        else:
-            compared = value
-        if(compared >= float(expected)):
-            raise AssertionError('%s is not smaller than %s' % (compared,expected))
-        else:
-            print('%s is smaller than %s' % (compared,expected))
-        return
-    def should_be_larger_than(self,expected,value=None):
-        if(value is None):
-            compared = self._result
-        else:
-            compared = value
-        if(compared <= float(expected)):
-            raise AssertionError('%s is not larger than %s' % (compared,expected))
-        else:
-            print('%s is larger than %s' % (compared,expected))
-        return
     
+    #########################################################
+    #RAM Memory functions
+    #########################################################
+    # Function decorated with @not_keyword so it is not exposed as a keyword
+    @not_keyword
+    def _devmem(self, address, size, value=None):
+        """Run the devmem command to read or write to memory."""
+        cmd = ["devmem", hex(address), str(size)]
+        if value is not None:
+            cmd.append(hex(value))  # If a value is provided, add it to write
+        result = subprocess.run(cmd, capture_output=True, text=True)
+        return result.stdout.strip() if value is None else None
+
+    # Function decorated with @not_keyword so it is not exposed as a keyword
+    @not_keyword
+    def _test_pattern(self, memory_base, memory_range, pattern):
+        """Write and verify a memory pattern using devmem."""
+        pattern_hex = f"0x{pattern:08X}"
+        print(f"Writing pattern: {pattern_hex}")
+        
+        # Write the pattern to each memory address
+        for offset in range(0, memory_range, 4):
+            self._devmem(memory_base + offset, 32, pattern)
+        
+        # Verify the pattern at each memory address
+        for offset in range(0, memory_range, 4):
+            value = self._devmem(memory_base + offset, 32)
+            if value != pattern_hex:
+                print(f"Error: Pattern verification failed at address {hex(memory_base + offset)}.")
+                raise AssertionError(f"Pattern verification failed at address {hex(memory_base + offset)}.")
+        
+        print(f"Pattern {pattern_hex} verified successfully.")
+        return True
+
+    # Function decorated with @not_keyword so it is not exposed as a keyword
+    @not_keyword
+    def _monitor_edac_mc0(self, log_file):
+        """Monitor EDAC MC0 messages and save the logs to a file."""
+        print(f"Starting EDAC MC0 monitoring with journalctl and saving to {log_file}...")
+        
+        with open(log_file, "w") as f:
+            # Run journalctl in a separate process
+            process = subprocess.Popen(
+                ["journalctl", "-f"], stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True
+            )
+            
+            try:
+                while True:
+                    # Read a line of output from journalctl
+                    line = process.stdout.readline()
+                    if not line:
+                        break  # Exit the loop if there is no more output
+                    
+                    # Filter lines that start with "EDAC MC0"
+                    if line.startswith("EDAC MC0"):
+                        f.write(line)
+                        f.flush()  # Ensure it is saved immediately
+            except KeyboardInterrupt:
+                pass  # Allow exiting with Ctrl+C
+            finally:
+                process.kill()  # Stop the journalctl process
+                print(f"EDAC MC0 logs saved to {log_file}.")
+    
+    # This function will be a Robot Framework keyword
+    def run_mem_test(self, memory_base, memory_range):
+        """Main function to run memory tests and monitoring."""
+        # Set up the log directory and file
+        log_dir = "/home/petalinux/test_scripts"
+        os.makedirs(log_dir, exist_ok=True)
+        log_file = os.path.join(log_dir, "edac_mc0_log.txt")
+        
+        # Check if the script is run as root (devmem requires elevated permissions)
+        if os.geteuid() != 0:
+            raise AssertionError("This script must be run as root.")
+        
+        # Start monitoring EDAC MC0
+        self._monitor_edac_mc0(log_file)
+
+        # Perform memory tests with pattern 0xFFFFFF
+        if not self._test_pattern(memory_base, memory_range, 0xFFFFFF):
+            raise AssertionError("Memory test failed for pattern 0xFFFFFF.")
+
+        # Perform memory tests with pattern 0x000000
+        if not self._test_pattern(memory_base, memory_range, 0x000000):
+            raise AssertionError("Memory test failed for pattern 0x000000.")
+
+        print("Memory test completed successfully.")
+        
 def nonblock(stream):
     fcntl.fcntl(stream, fcntl.F_SETFL, fcntl.fcntl(stream, fcntl.F_GETFL) | os.O_NONBLOCK)
 if __name__ == '__main__':
