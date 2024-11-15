@@ -1316,6 +1316,40 @@ class DPB2scLibrary(object):
 
         print("Memory test completed successfully.")
         
+    def run_failing_mem_test(self, memory_base):
+        """Main function to run memory tests and monitoring."""
+        # Set up the log directory and file
+        log_dir = "/home/petalinux/test_scripts"
+        os.makedirs(log_dir, exist_ok=True)
+        log_file = os.path.join(log_dir, "edac_mc0_log.txt")
+        
+        with open("/sys/devices/system/edac/mc/mc0/inject_data_poison", "w") as f:
+            f.write("CE")
+            f.close()
+            
+        with open("/sys/devices/system/edac/mc/mc0/inject_data_error", "w") as f:
+            f.write(memory_base)
+            f.close()
+        # Check if the script is run as root (devmem requires elevated permissions)
+        if os.geteuid() != 0:
+            raise AssertionError("This script must be run as root.")
+        now = datetime.now()
+        dt_string = now.strftime("%Y-%m-%d %H:%M:%S")
+
+        memory_base = int(memory_base,0)
+        
+        self._devmem(memory_base, 32, 0xFFFFFF)
+        
+        self._devmem(memory_base, 32, 0xFFFFFF)
+        # Check monitoring EDAC MC0
+        self._read_edac_mc0(log_file,dt_string)
+        
+        # Disable Poisoning
+        with open("/sys/devices/system/edac/mc/mc0/inject_data_poison", "w") as f:
+            f.write("DISABLE")
+            f.close()
+        self._devmem(memory_base, 32, 0x000000)
+        
     def read_remote_file(self,file_path):
         with open(file_path,'r') as f:
             content = f.read()
