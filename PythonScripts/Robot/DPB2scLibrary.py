@@ -1169,7 +1169,7 @@ class DPB2scLibrary(object):
             os.remove(pattern_file)
 
     @not_keyword
-    def read_qspi_memory_with_hexdump(self, qspi_device, size):
+    def read_qspi_memory_with_xxd(self, qspi_device, size):
         """
         Reads the content of the QSPI flash memory and returns the first 'size' bytes in hexadecimal format.
         
@@ -1177,7 +1177,7 @@ class DPB2scLibrary(object):
         :param size: Number of bytes to read
         :return: Content read from the flash memory in hexadecimal format
         """
-        command = ['hexdump', '-n', str(size), '-C', qspi_device]
+        command = ['xxd', '-p', '-l', str(size), '-seek', str(0), '-c', str(size) , qspi_device]
         
         try:
             result = subprocess.run(command, check=True, stdout=subprocess.PIPE)
@@ -1195,7 +1195,7 @@ class DPB2scLibrary(object):
         :param size: Number of bytes to read and verify
         """
         # Read the first 'size' bytes from the QSPI flash memory
-        memory_data = self.read_qspi_memory_with_hexdump(qspi_device, size)
+        memory_data = self.read_qspi_memory_with_xxd(qspi_device, size)
         
         if memory_data is None:
             raise AssertionError("Error reading flash memory, unable to verify the pattern.")
@@ -1207,31 +1207,24 @@ class DPB2scLibrary(object):
         hex_bytes = memory_data.replace(b'\n', b'').replace(b' ', b'')  # Clean up the hexdump output
         
         expected_hex = ''.join(f'{byte:02x}' for byte in expected_data).encode()
-        
+        print("Written in QSPI memory:" + str(hex_bytes))
         if hex_bytes != expected_hex:
             raise AssertionError(f"Verification failed: The pattern {hex(pattern)} does not match in memory.")
-        
-        # If we reached here, it means verification was successful
-        print(f"Verification successful: The pattern {hex(pattern)} was written correctly.")
 
-    def test_qspi_memory(self, qspi_device, memory_size):
+    def test_qspi_pattern(self, qspi_device, pattern, memory_size):
         """
         Main function that performs tests on the QSPI flash memory.
         
         :param qspi_device: Path to the QSPI device
         :param memory_size: Size of the QSPI memory in bytes
         """
+        memory_size = int(memory_size,0)
+        pattern = int(pattern,0)
         # Step 1: Write the 0xFFFF pattern to the QSPI flash memory
-        self.write_pattern_to_qspi(0xFF, qspi_device, memory_size)
+        self.write_pattern_to_qspi(pattern, qspi_device, memory_size)
 
         # Step 2: Verify that the 0xFFFF pattern was written correctly
-        self.verify_pattern_in_qspi(0xFF, qspi_device, memory_size)
-
-        # Step 3: Write the 0x0000 pattern to the QSPI flash memory
-        self.write_pattern_to_qspi(0x00, qspi_device, memory_size)
-
-        # Step 4: Verify that the 0x0000 pattern was written correctly
-        self.verify_pattern_in_qspi(0x00, qspi_device, memory_size)
+        self.verify_pattern_in_qspi(pattern, qspi_device, memory_size)
     
     
     #########################################################
