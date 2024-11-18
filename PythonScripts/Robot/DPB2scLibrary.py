@@ -1342,6 +1342,15 @@ class DPB2scLibrary(object):
             f.write("DISABLE")
             f.close()
         self._devmem(memory_base, 32, 0x000000)
+    
+    def run_memtester(self,size):
+        command = ['memtester', str(size), str(1)]
+        
+        try:
+            result = subprocess.run(command, check=True, stdout=subprocess.PIPE)
+            return result.stdout
+        except subprocess.CalledProcessError as e:
+            raise AssertionError(f"Memtester has failed {e}!")
         
     def read_remote_file(self,file_path):
         with open(file_path,'r') as f:
