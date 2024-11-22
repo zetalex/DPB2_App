@@ -648,7 +648,7 @@ class DPB2scLibrary(object):
     #########################################################
     #Check functions
     #########################################################
-    def result_should_be_within_tolerance_range(self, expected, tolerance):
+    def result_should_be_within_tolerance_range(self,expected, tolerance, computed=None):
         """Check if value is within range
 
         Args:
@@ -659,15 +659,20 @@ class DPB2scLibrary(object):
 
         """
 
+        if computed is None:
+            to_be_compared = self._result
+        else:
+            to_be_compared = computed
+        
         tolerance_decimal = float(tolerance.strip('%')) / 100.0
 
         lower_bound = float(expected) * (1 - tolerance_decimal)
         upper_bound = float(expected) * (1 + tolerance_decimal)
 
-        if not (lower_bound <= self._result <= upper_bound):
-            raise AssertionError('%s is not within the range [%s, %s]' % (self._result, lower_bound, upper_bound))
+        if not (lower_bound <= to_be_compared <= upper_bound):
+            raise AssertionError('%s is not within the range [%s, %s]' % (to_be_compared, lower_bound, upper_bound))
         else:
-            print('%s is within the range [%s, %s]' % (self._result, lower_bound, upper_bound))
+            print('%s is within the range [%s, %s]' % (to_be_compared, lower_bound, upper_bound))
         
     def result_should_be(self, expected):
         """Check if value matches
