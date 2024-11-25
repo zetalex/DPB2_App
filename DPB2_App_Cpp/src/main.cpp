@@ -8,6 +8,8 @@
 // COPacket includes
 #include <common/protocols/COPacket/COPacket.hpp>
 #include <COPacketCmdHkDig.h>
+#include <daqinterface/DAQInterface.h>
+#include <daq_inter_obj.h>
 
 extern "C"
 {
@@ -26,7 +28,6 @@ extern "C"
 #include <regex.h>
 #include "linux/errno.h"
 #include <execinfo.h>
-
 
 #include <dpb2sc.h>
 
@@ -990,12 +991,15 @@ skip_hv:
 		json_object_object_add(jdata,"DPB", jdpb);
 
 		const char *serialized_json = json_object_to_json_string(jdata);
-		
-		 //FIXME DAQ Function HERE. Use the send monitoring data function of DAQ library
+
+		 #ifdef DAQ_MODE
+		 	DAQ_Inter.SendMonitoringData(serialized_json);
+		 #else
 			rc2 = zmq_send(mon_publisher, serialized_json, strlen(serialized_json), 0);
 			if (rc2 < 0) {
 				printf("Error sending JSON\r\n");
 			}
+		#endif
 		json_object_put(jdata);
 		wait_period(&info);
 	}
