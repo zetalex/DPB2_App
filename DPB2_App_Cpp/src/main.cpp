@@ -8,8 +8,10 @@
 // COPacket includes
 #include <common/protocols/COPacket/COPacket.hpp>
 #include <COPacketCmdHkDig.h>
-#include <daqinterface/DAQInterface.h>
-#include <daq_inter_obj.h>
+#ifdef DAQ_MODE
+	#include <daqinterface/DAQInterface.h>
+	#include <daq_inter_obj.h>
+#endif
 
 extern "C"
 {
