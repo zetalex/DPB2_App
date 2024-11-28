@@ -993,13 +993,18 @@ class DPB2scLibrary(object):
     #########################################################
     #Aurora Functions
     #########################################################
-    def drive_aurora_link(self,dig_str,aurora_link,aurora_status):
-        # Drive Aurora Link up or down 
-        # TODO: Complete how Aurora can be driven up or down
+    def drive_aurora_link(self,dig_str,aurora_link,expected_status):
+        # Drive Aurora Link up or down
+        # TODO
+        return
+    
+    def switch_aurora_link(self,dig_str,aurora_wanted_link):
+        # Switch to Main or backup Aurora Links on a specific digitizer
+        # TODO
         return
     
     def check_aurora_link(self,dig_str,aurora_link,aurora_status):
-        """Check if the Aurora link statis is the expected one
+        """Check if the Aurora link status is the expected one
 
         Args:
         dig_str: DIG0 or DIG1 depending on the digitizer selected
@@ -1035,7 +1040,16 @@ class DPB2scLibrary(object):
               raise AssertionError("Aurora Link has not been driven down")  
         return
 
-    
+    def start_aurora_data_rx(self,dig,packet_number,packet_size):
+        # Start Aurora data taking
+        self.write_gpio(57,"ON") # Enable DMA
+        self.write_gpio(49,"ON") # Select Digitizer as a source
+        cmd = "dma2tcp " + packet_number + " " + packet_size + " 0"
+        try:
+            self.dma2tcp_proc = subprocess.Popen(cmd, shell=True,stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        except subprocess.CalledProcessError:
+            raise AssertionError("Error calling dma2tcp process")
+        return
   
     #########################################################
     #HV and LV Functions
