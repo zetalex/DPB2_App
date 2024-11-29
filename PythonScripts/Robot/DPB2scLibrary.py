@@ -172,6 +172,9 @@ class DPB2scLibrary(object):
                 self.xvc_process_dig1.terminate()
         self.modprobe_xvc_rm = subprocess.Popen("rmmod xvc_driver", shell=True,stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         
+        # Close dma_proxy process
+        self.modprobe_dma_rm = subprocess.Popen("rmmod dma_proxy", shell=True,stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        
         # Turn on only RS485 Main Driver
         self.write_gpio(68,"ON")
         self.write_gpio(69,"OFF")
@@ -1041,6 +1044,19 @@ class DPB2scLibrary(object):
         return
 
     def start_aurora_data_rx(self,dig,packet_number,packet_size):
+        # Enable dma_proxy driver module
+        fpath = "/home/petalinux/dma_proxy_module_temp.txt"
+        cmd = "lsmod | grep dma_proxy > " + fpath
+        os.system(cmd)
+        if(os.path.isfile(fpath) and os.path.getsize(fpath) == 0):
+            self.modprobe_dma = subprocess.Popen("modprobe dma_proxy", shell=True,stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            time.sleep(2)
+            os.system("dmesg | tail -n4 > /home/petalinux/modprobe_dma_temp.txt")
+            with open(r'/home/petalinux/modprobe_temp.txt', 'r') as fp:
+                print(fp.read())
+            os.remove("/home/petalinux/modprobe_temp.txt")       
+        else:
+            print("dma_proxy already initialized")
         # Start Aurora data taking
         self.write_gpio(57,"ON") # Enable DMA
         self.write_gpio(49,"ON") # Select Digitizer as a source
