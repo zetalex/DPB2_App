@@ -1052,9 +1052,9 @@ class DPB2scLibrary(object):
             self.modprobe_dma = subprocess.Popen("modprobe dma_proxy", shell=True,stdout=subprocess.PIPE, stderr=subprocess.PIPE)
             time.sleep(2)
             os.system("dmesg | tail -n4 > /home/petalinux/modprobe_dma_temp.txt")
-            with open(r'/home/petalinux/modprobe_temp.txt', 'r') as fp:
+            with open(r'/home/petalinux/modprobe_dma_temp.txt', 'r') as fp:
                 print(fp.read())
-            os.remove("/home/petalinux/modprobe_temp.txt")       
+            os.remove("/home/petalinux/modprobe_dma_temp.txt")       
         else:
             print("dma_proxy already initialized")
         # Start Aurora data taking
