@@ -1058,8 +1058,10 @@ class DPB2scLibrary(object):
         else:
             print("dma_proxy already initialized")
         # Start Aurora data taking
-        self.write_gpio(57,"ON") # Enable DMA
         self.write_gpio(49,"ON") # Select Digitizer as a source
+        time.sleep(1)
+        self.write_gpio(57,"ON") # Enable DMA
+        time.sleep(1)
         cmd = "dma2tcp " + packet_number + " " + packet_size + " 0"
         try:
             self.dma2tcp_proc = subprocess.Popen(cmd, shell=True,stdout=subprocess.PIPE, stderr=subprocess.PIPE)
