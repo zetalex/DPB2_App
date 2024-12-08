@@ -1411,9 +1411,9 @@ static void *command_thread(void *arg){
 					command_status_response_json(0,aurora_status,reply);
 				}		
 				else {
+					char board_response[64];
 					if(dig0_connected){
 						char digcmd[32];
-						char board_response[64];
 						//Command conversion
 						rc = dig_command_translation(digcmd, cmd, words_n);
 						if(rc){
@@ -1447,9 +1447,9 @@ static void *command_thread(void *arg){
 					command_status_response_json(0,aurora_status,reply);
 				}		
 				else {
+					char board_response[64];
 					if(dig1_connected){
 						char digcmd[32];
-						char board_response[32];
 						//Command conversion
 						rc = dig_command_translation(digcmd, cmd, words_n);
 						if(rc){
