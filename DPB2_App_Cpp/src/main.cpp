@@ -1465,6 +1465,7 @@ static void *command_thread(void *arg){
 						}
 					}
 					else{
+						printf("Entrando donde quiero \n");
 						strcpy(board_response,"ERROR: Digitizer 1 not connected");
 						command_response_string_json(msg_id,board_response,reply);
 					}
