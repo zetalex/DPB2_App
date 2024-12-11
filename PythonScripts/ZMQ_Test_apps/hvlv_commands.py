@@ -20,7 +20,6 @@ lv_channel_read_commands = [
     "READ LV STATUS 4",
     "READ LV STATUS 5",
     "READ LV STATUS 6",
-    "READ LV STATUS 7",
     "READ LV VOLT 0",
     "READ LV VOLT 1",
     "READ LV VOLT 2",
@@ -28,7 +27,6 @@ lv_channel_read_commands = [
     "READ LV VOLT 4",
     "READ LV VOLT 5",
     "READ LV VOLT 6",
-    "READ LV VOLT 7",
     "READ LV CURR 0",
     "READ LV CURR 1",
     "READ LV CURR 2",
@@ -36,7 +34,6 @@ lv_channel_read_commands = [
     "READ LV CURR 4",
     "READ LV CURR 5",
     "READ LV CURR 6",
-    "READ LV CURR 7",
 ]
 
 hv_channel_read_commands = [
@@ -104,12 +101,8 @@ hv_channel_read_commands = [
 
 lv_channel_set_commands = [
     "SET LV STATUS 0 ON", "SET LV STATUS 1 ON", "SET LV STATUS 2 ON", "SET LV STATUS 3 ON", 
-    "SET LV STATUS 4 ON", "SET LV STATUS 5 ON", "SET LV STATUS 6 ON", "SET LV STATUS 7 ON",
-    "SET LV VOLT 0 15", "SET LV VOLT 1 15", "SET LV VOLT 2 15", "SET LV VOLT 3 15", 
-    "SET LV VOLT 4 15", "SET LV VOLT 5 15", "SET LV VOLT 6 15", "SET LV VOLT 7 15",
-    "SET LV CURR 0 2000", "SET LV CURR 1 2000", "SET LV CURR 2 2000", "SET LV CURR 3 2000", 
-    "SET LV CURR 4 2000", "SET LV CURR 5 2000", "SET LV CURR 6 2000", "SET LV CURR 7 2000",
-    "SET LV CPU MAIN ON", "SET LV CPU MAIN OFF", "SET LV CPU BACKUP ON", "SET LV CPU BACKUP OFF",
+    "SET LV STATUS 4 ON", "SET LV STATUS 5 ON", "SET LV STATUS 6 ON"
+    "SET LV CPU MAIN OFF", "SET LV CPU MAIN ON", "SET LV CPU BACKUP ON", "SET LV CPU BACKUP OFF",
 ]
 
 hv_channel_set_commands = [
@@ -154,4 +147,8 @@ hv_channel_set_commands = [
     "SET HV TRIP 12", "SET HV TRIP 13", "SET HV TRIP 14", "SET HV TRIP 15", 
     "SET HV TRIP 16", "SET HV TRIP 17", "SET HV TRIP 18", "SET HV TRIP 19", 
     "SET HV TRIP 20", "SET HV TRIP 21", "SET HV TRIP 22", "SET HV TRIP 23"
+]
+
+hv_environ_set_commands = [
+    "SET HV CPU MAIN OFF", "SET HV CPU MAIN ON","SET HV CPU BACKUP ON", "SET HV CPU BACKUP OFF",
 ]
