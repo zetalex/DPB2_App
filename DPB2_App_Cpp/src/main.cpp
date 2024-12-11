@@ -547,7 +547,7 @@ static void *monitoring_thread(void *arg)
 			// Channel parameters
 			json_object *jdig0channels = json_object_new_array();
 			for(int i = 0; i < DIG_MON_CHAN_CODES_SIZE; i++){
-					for(int j = 0; j < 12; j++){
+					for(int j = 0; j < 18; j++){
 					pkt.CreatePacket(digcmd, HkDigCmdList.CmdList[dig_monitor_mag_chan_codes[i]].CmdString,(uint32_t) j);
 					rc = dig_command_handling(DIGITIZER_0,digcmd,dig_response);
 					if(rc){ // If the function returns error, we cancel reading on this board until check_board_presence() returns that it is available again
@@ -675,7 +675,7 @@ skip_dig0:
 			// Channel parameters
 			json_object *jdig1channels = json_object_new_array();
 			for(int i = 0; i < DIG_MON_CHAN_CODES_SIZE; i++){
-					for(int j = 0; j < 12; j++){
+					for(int j = 0; j < 18; j++){
 					pkt.CreatePacket(digcmd, HkDigCmdList.CmdList[dig_monitor_mag_chan_codes[i]].CmdString,(uint32_t) j);
 					rc = dig_command_handling(DIGITIZER_1,digcmd,dig_response);
 					if(rc){ // If the function returns error, we cancel reading on this board until check_board_presence() returns that it is available again
