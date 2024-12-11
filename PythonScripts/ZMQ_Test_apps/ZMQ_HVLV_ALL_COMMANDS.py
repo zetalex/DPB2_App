@@ -84,6 +84,16 @@ def main():
        response = str(response)
        if(response.startswith("ERROR")):
            nerrors= nerrors + 1
+           
+    print("Doing HV environment variables set\n")
+    for cmd in hvlv_commands.hv_environ_set_commands:
+       print(cmd)
+       response = send_command(socket,cmd)
+       print(response)
+       time.sleep(0.2)
+       response = str(response)
+       if(response.startswith("ERROR")):
+           nerrors= nerrors + 1
        
     print("DONE. Number of commands failed:" + str(nerrors))
         
