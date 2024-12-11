@@ -1429,8 +1429,9 @@ static void *command_thread(void *arg){
 						}
 					}
 					else{
-						strcpy(board_response,"ERROR: Digitizer 0 not connected");
-						command_response_string_json(msg_id,board_response,reply);
+						char board_response_nc[64];
+						strcpy(board_response_nc,"ERROR: Digitizer 0 not connected");
+						command_response_string_json(msg_id,board_response_nc,reply);
 					}
 
 				}
@@ -1465,9 +1466,9 @@ static void *command_thread(void *arg){
 						}
 					}
 					else{
-						printf("Entrando donde quiero \n");
-						strcpy(board_response,"ERROR: Digitizer 1 not connected");
-						command_response_string_json(msg_id,board_response,reply);
+						char board_response_nc[64];
+						strcpy(board_response_nc,"ERROR: Digitizer 1 not connected");
+						command_response_string_json(msg_id,board_response_nc,reply);
 					}
 				}
 			}
