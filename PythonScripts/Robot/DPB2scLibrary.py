@@ -142,6 +142,9 @@ class DPB2scLibrary(object):
     def library_teardown(self):
         """Destroys class
         """ 
+        # Turn on only RS485 Main Driver
+        self.write_gpio(68,"ON")
+        self.write_gpio(69,"OFF")
         # Send termination signal to the libdpb2sc library
         self.dpb2sc.dpbsc_lib_close(self.structure_i2c)
         
@@ -174,10 +177,6 @@ class DPB2scLibrary(object):
         
         # Close dma_proxy process
         self.modprobe_dma_rm = subprocess.Popen("rmmod dma_proxy", shell=True,stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-        
-        # Turn on only RS485 Main Driver
-        self.write_gpio(68,"ON")
-        self.write_gpio(69,"OFF")
         
     def initialize_zmq_ethernet_sockets (self):
         """Initializes DPB ZMQ sockets.
