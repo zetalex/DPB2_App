@@ -220,8 +220,6 @@ static void *monitoring_thread(void *arg)
 	struct DPB_I2cSensors *data = static_cast<DPB_I2cSensors *>(arg);
 
 	int eth_status[2];
-	int aurora_status[4];
-	int pll_locked;
 
 	char curr[32] = "12Vcurrent";
 	char volt[32] = "12Vvoltage";
@@ -360,26 +358,26 @@ static void *monitoring_thread(void *arg)
 		if (rc) {
 			DEBUG_PRINTF("Reading Error\r\n");
 		}
-		rc = read_GPIO(DIG0_MAIN_AURORA_LINK,&aurora_status[0]);
-		if (rc) {
-			DEBUG_PRINTF("Reading Error\r\n");
-		}
-		rc = read_GPIO(DIG0_BACKUP_AURORA_LINK,&aurora_status[1]);
-		if (rc) {
-			DEBUG_PRINTF("Reading Error\r\n");
-		}
-		rc = read_GPIO(DIG1_MAIN_AURORA_LINK,&aurora_status[2]);
-		if (rc) {
-			DEBUG_PRINTF("Reading Error\r\n");
-		}
-		rc = read_GPIO(DIG1_BACKUP_AURORA_LINK,&aurora_status[3]);
-		if (rc) {
-			DEBUG_PRINTF("Reading Error\r\n");
-		}
-		rc = read_GPIO(PLL_LOL_N,&pll_locked);
-		if (rc) {
-			DEBUG_PRINTF("Reading Error\r\n");
-		}
+		// rc = poll_GPIO(dig0_aurora_main_fd,DIG0_MAIN_AURORA_LINK,&dig0_aurora_main_val);
+		// if (rc) {
+		// 	DEBUG_PRINTF("Reading Error\r\n");
+		// }
+		// rc = poll_GPIO(dig0_aurora_backup_fd,DIG0_BACKUP_AURORA_LINK,&dig0_aurora_backup_val);
+		// if (rc) {
+		// 	DEBUG_PRINTF("Reading Error\r\n");
+		// }
+		// rc = poll_GPIO(dig1_aurora_main_fd,DIG1_MAIN_AURORA_LINK,&dig1_aurora_main_val);
+		// if (rc) {
+		// 	DEBUG_PRINTF("Reading Error\r\n");
+		// }
+		// rc = poll_GPIO(dig1_aurora_backup_fd,DIG1_BACKUP_AURORA_LINK,&dig1_aurora_backup_val);
+		// if (rc) {
+		// 	DEBUG_PRINTF("Reading Error\r\n");
+		// }
+		// rc = poll_GPIO(pll_locked_fd,PLL_LOL_N,&pll_locked_val);
+		// if (rc) {
+		// 	DEBUG_PRINTF("Reading Error\r\n");
+		// }
 		//json_object * jobj = json_object_new_object();
 		json_object *jdata = json_object_new_object();
 		json_object *jlv = json_object_new_object();
@@ -391,13 +389,13 @@ static void *monitoring_thread(void *arg)
 		json_object *jsfps = json_object_new_array();
 		parsing_mon_environment_status_into_object(jdpb, "ethmain", eth_status[0]);
 		parsing_mon_environment_status_into_object(jdpb, "ethbackup", eth_status[1]);
-		parsing_mon_environment_status_into_object(jdpb, "plllocked", pll_locked);
+		parsing_mon_environment_status_into_object(jdpb, "plllocked", pll_locked_val);
 
-		parsing_mon_environment_status_into_object(jdig0, "auroramain", aurora_status[0]);
-		parsing_mon_environment_status_into_object(jdig0, "aurorabackup", aurora_status[1]);
+		parsing_mon_environment_status_into_object(jdig0, "auroramain", dig0_aurora_main_val);
+		parsing_mon_environment_status_into_object(jdig0, "aurorabackup", dig0_aurora_backup_val);
 
-		parsing_mon_environment_status_into_object(jdig1, "auroramain", aurora_status[2]);
-		parsing_mon_environment_status_into_object(jdig1, "aurorabackup", aurora_status[3]);
+		parsing_mon_environment_status_into_object(jdig1, "auroramain", dig1_aurora_main_val);
+		parsing_mon_environment_status_into_object(jdig1, "aurorabackup", dig1_aurora_backup_val);
 
 		parsing_mon_environment_data_into_object(jdpb,"boardtemp", temp[0]);
 
@@ -1036,7 +1034,7 @@ static void *i2c_alarms_thread(void *arg){
 
 	// Trigger interrupt on falling edges of PLL not locked
 	char edge_type[12];
-	strcpy(edge_type,"falling");
+	strcpy(edge_type,"both");
 	write_GPIO_edge(PLL_LOL_N,edge_type);
 
 	// Trigger interrupt on both edges of the 4 Aurora Links
@@ -1422,14 +1420,12 @@ static void *command_thread(void *arg){
 			}
 			else if(!strcmp(cmd[1],"DIG0")){ //Digitizer 0
 				if(cmd[3] != NULL && !strcmp(cmd[3],"AUR0")){
-					int aurora_status;
-					read_GPIO(DIG0_MAIN_AURORA_LINK,&aurora_status);
-					command_status_response_json(0,aurora_status,reply);
+					//read_GPIO(DIG0_MAIN_AURORA_LINK,&aurora_status);
+					command_status_response_json(0,dig0_aurora_main_val,reply);
 				}
 				else if(cmd[3] != NULL && !strcmp(cmd[3],"AUR1")){
-					int aurora_status;
-					read_GPIO(DIG0_BACKUP_AURORA_LINK,&aurora_status);
-					command_status_response_json(0,aurora_status,reply);
+					//read_GPIO(DIG0_BACKUP_AURORA_LINK,&aurora_status);
+					command_status_response_json(0,dig0_aurora_backup_val,reply);
 				}		
 				else {
 					char board_response[64];
@@ -1459,14 +1455,12 @@ static void *command_thread(void *arg){
 			}
 			else if(!strcmp(cmd[1],"DIG1")){ //Digitizer 1
 				if(cmd[3] != NULL && !strcmp(cmd[3],"AUR0")){
-					int aurora_status;
-					read_GPIO(DIG1_MAIN_AURORA_LINK,&aurora_status);
-					command_status_response_json(0,aurora_status,reply);
+					//read_GPIO(DIG1_MAIN_AURORA_LINK,&aurora_status);
+					command_status_response_json(0,dig1_aurora_main_val,reply);
 				}
 				else if(cmd[3] != NULL && !strcmp(cmd[3],"AUR1")){
-					int aurora_status;
-					read_GPIO(DIG1_BACKUP_AURORA_LINK,&aurora_status);
-					command_status_response_json(0,aurora_status,reply);
+					//read_GPIO(DIG1_BACKUP_AURORA_LINK,&aurora_status);
+					command_status_response_json(0,dig1_aurora_backup_val,reply);
 				}		
 				else {
 					char board_response[64];
