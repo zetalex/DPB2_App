@@ -203,6 +203,10 @@ class DPB2scLibrary(object):
         self.GPIO_Base_Address = c_int.in_dll(self.dpb2sc, "GPIO_BASE_ADDRESS")
         self.dpb2sc.get_GPIO_base_address(byref(self.GPIO_Base_Address))
 
+    def export_all_gpios(self):
+        """Exports all DPB GPIOs Addresses.
+        """
+        self.dpb2sc.init_GPIO() 
     #########################################################
     #Ethernet Links functions
     #########################################################
