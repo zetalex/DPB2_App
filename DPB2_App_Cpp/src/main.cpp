@@ -391,7 +391,7 @@ static void *monitoring_thread(void *arg)
 		json_object *jsfps = json_object_new_array();
 		parsing_mon_environment_status_into_object(jdpb, "ethmain", eth_status[0]);
 		parsing_mon_environment_status_into_object(jdpb, "ethbackup", eth_status[1]);
-		parsing_mon_environment_status_into_object(jdpb, "plllocked", !pll_locked);
+		parsing_mon_environment_status_into_object(jdpb, "plllocked", pll_locked);
 
 		parsing_mon_environment_status_into_object(jdig0, "auroramain", aurora_status[0]);
 		parsing_mon_environment_status_into_object(jdig0, "aurorabackup", aurora_status[1]);
