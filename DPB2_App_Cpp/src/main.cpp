@@ -1314,6 +1314,7 @@ static void *command_thread(void *arg){
 				}
 				else{
 					json_object *jempty = json_object_new_string("");
+					cmd[3] = "";
 					json_object_object_add(jobj,"channel", jempty);
 				}
 				if(words_n == 5){
@@ -1321,6 +1322,7 @@ static void *command_thread(void *arg){
 				}
 				else{
 					json_object *jempty = json_object_new_string("");
+					cmd[4] = "";
 					json_object_object_add(jobj,"write_value", jempty);
 				}
 			}
