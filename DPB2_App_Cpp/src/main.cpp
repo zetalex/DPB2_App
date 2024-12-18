@@ -221,6 +221,7 @@ static void *monitoring_thread(void *arg)
 
 	int eth_status[2];
 	int aurora_status[4];
+	int pll_locked;
 
 	char curr[32] = "12Vcurrent";
 	char volt[32] = "12Vvoltage";
@@ -375,6 +376,10 @@ static void *monitoring_thread(void *arg)
 		if (rc) {
 			DEBUG_PRINTF("Reading Error\r\n");
 		}
+		rc = read_GPIO(PLL_LOL_N,&pll_locked);
+		if (rc) {
+			DEBUG_PRINTF("Reading Error\r\n");
+		}
 		//json_object * jobj = json_object_new_object();
 		json_object *jdata = json_object_new_object();
 		json_object *jlv = json_object_new_object();
@@ -386,6 +391,7 @@ static void *monitoring_thread(void *arg)
 		json_object *jsfps = json_object_new_array();
 		parsing_mon_environment_status_into_object(jdpb, "ethmain", eth_status[0]);
 		parsing_mon_environment_status_into_object(jdpb, "ethbackup", eth_status[1]);
+		parsing_mon_environment_status_into_object(jdpb, "plllocked", !pll_locked);
 
 		parsing_mon_environment_status_into_object(jdig0, "auroramain", aurora_status[0]);
 		parsing_mon_environment_status_into_object(jdig0, "aurorabackup", aurora_status[1]);
@@ -1027,6 +1033,17 @@ static void *i2c_alarms_thread(void *arg){
 	int hv_alarms_period = 700000/periods[1]; //in us
 	int hv_count = 0;
 	sem_post(&thread_sync);
+
+	// Trigger interrupt on falling edges of PLL not locked
+	char edge_type[12];
+	strcpy(edge_type,"falling");
+	write_GPIO_edge(PLL_LOL_N,edge_type);
+
+	// Trigger interrupt on both edges of the 4 Aurora Links
+	for (int i = 0; i < 4; i ++){
+		strcpy(edge_type,"both");
+		write_GPIO_edge(DIG0_MAIN_AURORA_LINK + i,edge_type);
+	}
 	while(1){
 		rc = eth_down_alarm("eth0",&eth0_flag);
 		if (rc) {
@@ -1049,6 +1066,10 @@ static void *i2c_alarms_thread(void *arg){
 			DEBUG_PRINTF("Error reading alarm\r\n");
 		}
 		rc = aurora_down_alarm(3,&dig1_backup_flag);
+		if (rc) {
+			DEBUG_PRINTF("Error reading alarm\r\n");
+		}
+		rc = pll_not_locked_alarm();
 		if (rc) {
 			DEBUG_PRINTF("Error reading alarm\r\n");
 		}
