@@ -59,7 +59,7 @@ pthread_t t_3;
 /** @brief Command Handling Thread */
 pthread_t t_4;
 /** @brief periods for each of the threads in order (1 = AMS alarms 2= Other alarms 3= Monitoring 4 = Command handling) */
-int periods[4];
+int periods[5];
 
 /** @} */
 
@@ -73,6 +73,7 @@ extern _COPacketCmdList HkDigCmdList;
 #define ALARMS_THREAD_PERIOD_DEFAULT 100000
 #define AMS_ALARMS_THREAD_PERIOD_DEFAULT 100000
 #define COMMAND_THREAD_PERIOD_DEFAULT 50000
+#define HV_LV_SLEEP_DELAY_DEFAULT 0
 
 /************************** Function Prototypes ******************************/
 
@@ -1517,7 +1518,7 @@ int main(int argc, char *argv[]){
 	int	n;
 	CCOPacket pkt(COPKT_DEFAULT_START, COPKT_DEFAULT_STOP, COPKT_DEFAULT_SEP);
 
-	for(int i = 1 ; i < 5; i++) {
+	for(int i = 1 ; i < 6; i++) {
 		if(argc <= i)
 			switch(i){
 				case 1:
@@ -1532,11 +1533,14 @@ int main(int argc, char *argv[]){
 				case 4:
 				periods[i-1] = COMMAND_THREAD_PERIOD_DEFAULT;
 				break;
+				case 5:
+				periods[i-1] = HV_LV_SLEEP_DELAY_DEFAULT;
+				break;
 			}
 		else
 			periods[i-1] = atoi(argv[i]);
 	}
-
+	hv_lv_sleep_delay = periods[4];
 	rc = dpbsc_lib_init(&data);
 	if(rc){
 		goto end;
