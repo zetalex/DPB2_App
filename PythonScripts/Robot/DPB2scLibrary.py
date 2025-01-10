@@ -142,6 +142,9 @@ class DPB2scLibrary(object):
     def library_teardown(self):
         """Destroys class
         """ 
+        # Turn on only RS485 Main Driver
+        self.write_gpio(68,"ON")
+        self.write_gpio(69,"OFF")
         # Send termination signal to the libdpb2sc library
         self.dpb2sc.dpbsc_lib_close(self.structure_i2c)
         
@@ -172,9 +175,8 @@ class DPB2scLibrary(object):
                 self.xvc_process_dig1.terminate()
         self.modprobe_xvc_rm = subprocess.Popen("rmmod xvc_driver", shell=True,stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         
-        # Turn on only RS485 Main Driver
-        self.write_gpio(68,"ON")
-        self.write_gpio(69,"OFF")
+        # Close dma_proxy process
+        self.modprobe_dma_rm = subprocess.Popen("rmmod dma_proxy", shell=True,stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         
     def initialize_zmq_ethernet_sockets (self):
         """Initializes DPB ZMQ sockets.
@@ -200,6 +202,10 @@ class DPB2scLibrary(object):
         self.GPIO_Base_Address = c_int.in_dll(self.dpb2sc, "GPIO_BASE_ADDRESS")
         self.dpb2sc.get_GPIO_base_address(byref(self.GPIO_Base_Address))
 
+    def export_all_gpios(self):
+        """Exports all DPB GPIOs Addresses.
+        """
+        self.dpb2sc.init_GPIO() 
     #########################################################
     #Ethernet Links functions
     #########################################################
@@ -993,13 +999,18 @@ class DPB2scLibrary(object):
     #########################################################
     #Aurora Functions
     #########################################################
-    def drive_aurora_link(self,dig_str,aurora_link,aurora_status):
-        # Drive Aurora Link up or down 
-        # TODO: Complete how Aurora can be driven up or down
+    def drive_aurora_link(self,dig_str,aurora_link,expected_status):
+        # Drive Aurora Link up or down
+        # TODO
+        return
+    
+    def switch_aurora_link(self,dig_str,aurora_wanted_link):
+        # Switch to Main or backup Aurora Links on a specific digitizer
+        # TODO
         return
     
     def check_aurora_link(self,dig_str,aurora_link,aurora_status):
-        """Check if the Aurora link statis is the expected one
+        """Check if the Aurora link status is the expected one
 
         Args:
         dig_str: DIG0 or DIG1 depending on the digitizer selected
@@ -1035,7 +1046,31 @@ class DPB2scLibrary(object):
               raise AssertionError("Aurora Link has not been driven down")  
         return
 
-    
+    def start_aurora_data_rx(self,dig,packet_number,packet_size):
+        # Enable dma_proxy driver module
+        fpath = "/home/petalinux/dma_proxy_module_temp.txt"
+        cmd = "lsmod | grep dma_proxy > " + fpath
+        os.system(cmd)
+        if(os.path.isfile(fpath) and os.path.getsize(fpath) == 0):
+            self.modprobe_dma = subprocess.Popen("modprobe dma_proxy", shell=True,stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            time.sleep(2)
+            os.system("dmesg | tail -n4 > /home/petalinux/modprobe_dma_temp.txt")
+            with open(r'/home/petalinux/modprobe_dma_temp.txt', 'r') as fp:
+                print(fp.read())
+            os.remove("/home/petalinux/modprobe_dma_temp.txt")       
+        else:
+            print("dma_proxy already initialized")
+        # Start Aurora data taking
+        self.write_gpio(49,"ON") # Select Digitizer as a source
+        time.sleep(1)
+        self.write_gpio(57,"ON") # Enable DMA
+        time.sleep(1)
+        cmd = "dma2tcp " + packet_number + " " + packet_size + " 0"
+        try:
+            self.dma2tcp_proc = subprocess.Popen(cmd, shell=True,stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        except subprocess.CalledProcessError:
+            raise AssertionError("Error calling dma2tcp process")
+        return
   
     #########################################################
     #HV and LV Functions

@@ -62,7 +62,7 @@ pthread_t t_3;
 /** @brief Command Handling Thread */
 pthread_t t_4;
 /** @brief periods for each of the threads in order (1 = AMS alarms 2= Other alarms 3= Monitoring 4 = Command handling) */
-int periods[4];
+int periods[5];
 
 /** @} */
 
@@ -76,6 +76,7 @@ extern _COPacketCmdList HkDigCmdList;
 #define ALARMS_THREAD_PERIOD_DEFAULT 100000
 #define AMS_ALARMS_THREAD_PERIOD_DEFAULT 100000
 #define COMMAND_THREAD_PERIOD_DEFAULT 50000
+#define HV_LV_SLEEP_DELAY_DEFAULT 0
 
 /************************** Function Prototypes ******************************/
 
@@ -223,7 +224,6 @@ static void *monitoring_thread(void *arg)
 	struct DPB_I2cSensors *data = static_cast<DPB_I2cSensors *>(arg);
 
 	int eth_status[2];
-	int aurora_status[4];
 
 	char curr[32] = "12Vcurrent";
 	char volt[32] = "12Vvoltage";
@@ -362,22 +362,26 @@ static void *monitoring_thread(void *arg)
 		if (rc) {
 			DEBUG_PRINTF("Reading Error\r\n");
 		}
-		rc = read_GPIO(DIG0_MAIN_AURORA_LINK,&aurora_status[0]);
-		if (rc) {
-			DEBUG_PRINTF("Reading Error\r\n");
-		}
-		rc = read_GPIO(DIG0_BACKUP_AURORA_LINK,&aurora_status[1]);
-		if (rc) {
-			DEBUG_PRINTF("Reading Error\r\n");
-		}
-		rc = read_GPIO(DIG1_MAIN_AURORA_LINK,&aurora_status[2]);
-		if (rc) {
-			DEBUG_PRINTF("Reading Error\r\n");
-		}
-		rc = read_GPIO(DIG1_BACKUP_AURORA_LINK,&aurora_status[3]);
-		if (rc) {
-			DEBUG_PRINTF("Reading Error\r\n");
-		}
+		// rc = poll_GPIO(dig0_aurora_main_fd,DIG0_MAIN_AURORA_LINK,&dig0_aurora_main_val);
+		// if (rc) {
+		// 	DEBUG_PRINTF("Reading Error\r\n");
+		// }
+		// rc = poll_GPIO(dig0_aurora_backup_fd,DIG0_BACKUP_AURORA_LINK,&dig0_aurora_backup_val);
+		// if (rc) {
+		// 	DEBUG_PRINTF("Reading Error\r\n");
+		// }
+		// rc = poll_GPIO(dig1_aurora_main_fd,DIG1_MAIN_AURORA_LINK,&dig1_aurora_main_val);
+		// if (rc) {
+		// 	DEBUG_PRINTF("Reading Error\r\n");
+		// }
+		// rc = poll_GPIO(dig1_aurora_backup_fd,DIG1_BACKUP_AURORA_LINK,&dig1_aurora_backup_val);
+		// if (rc) {
+		// 	DEBUG_PRINTF("Reading Error\r\n");
+		// }
+		// rc = poll_GPIO(pll_locked_fd,PLL_LOL_N,&pll_locked_val);
+		// if (rc) {
+		// 	DEBUG_PRINTF("Reading Error\r\n");
+		// }
 		//json_object * jobj = json_object_new_object();
 		json_object *jdata = json_object_new_object();
 		json_object *jlv = json_object_new_object();
@@ -389,12 +393,14 @@ static void *monitoring_thread(void *arg)
 		json_object *jsfps = json_object_new_array();
 		parsing_mon_environment_status_into_object(jdpb, "ethmain", eth_status[0]);
 		parsing_mon_environment_status_into_object(jdpb, "ethbackup", eth_status[1]);
+		parsing_mon_environment_status_into_object(jdpb, "plllocked", pll_locked_val);
+		parsing_mon_environment_status_into_object(jdpb, "tdmlocked", tdm_locked_val);
 
-		parsing_mon_environment_status_into_object(jdig0, "auroramain", aurora_status[0]);
-		parsing_mon_environment_status_into_object(jdig0, "aurorabackup", aurora_status[1]);
+		parsing_mon_environment_status_into_object(jdig0, "auroramain", dig0_aurora_main_val);
+		parsing_mon_environment_status_into_object(jdig0, "aurorabackup", dig0_aurora_backup_val);
 
-		parsing_mon_environment_status_into_object(jdig1, "auroramain", aurora_status[2]);
-		parsing_mon_environment_status_into_object(jdig1, "aurorabackup", aurora_status[3]);
+		parsing_mon_environment_status_into_object(jdig1, "auroramain", dig1_aurora_main_val);
+		parsing_mon_environment_status_into_object(jdig1, "aurorabackup", dig1_aurora_backup_val);
 
 		parsing_mon_environment_data_into_object(jdpb,"boardtemp", temp[0]);
 
@@ -550,7 +556,7 @@ static void *monitoring_thread(void *arg)
 			// Channel parameters
 			json_object *jdig0channels = json_object_new_array();
 			for(int i = 0; i < DIG_MON_CHAN_CODES_SIZE; i++){
-					for(int j = 0; j < 12; j++){
+					for(int j = 0; j < 18; j++){
 					pkt.CreatePacket(digcmd, HkDigCmdList.CmdList[dig_monitor_mag_chan_codes[i]].CmdString,(uint32_t) j);
 					rc = dig_command_handling(DIGITIZER_0,digcmd,dig_response);
 					if(rc){ // If the function returns error, we cancel reading on this board until check_board_presence() returns that it is available again
@@ -575,6 +581,8 @@ static void *monitoring_thread(void *arg)
 						case HKDIG_GET_RMON_ADC_N:
 						case HKDIG_GET_RMON_TDC_N:
 						case HKDIG_GET_RMON_FMT_N:
+						case HKDIG_GET_CHN_LG_CHG:
+						case HKDIG_GET_CHN_HG_CHG:
 							dig_mag_str = pkt.GetNextField();
 							dig_mag_str = pkt.GetNextField();
 							parsing_mon_channel_string_into_object(jdig0channels,j, dig_monitor_mag_chan_names[i],dig_mag_str);
@@ -676,7 +684,7 @@ skip_dig0:
 			// Channel parameters
 			json_object *jdig1channels = json_object_new_array();
 			for(int i = 0; i < DIG_MON_CHAN_CODES_SIZE; i++){
-					for(int j = 0; j < 12; j++){
+					for(int j = 0; j < 18; j++){
 					pkt.CreatePacket(digcmd, HkDigCmdList.CmdList[dig_monitor_mag_chan_codes[i]].CmdString,(uint32_t) j);
 					rc = dig_command_handling(DIGITIZER_1,digcmd,dig_response);
 					if(rc){ // If the function returns error, we cancel reading on this board until check_board_presence() returns that it is available again
@@ -702,6 +710,8 @@ skip_dig0:
 						case HKDIG_GET_RMON_ADC_N:
 						case HKDIG_GET_RMON_TDC_N:
 						case HKDIG_GET_RMON_FMT_N:
+						case HKDIG_GET_CHN_LG_CHG:
+						case HKDIG_GET_CHN_HG_CHG:
 							dig_mag_str = pkt.GetNextField();
 							dig_mag_str = pkt.GetNextField();
 							parsing_mon_channel_string_into_object(jdig1channels,j, dig_monitor_mag_chan_names[i],dig_mag_str);
@@ -1029,6 +1039,18 @@ static void *i2c_alarms_thread(void *arg){
 	int hv_alarms_period = 700000/periods[1]; //in us
 	int hv_count = 0;
 	sem_post(&thread_sync);
+
+	// Trigger interrupt on falling edges of PLL not locked
+	char edge_type[12];
+	strcpy(edge_type,"both");
+	write_GPIO_edge(PLL_LOL_N,edge_type);
+	write_GPIO_edge(TDM_DPB_LOCK,edge_type);
+
+	// Trigger interrupt on both edges of the 4 Aurora Links
+	for (int i = 0; i < 4; i ++){
+		strcpy(edge_type,"both");
+		write_GPIO_edge(DIG0_MAIN_AURORA_LINK + i,edge_type);
+	}
 	while(1){
 		rc = eth_down_alarm("eth0",&eth0_flag);
 		if (rc) {
@@ -1054,8 +1076,15 @@ static void *i2c_alarms_thread(void *arg){
 		if (rc) {
 			DEBUG_PRINTF("Error reading alarm\r\n");
 		}
+		rc = pll_not_locked_alarm();
+		if (rc) {
+			DEBUG_PRINTF("Error reading alarm\r\n");
+		}
+		rc = tdm_not_locked_alarm();
+		if (rc) {
+			DEBUG_PRINTF("Error reading alarm\r\n");
+		}
 		sem_wait(&i2c_sync); //Semaphore to sync I2C usage
-
 		rc = mcp9844_read_alarms(data);
 		if (rc) {
 			DEBUG_PRINTF("Error reading alarm\r\n");
@@ -1297,6 +1326,7 @@ static void *command_thread(void *arg){
 				}
 				else{
 					json_object *jempty = json_object_new_string("");
+					cmd[3] = "";
 					json_object_object_add(jobj,"channel", jempty);
 				}
 				if(words_n == 5){
@@ -1304,6 +1334,7 @@ static void *command_thread(void *arg){
 				}
 				else{
 					json_object *jempty = json_object_new_string("");
+					cmd[4] = "";
 					json_object_object_add(jobj,"write_value", jempty);
 				}
 			}
@@ -1403,19 +1434,27 @@ static void *command_thread(void *arg){
 			}
 			else if(!strcmp(cmd[1],"DIG0")){ //Digitizer 0
 				if(cmd[3] != NULL && !strcmp(cmd[3],"AUR0")){
-					int aurora_status;
-					read_GPIO(DIG0_MAIN_AURORA_LINK,&aurora_status);
-					command_status_response_json(0,aurora_status,reply);
+					//read_GPIO(DIG0_MAIN_AURORA_LINK,&aurora_status);
+					if(!strcmp(cmd[0],"READ")){
+						command_status_response_json(0,dig0_aurora_main_val,reply);
+					}
+					else if(!strcmp(cmd[0],"SET")){
+						write_GPIO(DIG0_LINK_SEL,0);
+					}
 				}
 				else if(cmd[3] != NULL && !strcmp(cmd[3],"AUR1")){
-					int aurora_status;
-					read_GPIO(DIG0_BACKUP_AURORA_LINK,&aurora_status);
-					command_status_response_json(0,aurora_status,reply);
+					//read_GPIO(DIG0_BACKUP_AURORA_LINK,&aurora_status);
+					if(!strcmp(cmd[0],"READ")){
+						command_status_response_json(0,dig0_aurora_backup_val,reply);
+					}
+					else if(!strcmp(cmd[0],"SET")){
+						write_GPIO(DIG0_LINK_SEL,1);
+					}
 				}		
 				else {
+					char board_response[64];
 					if(dig0_connected){
 						char digcmd[32];
-						char board_response[64];
 						//Command conversion
 						rc = dig_command_translation(digcmd, cmd, words_n);
 						if(rc){
@@ -1431,27 +1470,36 @@ static void *command_thread(void *arg){
 						}
 					}
 					else{
-						strcpy(board_response,"ERROR: Digitizer 0 not connected");
-						command_response_string_json(msg_id,board_response,reply);
+						char board_response_nc[64];
+						strcpy(board_response_nc,"ERROR: Digitizer 0 not connected");
+						command_response_string_json(msg_id,board_response_nc,reply);
 					}
 
 				}
 			}
 			else if(!strcmp(cmd[1],"DIG1")){ //Digitizer 1
 				if(cmd[3] != NULL && !strcmp(cmd[3],"AUR0")){
-					int aurora_status;
-					read_GPIO(DIG1_MAIN_AURORA_LINK,&aurora_status);
-					command_status_response_json(0,aurora_status,reply);
+					//read_GPIO(DIG1_MAIN_AURORA_LINK,&aurora_status);
+					if(!strcmp(cmd[0],"READ")){
+						command_status_response_json(0,dig1_aurora_main_val,reply);
+					}
+					else if(!strcmp(cmd[0],"SET")){
+						write_GPIO(DIG1_LINK_SEL,0);
+					}
 				}
 				else if(cmd[3] != NULL && !strcmp(cmd[3],"AUR1")){
-					int aurora_status;
-					read_GPIO(DIG1_BACKUP_AURORA_LINK,&aurora_status);
-					command_status_response_json(0,aurora_status,reply);
+					//read_GPIO(DIG1_BACKUP_AURORA_LINK,&aurora_status);
+					if(!strcmp(cmd[0],"READ")){
+						command_status_response_json(0,dig1_aurora_backup_val,reply);
+					}
+					else if(!strcmp(cmd[0],"SET")){
+						write_GPIO(DIG1_LINK_SEL,1);
+					}
 				}		
 				else {
+					char board_response[64];
 					if(dig1_connected){
 						char digcmd[32];
-						char board_response[32];
 						//Command conversion
 						rc = dig_command_translation(digcmd, cmd, words_n);
 						if(rc){
@@ -1467,8 +1515,9 @@ static void *command_thread(void *arg){
 						}
 					}
 					else{
-						strcpy(board_response,"ERROR: Digitizer 1 not connected");
-						command_response_string_json(msg_id,board_response,reply);
+						char board_response_nc[64];
+						strcpy(board_response_nc,"ERROR: Digitizer 1 not connected");
+						command_response_string_json(msg_id,board_response_nc,reply);
 					}
 				}
 			}
@@ -1500,7 +1549,7 @@ int main(int argc, char *argv[]){
 	int	n;
 	CCOPacket pkt(COPKT_DEFAULT_START, COPKT_DEFAULT_STOP, COPKT_DEFAULT_SEP);
 
-	for(int i = 1 ; i < 5; i++) {
+	for(int i = 1 ; i < 6; i++) {
 		if(argc <= i)
 			switch(i){
 				case 1:
@@ -1515,11 +1564,14 @@ int main(int argc, char *argv[]){
 				case 4:
 				periods[i-1] = COMMAND_THREAD_PERIOD_DEFAULT;
 				break;
+				case 5:
+				periods[i-1] = HV_LV_SLEEP_DELAY_DEFAULT;
+				break;
 			}
 		else
 			periods[i-1] = atoi(argv[i]);
 	}
-
+	hv_lv_sleep_delay = periods[4];
 	rc = dpbsc_lib_init(&data);
 	if(rc){
 		goto end;
