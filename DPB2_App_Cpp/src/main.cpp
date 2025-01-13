@@ -67,7 +67,6 @@ int periods[5];
 /** @} */
 
 int break_flag = 0;
-struct DPB_I2cSensors data;
 extern _COPacketCmdList HkDigCmdList;
 /******************************************************************************
 *Threads timers (ms).
@@ -1242,7 +1241,7 @@ static void *command_thread(void *arg){
 
 	struct periodic_info info;
 	int rc ;
-	struct DPB_I2cSensors *data = static_cast<DPB_I2cSensors *>(arg);
+	//struct DPB_I2cSensors *data = static_cast<DPB_I2cSensors *>(arg);
 
 	printf("Command thread period: %3.4fms\n",((float)periods[3])/1000);
 	rc = make_periodic(periods[3], &info);
@@ -1251,20 +1250,14 @@ static void *command_thread(void *arg){
 		return NULL;
 	}
 	while(1){
+		char aux_buff[256];
+		int size;
+		char buffer[256];
+		char reply[256];
+		const char *serialized_json_msg;
 		json_object * jid;
 		json_object * jcmd;
-		json_object *jobj;
-		int size;
-		char *cmd[6];
-		char aux_buff[256];
-		char buffer[256];
 		int msg_id;
-		char reply[256];
-
-		const char *serialized_json;
-		const char *serialized_json_msg;
-		int words_n;
-
 		size = zmq_recv(cmd_router, aux_buff, 255, 0);
 		if (size == -1)
 		  return NULL;
@@ -1285,249 +1278,14 @@ static void *command_thread(void *arg){
 		}
 		json_object_object_get_ex(jmsg, "msg_id", &jid);
 		json_object_object_get_ex(jmsg, "msg_value", &jcmd);
-
 		strcpy(buffer,json_object_get_string(jcmd));
 		msg_id = json_object_get_int(jid);
-
-		cmd[0] = strtok(buffer," ");
-		words_n = 0;
-		while( cmd[words_n] != NULL ) {
-		   words_n++;
-		   cmd[words_n] = strtok(NULL, " ");
-		}
-		jobj = json_object_new_object();
-		char buff[512];
-
-		switch(words_n){
-		case 5:
-			json_object *jstr5;
-			if(!strcmp(cmd[4],"ON") | !strcmp(cmd[4],"OFF")){
-				jstr5 = json_object_new_string(cmd[4]);
-			}
-			else{
-				float val = atof(cmd[4]);
-				sprintf(buff, "%f", val);
-				jstr5 = json_object_new_double_s((double) val,buff);
-			}
-		case 4:
-			json_object *jstr4;
-			jstr4 = json_object_new_string(cmd[3]);
-		case 3: {
-				json_object *jstr3 = json_object_new_string(cmd[2]);
-				json_object *jstr2 = json_object_new_string(cmd[1]);
-				json_object *jstr1 = json_object_new_string(cmd[0]);
-
-				json_object_object_add(jobj,"operation", jstr1);
-				json_object_object_add(jobj,"board", jstr2);
-				json_object_object_add(jobj,"magnitude", jstr3);
-
-				if(words_n>=4){
-					json_object_object_add(jobj,"channel", jstr4);
-				}
-				else{
-					json_object *jempty = json_object_new_string("");
-					cmd[3] = "";
-					json_object_object_add(jobj,"channel", jempty);
-				}
-				if(words_n == 5){
-					json_object_object_add(jobj,"write_value", jstr5);
-				}
-				else{
-					json_object *jempty = json_object_new_string("");
-					cmd[4] = "";
-					json_object_object_add(jobj,"write_value", jempty);
-				}
-			}
-			break;
-		default:
-			break;
-		}
-		//Check JSON schema valid
-		serialized_json = json_object_to_json_string(jobj);
-		rc = json_schema_validate("JSONSchemaCommandRequest.json",serialized_json, "cmd_temp.json");
-		if(rc){
-			rc = command_status_response_json (msg_id,-EINCMD,reply);
-		}
-		else{
-			char board_response[64];
-			if(!strcmp(cmd[1],"LV")){
-				// Implement CPU toggling of LV (Only SET command)
-				if(!strcmp(cmd[2],"CPU")){
-					int gpio_cpu_addr;
-					int gpio_cpu_val;
-					if(!strcmp(cmd[3],"MAIN")){
-						gpio_cpu_addr = LV_MAIN_CPU_GPIO_OFFSET;
-					}
-					else{
-						gpio_cpu_addr = LV_BACKUP_CPU_GPIO_OFFSET;
-					}
-					if(!strcmp(cmd[4],"ON")){
-						gpio_cpu_val = 1;
-					}
-					else{
-						gpio_cpu_val = 0;
-					}
-					write_GPIO(gpio_cpu_addr,gpio_cpu_val);
-					command_status_response_json (msg_id,99,reply);
-				}
-				else if(lv_connected){	
-					char board_dev[64];
-					#ifdef HVLV_NORESISTORS
-					strcpy(board_dev,"/dev/ttyUL4");
-					#else
-					strcpy(board_dev,"/dev/ttyUL3");
-					#endif
-					//Command conversion
-					char hvlvcmd[40] =  "$BD:0,$CMD:";
-					rc = hv_lv_command_translation(hvlvcmd, cmd, words_n);
-					//RS485 communication
-					rc = hv_lv_command_handling(board_dev,hvlvcmd, board_response);
-					// Generate the JSON message depending on reading or setting
-					rc = hv_lv_command_response(board_response,reply,msg_id,cmd);
-				}
-				else{
-					strcpy(board_response,"ERROR: LV Board not connected");
-					rc = hv_lv_command_response(board_response,reply,msg_id,cmd);
-				}
-			}
-			else if(!strcmp(cmd[1],"HV")){
-				// Implement CPU toggling of HV (only SET command)
-				if(!strcmp(cmd[2],"CPU")){
-					int gpio_cpu_addr;
-					int gpio_cpu_val;
-					if(!strcmp(cmd[3],"MAIN")){
-						gpio_cpu_addr = HV_MAIN_CPU_GPIO_OFFSET;
-					}
-					else{
-						gpio_cpu_addr = HV_BACKUP_CPU_GPIO_OFFSET;
-					}
-					if(!strcmp(cmd[4],"ON")){
-						gpio_cpu_val = 1;
-					}
-					else{
-						gpio_cpu_val = 0;
-					}
-					write_GPIO(gpio_cpu_addr,gpio_cpu_val);
-					command_status_response_json (msg_id,99,reply);
-				}
-				else if(hv_connected){
-					char board_dev[64] = "/dev/ttyUL3";
-					//Command conversion
-					char hvlvcmd[40] =  "$BD:1,$CMD:";
-					rc = hv_lv_command_translation(hvlvcmd, cmd, words_n);
-					if(rc){
-						DEBUG_PRINTF("HV/LV Command not valid \n");
-						strcpy(board_response,"ERROR: READ operation not successful");
-						command_response_string_json(msg_id,board_response,reply);
-					}
-					else{
-					//RS485 communication
-					rc = hv_lv_command_handling(board_dev,hvlvcmd, board_response);
-					// Generate the JSON message depending on reading or setting
-					rc = hv_lv_command_response(board_response,reply,msg_id,cmd);
-					}
-				}
-				else{
-					strcpy(board_response,"ERROR: HV board not connected");
-					command_response_string_json(msg_id,board_response,reply);
-				}
-			}
-			else if(!strcmp(cmd[1],"DIG0")){ //Digitizer 0
-				if(cmd[3] != NULL && !strcmp(cmd[3],"AUR0")){
-					//read_GPIO(DIG0_MAIN_AURORA_LINK,&aurora_status);
-					if(!strcmp(cmd[0],"READ")){
-						command_status_response_json(0,dig0_aurora_main_val,reply);
-					}
-					else if(!strcmp(cmd[0],"SET")){
-						write_GPIO(DIG0_LINK_SEL,0);
-					}
-				}
-				else if(cmd[3] != NULL && !strcmp(cmd[3],"AUR1")){
-					//read_GPIO(DIG0_BACKUP_AURORA_LINK,&aurora_status);
-					if(!strcmp(cmd[0],"READ")){
-						command_status_response_json(0,dig0_aurora_backup_val,reply);
-					}
-					else if(!strcmp(cmd[0],"SET")){
-						write_GPIO(DIG0_LINK_SEL,1);
-					}
-				}		
-				else {
-					char board_response[64];
-					if(dig0_connected){
-						char digcmd[32];
-						//Command conversion
-						rc = dig_command_translation(digcmd, cmd, words_n);
-						if(rc){
-							DEBUG_PRINTF("DIG0 Command not valid \n");
-							strcpy(board_response,"ERROR: READ operation not successful");
-							command_response_string_json(msg_id,board_response,reply);
-						}
-						else{
-							//Serial Port Communication
-							rc = dig_command_handling(DIGITIZER_0, digcmd, board_response);
-							// Generate the JSON message depending on reading or setting
-							rc = dig_command_response(board_response,reply,msg_id,cmd);
-						}
-					}
-					else{
-						char board_response_nc[64];
-						strcpy(board_response_nc,"ERROR: Digitizer 0 not connected");
-						command_response_string_json(msg_id,board_response_nc,reply);
-					}
-
-				}
-			}
-			else if(!strcmp(cmd[1],"DIG1")){ //Digitizer 1
-				if(cmd[3] != NULL && !strcmp(cmd[3],"AUR0")){
-					//read_GPIO(DIG1_MAIN_AURORA_LINK,&aurora_status);
-					if(!strcmp(cmd[0],"READ")){
-						command_status_response_json(0,dig1_aurora_main_val,reply);
-					}
-					else if(!strcmp(cmd[0],"SET")){
-						write_GPIO(DIG1_LINK_SEL,0);
-					}
-				}
-				else if(cmd[3] != NULL && !strcmp(cmd[3],"AUR1")){
-					//read_GPIO(DIG1_BACKUP_AURORA_LINK,&aurora_status);
-					if(!strcmp(cmd[0],"READ")){
-						command_status_response_json(0,dig1_aurora_backup_val,reply);
-					}
-					else if(!strcmp(cmd[0],"SET")){
-						write_GPIO(DIG1_LINK_SEL,1);
-					}
-				}		
-				else {
-					char board_response[64];
-					if(dig1_connected){
-						char digcmd[32];
-						//Command conversion
-						rc = dig_command_translation(digcmd, cmd, words_n);
-						if(rc){
-							DEBUG_PRINTF("DIG1 Command not valid \n");
-							strcpy(board_response,"ERROR: READ operation not successful");
-							command_response_string_json(msg_id,board_response,reply);
-						}
-						else{
-							//Serial Port Communication
-							rc = dig_command_handling(DIGITIZER_1, digcmd, board_response);
-							// Generate the JSON message depending on reading or setting
-							rc = dig_command_response(board_response,reply,msg_id,cmd);
-						}
-					}
-					else{
-						char board_response_nc[64];
-						strcpy(board_response_nc,"ERROR: Digitizer 1 not connected");
-						command_response_string_json(msg_id,board_response_nc,reply);
-					}
-				}
-			}
-			else{ //DPB
-				rc = dpb_command_handling(data,cmd,msg_id,reply);
-			}
-		}
-		// Free JSON objects after using them
+		// Call generic command parse function
+		char *reply_bis;
+		reply_bis = command_parse((const char *)buffer);
 		json_object_put(jmsg);
-		json_object_put(jobj);
+		strcpy(reply,reply_bis);
+		free(reply_bis);
 waitmsg:
 	const char* msg_sent = (const char*) reply;
 	//FIXME: DAQ Function HERE. Use whole command_thread function as callback function for DAQ library and parse string into DPB command format
@@ -1606,7 +1364,10 @@ int main(int argc, char *argv[]){
 	sem_wait(&thread_sync);
 	pthread_create(&t_3, NULL, monitoring_thread,(void *)&data);//Create thread 3 - monitors magnitudes every x seconds
 	sem_wait(&thread_sync); //Avoids race conditions
+	// Create command thread only if we are not running in DAQ Mode
+	#ifndef DAQ_MODE
 	pthread_create(&t_4, NULL, command_thread,(void *)&data);//Create thread 4 - waits and attends commands
+	#endif
 
 	while(1){
 		sleep(100);

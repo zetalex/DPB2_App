@@ -10,7 +10,9 @@
         "string": "cpp",
         "cstdlib": "cpp",
         "stdlib.h": "c",
-        "cfloat": "cpp"
+        "cfloat": "cpp",
+        "array": "cpp",
+        "string_view": "cpp"
     },
     "cSpell.language": "en-GB",
     "cSpell.words": [
