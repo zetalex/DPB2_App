@@ -67,7 +67,6 @@ int periods[5];
 /** @} */
 
 int break_flag = 0;
-struct DPB_I2cSensors data;
 extern _COPacketCmdList HkDigCmdList;
 /******************************************************************************
 *Threads timers (ms).
@@ -182,9 +181,8 @@ void sighandler(int signum) {
 	pthread_join(t_4,NULL);
 
 	dpbsc_lib_close(&data);
-	free(&data);
-   break_flag = 1;
-   return ;
+	break_flag = 1;
+	return;
 }
 
 /**
@@ -1233,8 +1231,9 @@ static void *ams_alarms_thread(void *arg){
 	return NULL;
 }
 
+#ifndef DAQ_MODE
 /**
- * Periodic thread that is waiting for a command from the DAQ and handling it
+ * Periodic thread that is waiting for a command from the DAQ and handling it. Used in nonDAQMode
  *
  * @param arg must be NULL
  *
@@ -1244,7 +1243,7 @@ static void *command_thread(void *arg){
 
 	struct periodic_info info;
 	int rc ;
-	//struct DPB_I2cSensors *data = static_cast<DPB_I2cSensors *>(arg);
+	struct DPB_I2cSensors *data = static_cast<DPB_I2cSensors *>(arg);
 
 	printf("Command thread period: %3.4fms\n",((float)periods[3])/1000);
 	rc = make_periodic(periods[3], &info);
@@ -1298,6 +1297,7 @@ waitmsg:
 
 	return NULL;
 }
+#endif
 /** @} */
 /************************** Main function ******************************/
 
@@ -1310,8 +1310,6 @@ int main(int argc, char *argv[]){
 	int	n;
 	CCOPacket pkt(COPKT_DEFAULT_START, COPKT_DEFAULT_STOP, COPKT_DEFAULT_SEP);
 
-
-	//i2c_data=static_cast<DPB_I2cSensors *>(malloc(sizeof(DPB_I2cSensors)));
 	for(int i = 1 ; i < 6; i++) {
 		if(argc <= i)
 			switch(i){
