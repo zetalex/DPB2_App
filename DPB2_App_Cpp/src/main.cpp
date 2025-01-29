@@ -67,6 +67,7 @@ int periods[5];
 /** @} */
 
 int break_flag = 0;
+struct DPB_I2cSensors data;
 extern _COPacketCmdList HkDigCmdList;
 /******************************************************************************
 *Threads timers (ms).
@@ -168,19 +169,20 @@ int iio_event_monitor_up() {
  * @return void
  */
 void sighandler(int signum) {
-   kill(child_pid,SIGKILL);
-   //End threads
-   pthread_cancel(t_1);
-   pthread_cancel(t_2);
-   pthread_cancel(t_4);
-   pthread_cancel(t_3);
+	kill(child_pid,SIGKILL);
+	//End threads
+	pthread_cancel(t_1);
+	pthread_cancel(t_2);
+	pthread_cancel(t_4);
+	pthread_cancel(t_3);
 
-   pthread_join(t_1,NULL);
-   pthread_join(t_2,NULL);
-   pthread_join(t_3,NULL);
-   pthread_join(t_4,NULL);
+	pthread_join(t_1,NULL);
+	pthread_join(t_2,NULL);
+	pthread_join(t_3,NULL);
+	pthread_join(t_4,NULL);
 
-   dpbsc_lib_close(&data);
+	dpbsc_lib_close(&data);
+	free(&data);
    break_flag = 1;
    return ;
 }
@@ -220,6 +222,7 @@ static void *monitoring_thread(void *arg)
 {
 	struct periodic_info info;
 	int rc ;
+	//struct DPB_I2cSensors *data = i2c_data;
 	struct DPB_I2cSensors *data = static_cast<DPB_I2cSensors *>(arg);
 
 	int eth_status[2];
@@ -1027,8 +1030,8 @@ skip_hv:
 static void *i2c_alarms_thread(void *arg){
 	struct periodic_info info;
 	int rc ;
+	//struct DPB_I2cSensors *data = i2c_data;
 	struct DPB_I2cSensors *data = static_cast<DPB_I2cSensors *>(arg);
-
 	printf("Alarms thread period: %3.4fms\n",((float)periods[1])/1000);
 	rc = make_periodic(periods[1], &info);
 	if (rc) {
@@ -1307,6 +1310,8 @@ int main(int argc, char *argv[]){
 	int	n;
 	CCOPacket pkt(COPKT_DEFAULT_START, COPKT_DEFAULT_STOP, COPKT_DEFAULT_SEP);
 
+
+	//i2c_data=static_cast<DPB_I2cSensors *>(malloc(sizeof(DPB_I2cSensors)));
 	for(int i = 1 ; i < 6; i++) {
 		if(argc <= i)
 			switch(i){
