@@ -1299,8 +1299,19 @@ waitmsg:
 }
 #endif
 /** @} */
-/************************** Main function ******************************/
 
+/************************** Main function ******************************/
+/**
+ * @brief Main function that initializes signal handlers, creates threads, and manages the main loop.
+ * 
+ * This function sets up signal handlers for SIGTERM, SIGINT, and SIGSEGV. It initializes a semaphore
+ * for thread synchronization and blocks all real-time signals to be used for timers. It then creates
+ * several threads for handling AMS alarms, I2C alarms, and monitoring magnitudes. If not running in
+ * DAQ mode, it also creates a command thread. The main loop runs indefinitely, checking for a break
+ * flag to exit the loop.
+ * 
+ * @return int Returns 0 upon successful completion.
+ */
 int main(int argc, char *argv[]){
 
 	setbuf(stdout, NULL);
