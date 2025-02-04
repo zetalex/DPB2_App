@@ -1005,7 +1005,7 @@ skip_hv:
 		const char *serialized_json = json_object_to_json_string(jdata);
 
 		 #ifdef DAQ_MODE
-		 	DAQ_Inter.SendMonitoringData(serialized_json);
+		 	DAQ_Inter->SendMonitoringData(serialized_json);
 		 #else
 			rc2 = zmq_send(mon_publisher, serialized_json, strlen(serialized_json), 0);
 			if (rc2 < 0) {
@@ -1344,6 +1344,17 @@ int main(int argc, char *argv[]){
 			periods[i-1] = atoi(argv[i]);
 	}
 	hv_lv_sleep_delay = periods[4];
+
+	/* Block all real time signals so they can be used for the timers.
+	Note: this has to be done in main() before any threads are created
+	so they all inherit the same mask. Doing it later is subject to
+	race conditions*/
+
+	sigemptyset(&alarm_sig);
+	for (i = SIGRTMIN; i <= SIGRTMAX; i++)
+		sigaddset(&alarm_sig, i);
+	sigprocmask(SIG_BLOCK, &alarm_sig, NULL);
+
 	rc = dpbsc_lib_init(&data);
 	if(rc){
 		goto end;
@@ -1361,16 +1372,6 @@ int main(int argc, char *argv[]){
 	signal(SIGSEGV, segmentation_handler);
 
 	sem_init(&thread_sync,0,0);
-
-	/* Block all real time signals so they can be used for the timers.
-	   Note: this has to be done in main() before any threads are created
-	   so they all inherit the same mask. Doing it later is subject to
-	   race conditions*/
-
-	sigemptyset(&alarm_sig);
-	for (i = SIGRTMIN; i <= SIGRTMAX; i++)
-		sigaddset(&alarm_sig, i);
-	sigprocmask(SIG_BLOCK, &alarm_sig, NULL);
 
 	pthread_create(&t_1, NULL, ams_alarms_thread,NULL); //Create thread 1 - reads AMS alarms
 	sem_wait(&thread_sync);
