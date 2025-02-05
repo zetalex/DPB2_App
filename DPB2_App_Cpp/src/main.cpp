@@ -172,13 +172,17 @@ void sighandler(int signum) {
 	//End threads
 	pthread_cancel(t_1);
 	pthread_cancel(t_2);
+	#ifndef DAQ_MODE
 	pthread_cancel(t_4);
+	#endif
 	pthread_cancel(t_3);
 
 	pthread_join(t_1,NULL);
 	pthread_join(t_2,NULL);
 	pthread_join(t_3,NULL);
+	#ifndef DAQ_MODE
 	pthread_join(t_4,NULL);
+	#endif
 
 	dpbsc_lib_close(&data);
 	break_flag = 1;
