@@ -1261,6 +1261,7 @@ static void *command_thread(void *arg){
 		char buffer[256];
 		char reply[256];
 		const char *serialized_json_msg;
+		char *reply_bis;
 		json_object * jid;
 		json_object * jcmd;
 		int msg_id;
@@ -1287,11 +1288,9 @@ static void *command_thread(void *arg){
 		strcpy(buffer,json_object_get_string(jcmd));
 		msg_id = json_object_get_int(jid);
 		// Call generic command parse function
-		char *reply_bis;
 		reply_bis = command_parse((const char *)buffer);
-		json_object_put(jmsg);
 		strcpy(reply,reply_bis);
-		free(reply_bis);
+		json_object_put(jmsg);
 waitmsg:
 	const char* msg_sent = (const char*) reply;
 	//FIXME: DAQ Function HERE. Use whole command_thread function as callback function for DAQ library and parse string into DPB command format
