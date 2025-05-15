@@ -494,6 +494,7 @@ static void *monitoring_thread(void *arg)
     				case HKDIG_GET_SW_VER:
     				case HKDIG_GET_BOARD_STATUS:
     				case HKDIG_GET_BOARD_CNTRL:
+					case HKDIG_GET_BOARD_CNTRL2:
 					case HKDIG_GET_UPTIME:
 					case HKDIG_GET_RMON_PER:
 					case HKDIG_GET_TLNK_LOCK:
@@ -581,12 +582,13 @@ static void *monitoring_thread(void *arg)
 						case HKDIG_GET_THR_NUM:
 						case HKDIG_GET_CHN_STATUS:
 						case HKDIG_GET_CHN_CNTRL:
-						case HKDIG_GET_PED_TYPE:
+						case HKDIG_GET_BOARD_CNTRL2:
 						case HKDIG_GET_RMON_ADC_N:
 						case HKDIG_GET_RMON_TDC_N:
 						case HKDIG_GET_RMON_FMT_N:
 						case HKDIG_GET_CHN_LG_CHG:
 						case HKDIG_GET_CHN_HG_CHG:
+						case HKDIG_GET_PED_ENABLE:
 							dig_mag_str = pkt.GetNextField();
 							dig_mag_str = pkt.GetNextField();
 							parsing_mon_channel_string_into_object(jdig0channels,j, dig_monitor_mag_chan_names[i],dig_mag_str);
@@ -710,12 +712,12 @@ skip_dig0:
 						case HKDIG_GET_THR_NUM:
 						case HKDIG_GET_CHN_STATUS:
 						case HKDIG_GET_CHN_CNTRL:
-						case HKDIG_GET_PED_TYPE:
 						case HKDIG_GET_RMON_ADC_N:
 						case HKDIG_GET_RMON_TDC_N:
 						case HKDIG_GET_RMON_FMT_N:
 						case HKDIG_GET_CHN_LG_CHG:
 						case HKDIG_GET_CHN_HG_CHG:
+						case HKDIG_GET_PED_ENABLE:
 							dig_mag_str = pkt.GetNextField();
 							dig_mag_str = pkt.GetNextField();
 							parsing_mon_channel_string_into_object(jdig1channels,j, dig_monitor_mag_chan_names[i],dig_mag_str);

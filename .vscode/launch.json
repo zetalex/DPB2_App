@@ -1,0 +1,20 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "type": "gdb",
+            "request": "attach",
+            "name": "DPB3 Test Station GDBServer",
+            "gdbpath": "/usr/bin/gdb-multiarch",
+            "executable": "/media/hyperk2/SSD_DATA/GITLAB_CERN/hk_petalinux_project_dpb2_2022_2/images/linux/sdk/sysroots/cortexa72-cortexa53-xilinx-linux/usr/bin/dpb-slowcontrolapp",
+            "target": "158.42.106.150:5111",
+            "remote": true,
+            "printCalls": true,
+            "cwd": "${workspaceRoot}",
+            "valuesFormatting": "parseText",
+            "stopAtConnect":true,
+            "debugger_args" : ["-iex", "dir /media/hyperk2/SSD_DATA/GITHUB/DPB2_App/DPB2_App_Cpp/src", "-iex", "dir /media/hyperk2/SSD_DATA/GITHUB/libdpb2sc/dpb2sc_Cpp/src", "-iex", "set sysroot /media/hyperk2/SSD_DATA/GITLAB_CERN/hk_petalinux_project_dpb2_2022_2/images/linux/sdk/sysroots/cortexa72-cortexa53-xilinx-linux"]
+
+        }
+    ]
+}
