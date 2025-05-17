@@ -55,7 +55,7 @@ dig_dpb_environ_commands_set = [
     "SET DIG0 DEMUX ON",
     "SET DIG0 DEMUX OFF",
     "SET DIG0 PEDSTAG 0",
-    "SET DIG0 PSC"
+    "SET DIG0 PSC 2"
 ]
 
 dig_dpb_channel_commands_read = [
