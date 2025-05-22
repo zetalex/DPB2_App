@@ -656,8 +656,8 @@ skip_dig0:
 					case HKDIG_GET_BOARD_TU40:
 					case HKDIG_GET_BOARD_TU41:
 					case HKDIG_GET_BOARD_TU45:
-						dig_value = dig_value / 100;  //Convert 100ths of degrees to degrees
 						pkt.GetNextFieldAsFLOAT(dig_value);
+						dig_value = dig_value / 100;  //Convert 100ths of degrees to degrees
 						parsing_mon_environment_data_into_object(jdig1, dig_monitor_mag_board_names[i],dig_value);
 						break;				
 					//Clock
