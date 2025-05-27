@@ -495,6 +495,8 @@ static void *monitoring_thread(void *arg)
 					case HKDIG_GET_EEPROM_EID:
 					case HKDIG_GET_RMON_MUX_N:
 					case HKDIG_GET_RMON_RST_N:
+					case HKDIG_GET_PED_STAGGER:
+					case HKDIG_GET_PED_PERIOD:
 						dig_mag_str=pkt.GetNextField();
 						parsing_mon_environment_string_into_object(jdig0, dig_monitor_mag_board_names[i],dig_mag_str);
 						break;
@@ -517,7 +519,7 @@ static void *monitoring_thread(void *arg)
 					case HKDIG_GET_BOARD_5V0A:
 					case HKDIG_GET_BOARD_5V0F:
 					case HKDIG_GET_BOARD_C12V:
-					case HKDIG_GET_BOARD_I5VF:
+					case HKDIG_GET_BOARD_I5VA:
 					case HKDIG_GET_BOARD_I3V3A:
 					case HKDIG_GET_BOARD_I12VA:
 						pkt.GetNextFieldAsFLOAT(dig_value);
@@ -646,7 +648,7 @@ skip_dig0:
 					case HKDIG_GET_BOARD_5V0A:
 					case HKDIG_GET_BOARD_5V0F:
 					case HKDIG_GET_BOARD_C12V:
-					case HKDIG_GET_BOARD_I5VF:
+					case HKDIG_GET_BOARD_I5VA:
 					case HKDIG_GET_BOARD_I3V3A:
 					case HKDIG_GET_BOARD_I12VA:
 						pkt.GetNextFieldAsFLOAT(dig_value);
