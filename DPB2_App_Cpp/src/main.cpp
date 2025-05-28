@@ -577,7 +577,6 @@ static void *monitoring_thread(void *arg)
 						case HKDIG_GET_THR_NUM:
 						case HKDIG_GET_CHN_STATUS:
 						case HKDIG_GET_CHN_CNTRL:
-						case HKDIG_GET_BOARD_CNTRL2:
 						case HKDIG_GET_RMON_ADC_N:
 						case HKDIG_GET_RMON_TDC_N:
 						case HKDIG_GET_RMON_FMT_N:
@@ -619,6 +618,7 @@ skip_dig0:
     				case HKDIG_GET_SW_VER:
     				case HKDIG_GET_BOARD_STATUS:
     				case HKDIG_GET_BOARD_CNTRL:
+					case HKDIG_GET_BOARD_CNTRL2:
 					case HKDIG_GET_UPTIME:
 					case HKDIG_GET_RMON_PER:
 					case HKDIG_GET_TLNK_LOCK:
@@ -626,6 +626,8 @@ skip_dig0:
 					case HKDIG_GET_EEPROM_EID:
 					case HKDIG_GET_RMON_MUX_N:
 					case HKDIG_GET_RMON_RST_N:
+					case HKDIG_GET_PED_STAGGER:
+					case HKDIG_GET_PED_PERIOD:
 						dig_mag_str=pkt.GetNextField();
 						parsing_mon_environment_string_into_object(jdig1, dig_monitor_mag_board_names[i],dig_mag_str);
 						break;
