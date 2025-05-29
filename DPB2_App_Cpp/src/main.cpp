@@ -502,6 +502,8 @@ static void *monitoring_thread(void *arg)
 					case HKDIG_GET_EEPROM_EID:
 					case HKDIG_GET_RMON_MUX_N:
 					case HKDIG_GET_RMON_RST_N:
+					case HKDIG_GET_PED_STAGGER:
+					case HKDIG_GET_PED_PERIOD:
 						dig_mag_str=pkt.GetNextField();
 						parsing_mon_environment_string_into_object(jdig0, dig_monitor_mag_board_names[i],dig_mag_str);
 						break;
@@ -524,7 +526,7 @@ static void *monitoring_thread(void *arg)
 					case HKDIG_GET_BOARD_5V0A:
 					case HKDIG_GET_BOARD_5V0F:
 					case HKDIG_GET_BOARD_C12V:
-					case HKDIG_GET_BOARD_I5VF:
+					case HKDIG_GET_BOARD_I5VA:
 					case HKDIG_GET_BOARD_I3V3A:
 					case HKDIG_GET_BOARD_I12VA:
 						pkt.GetNextFieldAsFLOAT(dig_value);
@@ -582,7 +584,6 @@ static void *monitoring_thread(void *arg)
 						case HKDIG_GET_THR_NUM:
 						case HKDIG_GET_CHN_STATUS:
 						case HKDIG_GET_CHN_CNTRL:
-						case HKDIG_GET_BOARD_CNTRL2:
 						case HKDIG_GET_RMON_ADC_N:
 						case HKDIG_GET_RMON_TDC_N:
 						case HKDIG_GET_RMON_FMT_N:
@@ -624,6 +625,7 @@ skip_dig0:
     				case HKDIG_GET_SW_VER:
     				case HKDIG_GET_BOARD_STATUS:
     				case HKDIG_GET_BOARD_CNTRL:
+					case HKDIG_GET_BOARD_CNTRL2:
 					case HKDIG_GET_UPTIME:
 					case HKDIG_GET_RMON_PER:
 					case HKDIG_GET_TLNK_LOCK:
@@ -631,6 +633,8 @@ skip_dig0:
 					case HKDIG_GET_EEPROM_EID:
 					case HKDIG_GET_RMON_MUX_N:
 					case HKDIG_GET_RMON_RST_N:
+					case HKDIG_GET_PED_STAGGER:
+					case HKDIG_GET_PED_PERIOD:
 						dig_mag_str=pkt.GetNextField();
 						parsing_mon_environment_string_into_object(jdig1, dig_monitor_mag_board_names[i],dig_mag_str);
 						break;
@@ -653,7 +657,7 @@ skip_dig0:
 					case HKDIG_GET_BOARD_5V0A:
 					case HKDIG_GET_BOARD_5V0F:
 					case HKDIG_GET_BOARD_C12V:
-					case HKDIG_GET_BOARD_I5VF:
+					case HKDIG_GET_BOARD_I5VA:
 					case HKDIG_GET_BOARD_I3V3A:
 					case HKDIG_GET_BOARD_I12VA:
 						pkt.GetNextFieldAsFLOAT(dig_value);
@@ -663,8 +667,8 @@ skip_dig0:
 					case HKDIG_GET_BOARD_TU40:
 					case HKDIG_GET_BOARD_TU41:
 					case HKDIG_GET_BOARD_TU45:
-						dig_value = dig_value / 100;  //Convert 100ths of degrees to degrees
 						pkt.GetNextFieldAsFLOAT(dig_value);
+						dig_value = dig_value / 100;  //Convert 100ths of degrees to degrees
 						parsing_mon_environment_data_into_object(jdig1, dig_monitor_mag_board_names[i],dig_value);
 						break;				
 					//Clock

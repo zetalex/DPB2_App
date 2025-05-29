@@ -18,7 +18,7 @@ dig_dpb_environ_commands_read = [
     "READ DIG0 5V0A",
     "READ DIG0 5V0F",
     "READ DIG0 C12V",
-    "READ DIG0 I5VF",
+    "READ DIG0 I5VA",
     "READ DIG0 I3V3A",
     "READ DIG0 I12VA",
     "READ DIG0 TPWR",
