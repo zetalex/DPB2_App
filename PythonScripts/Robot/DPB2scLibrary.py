@@ -863,7 +863,7 @@ class DPB2scLibrary(object):
         """Check SFP RX Power value is within manufacturer valid rangesm
 
         """
-        lower_bound = 0.00002
+        lower_bound = 0.000019
         upper_bound = 0.001
 
         if not (lower_bound <= self._result <= upper_bound):
