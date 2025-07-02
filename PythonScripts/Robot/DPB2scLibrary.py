@@ -79,6 +79,15 @@ class DPB2scLibrary(object):
         "20"  :  "90"
     }
     
+    uio_axireg_names = [
+    "DPB_COMMIT_SHA",
+    "DPB_VER",
+    "DPB_COMMIT_DATE",
+    "DMA_BUF_SIZE",
+    "TIMING_LINK_SWITCH",
+    "TIMING_MGT_MAIN_SWITCH",
+    "TIMING_MGT_BACKUP_SWITCH"
+    ]
     #########################################################
     # Initialization functions
     #########################################################
@@ -1396,7 +1405,37 @@ class DPB2scLibrary(object):
         with open(file_path,'r') as f:
             content = f.read()
         return content
-      
+    #########################################################
+    #UIO Functions
+    #########################################################
+    def read_pl_register(self, reg_name):
+        """Read a PL register using the uio driver.
+
+        Args:
+        address (int): Address of the PL register to read.
+
+        Returns:
+        int: Value read from the PL register.
+        """
+        
+        index = uio_axireg_names.index(reg_name)
+        c_index = c_int(index)
+        c_value = c_int(0)
+        self.dpb2sc.read_uio(c_index,POINTER(c_value))
+        return c_value.value
+    def write_pl_register(self, reg_name, value):
+        """Write a value to a PL register using the uio driver.
+
+        Args:
+        address (int): Address of the PL register to write.
+        value (int): Value to write to the PL register.
+        """
+        
+        index = uio_axireg_names.index(reg_name)
+        c_index = c_int(index)
+        c_value = c_int(value)
+        self.dpb2sc.write_uio(c_index, c_value)
+        
 def nonblock(stream):
     fcntl.fcntl(stream, fcntl.F_SETFL, fcntl.fcntl(stream, fcntl.F_GETFL) | os.O_NONBLOCK)
 if __name__ == '__main__':
