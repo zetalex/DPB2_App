@@ -1418,7 +1418,7 @@ class DPB2scLibrary(object):
         int: Value read from the PL register.
         """
         
-        index = uio_axireg_names.index(reg_name)
+        index = self.uio_axireg_names.index(reg_name)
         c_index = c_int(index)
         c_value = c_int(0)
         self.dpb2sc.read_uio(c_index,POINTER(c_value))
@@ -1431,7 +1431,7 @@ class DPB2scLibrary(object):
         value (int): Value to write to the PL register.
         """
         
-        index = uio_axireg_names.index(reg_name)
+        index = self.uio_axireg_names.index(reg_name)
         c_index = c_int(index)
         c_value = c_int(value)
         self.dpb2sc.write_uio(c_index, c_value)
