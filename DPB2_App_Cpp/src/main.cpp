@@ -221,6 +221,10 @@ static void *monitoring_thread(void *arg)
 	struct DPB_I2cSensors *data = static_cast<DPB_I2cSensors *>(arg);
 
 	int eth_status[2];
+	uint8_t tdm_active_link = -1;
+	uint8_t tdm_main_mgt_status = -1;
+	uint8_t tdm_backup_mgt_status = -1;
+	char tdm_active_link_str[12];
 
 	char curr[32] = "12Vcurrent";
 	char volt[32] = "12Vvoltage";
@@ -262,7 +266,8 @@ static void *monitoring_thread(void *arg)
 		check_digs_presence();
 		// Do a preliminary checking for SFPs
 		check_sfp_presence(data);
-		// DPB Slow Control Monitoring
+		/* DPB Slow Control Monitoring */
+		// DPB PCB Temperature sensor
 		sem_wait(&i2c_sync); //Semaphore to sync I2C usage
 		rc = mcp9844_read_temperature(data,temp);
 		if (rc) {
@@ -359,6 +364,26 @@ static void *monitoring_thread(void *arg)
 		if (rc) {
 			DEBUG_PRINTF("Reading Error\r\n");
 		}
+		rc = read_uio(REG_TIMING_LINK_SWITCH,&tdm_active_link);
+		if (rc) {
+			DEBUG_PRINTF("Reading Error\r\n");
+		}
+		if(tdm_active_link){
+			strcpy(tdm_active_link_str,"BACKUP"); // TDM is using backup  link
+		}
+		else{
+			strcpy(tdm_active_link_str,"MAIN"); // TDM using main link
+		}
+
+		rc = read_uio(REG_TIMING_MGT_MAIN_SWITCH,&tdm_main_mgt_status);
+		if (rc) {
+			DEBUG_PRINTF("Reading Error\r\n");
+		}
+
+		rc = read_uio(REG_TIMING_MGT_BACKUP_SWITCH,&tdm_backup_mgt_status);
+		if (rc) {
+			DEBUG_PRINTF("Reading Error\r\n");
+		}
 		// rc = poll_GPIO(dig0_aurora_main_fd,DIG0_MAIN_AURORA_LINK,&dig0_aurora_main_val);
 		// if (rc) {
 		// 	DEBUG_PRINTF("Reading Error\r\n");
@@ -392,6 +417,13 @@ static void *monitoring_thread(void *arg)
 		parsing_mon_environment_status_into_object(jdpb, "ethbackup", eth_status[1]);
 		parsing_mon_environment_status_into_object(jdpb, "plllocked", pll_locked_val);
 		parsing_mon_environment_status_into_object(jdpb, "tdmlocked", tdm_locked_val);
+
+		parsing_mon_environment_string_into_object(jdpb,"tdmactivelink", tdm_active_link_str);
+
+		parsing_mon_environment_status_into_object(jdpb, "timingmaintx", tdm_main_mgt_status & 0x2);
+		parsing_mon_environment_status_into_object(jdpb, "timingmainrx", tdm_main_mgt_status & 0x1);
+		parsing_mon_environment_status_into_object(jdpb, "timingbackuptx", tdm_backup_mgt_status & 0x2);
+		parsing_mon_environment_status_into_object(jdpb, "timingbackuprx", tdm_backup_mgt_status & 0x1);
 
 		parsing_mon_environment_status_into_object(jdig0, "auroramain", dig0_aurora_main_val);
 		parsing_mon_environment_status_into_object(jdig0, "aurorabackup", dig0_aurora_backup_val);
