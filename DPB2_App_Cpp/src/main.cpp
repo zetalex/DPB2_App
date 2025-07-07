@@ -419,11 +419,12 @@ static void *monitoring_thread(void *arg)
 		parsing_mon_environment_status_into_object(jdpb, "tdmlocked", tdm_locked_val);
 
 		parsing_mon_environment_string_into_object(jdpb,"tdmactivelink", tdm_active_link_str);
-
-		parsing_mon_environment_status_into_object(jdpb, "timingmaintx", tdm_main_mgt_status & 0x2);
-		parsing_mon_environment_status_into_object(jdpb, "timingmainrx", tdm_main_mgt_status & 0x1);
-		parsing_mon_environment_status_into_object(jdpb, "timingbackuptx", tdm_backup_mgt_status & 0x2);
-		parsing_mon_environment_status_into_object(jdpb, "timingbackuprx", tdm_backup_mgt_status & 0x1);
+		
+		// Registers for MGT Switch are inverted (0 means ON)
+		parsing_mon_environment_status_into_object(jdpb, "timingmaintx", !(tdm_main_mgt_status & 0x2));
+		parsing_mon_environment_status_into_object(jdpb, "timingmainrx", !(tdm_main_mgt_status & 0x1));
+		parsing_mon_environment_status_into_object(jdpb, "timingbackuptx", !(tdm_backup_mgt_status & 0x2));
+		parsing_mon_environment_status_into_object(jdpb, "timingbackuprx", !(tdm_backup_mgt_status & 0x1));
 
 		parsing_mon_environment_status_into_object(jdig0, "auroramain", dig0_aurora_main_val);
 		parsing_mon_environment_status_into_object(jdig0, "aurorabackup", dig0_aurora_backup_val);
