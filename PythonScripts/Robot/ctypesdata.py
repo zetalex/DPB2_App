@@ -39,6 +39,7 @@ ctype_map = {
     'struct I2cDevice':I2cDevice,
     'int32_t': ctypes.c_int32,
     'uint16_t': ctypes.c_uint16,
+    'uint32_t': ctypes.c_uint32,
     'uint8_t': ctypes.c_ubyte,
     'uint64_t': ctypes.c_uint64,
     'json_object':JsonObject,
