@@ -15,7 +15,8 @@ def main():
     socket = context.socket(zmq.REQ)
     socket.connect(ip_str)
     print("Establishing connection with DPB at address " + str(str(sys.argv[1])))
-
+    n = 0
+    
     while True:
         command = sys.argv[2]
         msg = "{'msg_id':0, 'msg_time':'2021-11-19T17:54:30.691Z', 'msg_type':'Command', 'msg_value':'" + command + "', 'uuid': '931fbc9d-b2b3-c248-87d6ae33f9a62'}"
@@ -23,7 +24,8 @@ def main():
         response = socket.recv_string()
         json_obj = json.loads(response)
         value = json_obj["msg_value"]
-        print(value)
+        print(n,value)
+        n += 1
         time.sleep(0.2)
     
 
