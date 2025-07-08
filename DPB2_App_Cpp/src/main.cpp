@@ -1095,14 +1095,21 @@ static void *i2c_alarms_thread(void *arg){
 		write_GPIO_edge(DIG0_MAIN_AURORA_LINK + i,edge_type);
 	}
 	while(1){
-		rc = eth_down_alarm("eth0",&eth0_flag);
-		if (rc) {
-			DEBUG_PRINTF("Error reading alarm\r\n");
+		
+		if(!eths_shutdown[0]){
+			rc = eth_down_alarm("eth0",&eth0_flag);
+			if (rc) {
+				DEBUG_PRINTF("Error reading alarm\r\n");
+			}
 		}
-		rc = eth_down_alarm("eth1",&eth1_flag);
-		if (rc) {
-			DEBUG_PRINTF("Error reading alarm\r\n");
+
+		if(!eths_shutdown[1]){
+			rc = eth_down_alarm("eth1",&eth1_flag);
+			if (rc) {
+				DEBUG_PRINTF("Error reading alarm\r\n");
+			}
 		}
+
 		rc = aurora_down_alarm(0,&dig0_main_flag);
 		if (rc) {
 			DEBUG_PRINTF("Error reading alarm\r\n");
