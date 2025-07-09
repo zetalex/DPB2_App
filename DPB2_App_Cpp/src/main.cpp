@@ -260,10 +260,10 @@ static void *monitoring_thread(void *arg)
 	float sfp_txbias[SFP_NUM];
 	uint8_t sfp_status[SFP_NUM][2];
 
-	printf("Monitoring thread period: %3.4fs\n",((float)periods[2])/1000000);
+	LOG_PRINTF("Monitoring thread period: %3.4fs\n",((float)periods[2])/1000000);
 	rc = make_periodic(periods[2], &info);
 	if (rc) {
-		DEBUG_PRINTF("Error\r\n");
+		LOG_PRINTF("Error creating monitoring thread\r\n");
 		return NULL;
 	}
 	sem_post(&thread_sync);
@@ -278,7 +278,7 @@ static void *monitoring_thread(void *arg)
 		sem_wait(&i2c_sync); //Semaphore to sync I2C usage
 		rc = mcp9844_read_temperature(data,temp);
 		if (rc) {
-			DEBUG_PRINTF("Reading Error\r\n");
+			LOG_PRINTF("Reading Error PCB Temperature\r\n");
 		}
 		// SFP monitoring
 		for(int i = 0; i < SFP_NUM;i++){
@@ -289,91 +289,91 @@ static void *monitoring_thread(void *arg)
 					write_GPIO(I2C_MUX_RESET,1);
 					usleep(100);
 					write_GPIO(I2C_MUX_RESET,0);
-					DEBUG_PRINTF("Reading Error\r\n");
+					LOG_PRINTF("Reading Error SFP temperature\r\n");
 				}
 				rc = sfp_avago_read_voltage(data,i,&sfp_vcc[i]);
 				if (rc) {
 					write_GPIO(I2C_MUX_RESET,1);
 					usleep(100);
 					write_GPIO(I2C_MUX_RESET,0);
-					DEBUG_PRINTF("Reading Error\r\n");
+					LOG_PRINTF("Reading Error SFP voltage\r\n");
 				}
 				rc = sfp_avago_read_lbias_current(data,i,&sfp_txbias[i]);
 				if (rc) {
 					write_GPIO(I2C_MUX_RESET,1);
 					usleep(100);
 					write_GPIO(I2C_MUX_RESET,0);
-					DEBUG_PRINTF("Reading Error\r\n");
+					LOG_PRINTF("Reading Error SFP Bias Current\r\n");
 				}
 				rc = sfp_avago_read_tx_av_optical_pwr(data,i,&sfp_txpwr[i]);
 				if (rc) {
 					write_GPIO(I2C_MUX_RESET,1);
 					usleep(100);
 					write_GPIO(I2C_MUX_RESET,0);
-					DEBUG_PRINTF("Reading Error\r\n");
+					LOG_PRINTF("Reading Error SFP TX power\r\n");
 				}
 				rc = sfp_avago_read_rx_av_optical_pwr(data,i,&sfp_rxpwr[i]);
 				if (rc) {
 					write_GPIO(I2C_MUX_RESET,1);
 					usleep(100);
 					write_GPIO(I2C_MUX_RESET,0);
-					DEBUG_PRINTF("Reading Error\r\n");
+					LOG_PRINTF("Reading Error RX Power\r\n");
 				}
 				rc = sfp_avago_read_status(data,i,sfp_status[i]);
 				if (rc) {
 					write_GPIO(I2C_MUX_RESET,1);
 					usleep(100);
 					write_GPIO(I2C_MUX_RESET,0);
-					DEBUG_PRINTF("Reading Error\r\n");
+					LOG_PRINTF("Reading Error SFP Status\r\n");
 				
 				}
 			}
 		}
 		rc = ina3221_get_voltage(data,0,volt_sfp0_2);
 		if (rc) {
-			DEBUG_PRINTF("Reading Error\r\n");
+			LOG_PRINTF("Reading Error Voltage\r\n");
 		}
 		rc = ina3221_get_voltage(data,1,volt_sfp3_5);
 		if (rc) {
-			DEBUG_PRINTF("Reading Error\r\n");
+			LOG_PRINTF("Reading Error Voltage\r\n");
 		}
 		rc = ina3221_get_voltage(data,2,volt_som);
 		if (rc) {
-			DEBUG_PRINTF("Reading Error\r\n");
+			LOG_PRINTF("Reading Error SOM voltage\r\n");
 		}
 		rc = ina3221_get_current(data,0,curr_sfp0_2);
 		if (rc) {
-			DEBUG_PRINTF("Reading Error\r\n");
+			LOG_PRINTF("Reading Error Current\r\n");
 		}
 		rc = ina3221_get_current(data,1,curr_sfp3_5);
 		if (rc) {
-			DEBUG_PRINTF("Reading Error\r\n");
+			LOG_PRINTF("Reading Error Current\r\n");
 		}
 		rc = ina3221_get_current(data,2,curr_som);
 		if (rc) {
-			DEBUG_PRINTF("Reading Error\r\n");
+			LOG_PRINTF("Reading Error Current\r\n");
 		}
 		sem_post(&i2c_sync);//Free semaphore to sync I2C usage
 
 		rc = xlnx_ams_read_temp(temp_chan,AMS_TEMP_NUM_CHAN,ams_temp);
 		if (rc) {
-			DEBUG_PRINTF("Reading Error\r\n");
+			LOG_PRINTF("Reading Error AMS Temperature\r\n");
 		}
 		rc = xlnx_ams_read_volt(volt_chan,AMS_VOLT_NUM_CHAN,ams_volt);
 		if (rc) {
-			DEBUG_PRINTF("Reading Error\r\n");
+			LOG_PRINTF("Reading Error AMS Voltage\r\n");
 		}
 		rc = eth_link_status("eth0",&eth_status[0]);
 		if (rc) {
-			DEBUG_PRINTF("Reading Error\r\n");
+			LOG_PRINTF("Reading Error Ethernet 0 status\r\n");
 		}
 		rc = eth_link_status("eth1",&eth_status[1]);
 		if (rc) {
-			DEBUG_PRINTF("Reading Error\r\n");
+			LOG_PRINTF("Reading Error Ethernet 1 Status\r\n");
 		}
 		rc = read_uio(REG_TIMING_LINK_SWITCH,&tdm_active_link);
 		if (rc) {
-			DEBUG_PRINTF("Reading Error\r\n");
+			LOG_PRINTF("Reading Error Timing register\r\n");
 		}
 		if(tdm_active_link){
 			strcpy(tdm_active_link_str,"BACKUP"); // TDM is using backup  link
@@ -384,32 +384,32 @@ static void *monitoring_thread(void *arg)
 
 		rc = read_uio(REG_TIMING_MGT_MAIN_SWITCH,&tdm_main_mgt_status);
 		if (rc) {
-			DEBUG_PRINTF("Reading Error\r\n");
+			LOG_PRINTF("Reading Error Timing Register switch\r\n");
 		}
 
 		rc = read_uio(REG_TIMING_MGT_BACKUP_SWITCH,&tdm_backup_mgt_status);
 		if (rc) {
-			DEBUG_PRINTF("Reading Error\r\n");
+			LOG_PRINTF("Reading Error Timing Register switch\r\n");
 		}
 		// rc = poll_GPIO(dig0_aurora_main_fd,DIG0_MAIN_AURORA_LINK,&dig0_aurora_main_val);
 		// if (rc) {
-		// 	DEBUG_PRINTF("Reading Error\r\n");
+		// 	LOG_PRINTF("Reading Error\r\n");
 		// }
 		// rc = poll_GPIO(dig0_aurora_backup_fd,DIG0_BACKUP_AURORA_LINK,&dig0_aurora_backup_val);
 		// if (rc) {
-		// 	DEBUG_PRINTF("Reading Error\r\n");
+		// 	LOG_PRINTF("Reading Error\r\n");
 		// }
 		// rc = poll_GPIO(dig1_aurora_main_fd,DIG1_MAIN_AURORA_LINK,&dig1_aurora_main_val);
 		// if (rc) {
-		// 	DEBUG_PRINTF("Reading Error\r\n");
+		// 	LOG_PRINTF("Reading Error\r\n");
 		// }
 		// rc = poll_GPIO(dig1_aurora_backup_fd,DIG1_BACKUP_AURORA_LINK,&dig1_aurora_backup_val);
 		// if (rc) {
-		// 	DEBUG_PRINTF("Reading Error\r\n");
+		// 	LOG_PRINTF("Reading Error\r\n");
 		// }
 		// rc = poll_GPIO(pll_locked_fd,PLL_LOL_N,&pll_locked_val);
 		// if (rc) {
-		// 	DEBUG_PRINTF("Reading Error\r\n");
+		// 	LOG_PRINTF("Reading Error\r\n");
 		// }
 		//json_object * jobj = json_object_new_object();
 		json_object *jdata = json_object_new_object();
@@ -1052,7 +1052,7 @@ skip_hv:
 		 #else
 			rc2 = zmq_send(mon_publisher, serialized_json, strlen(serialized_json), 0);
 			if (rc2 < 0) {
-				printf("Error sending JSON\r\n");
+				LOG_PRINTF("Error sending JSON\r\n");
 			}
 		#endif
 		json_object_put(jdata);
@@ -1073,10 +1073,10 @@ static void *i2c_alarms_thread(void *arg){
 	int rc ;
 	//struct DPB_I2cSensors *data = i2c_data;
 	struct DPB_I2cSensors *data = static_cast<DPB_I2cSensors *>(arg);
-	printf("Alarms thread period: %3.4fms\n",((float)periods[1])/1000);
+	LOG_PRINTF("Alarms thread period: %3.4fms\n",((float)periods[1])/1000);
 	rc = make_periodic(periods[1], &info);
 	if (rc) {
-		DEBUG_PRINTF("Error\r\n");
+		LOG_PRINTF("Error\r\n");
 		return NULL;
 	}
 	int hv_alarms_period = 700000/periods[1]; //in us
@@ -1099,57 +1099,57 @@ static void *i2c_alarms_thread(void *arg){
 		if(!eths_shutdown[0]){
 			rc = eth_down_alarm("eth0",&eth0_flag);
 			if (rc) {
-				DEBUG_PRINTF("Error reading alarm\r\n");
+				LOG_PRINTF("Error reading alarm ethernet 0\r\n");
 			}
 		}
 
 		if(!eths_shutdown[1]){
 			rc = eth_down_alarm("eth1",&eth1_flag);
 			if (rc) {
-				DEBUG_PRINTF("Error reading alarm\r\n");
+				LOG_PRINTF("Error reading alarm ethernet 1\r\n");
 			}
 		}
 
 		rc = aurora_down_alarm(0,&dig0_main_flag);
 		if (rc) {
-			DEBUG_PRINTF("Error reading alarm\r\n");
+			LOG_PRINTF("Error reading alarm aurora 0 main\r\n");
 		}
 		rc = aurora_down_alarm(1,&dig0_backup_flag);
 		if (rc) {
-			DEBUG_PRINTF("Error reading alarm\r\n");
+			LOG_PRINTF("Error reading alarm aurora 0 backup\r\n");
 		}
 		rc = aurora_down_alarm(2,&dig1_main_flag);
 		if (rc) {
-			DEBUG_PRINTF("Error reading alarm\r\n");
+			LOG_PRINTF("Error reading alarm aurora 1 main\r\n");
 		}
 		rc = aurora_down_alarm(3,&dig1_backup_flag);
 		if (rc) {
-			DEBUG_PRINTF("Error reading alarm\r\n");
+			LOG_PRINTF("Error reading alarm aurora 1 backup\r\n");
 		}
 		rc = pll_not_locked_alarm();
 		if (rc) {
-			DEBUG_PRINTF("Error reading alarm\r\n");
+			LOG_PRINTF("Error reading alarm PLL\r\n");
 		}
 		rc = tdm_not_locked_alarm();
 		if (rc) {
-			DEBUG_PRINTF("Error reading alarm\r\n");
+			LOG_PRINTF("Error reading alarm TDM Lock\r\n");
 		}
 		sem_wait(&i2c_sync); //Semaphore to sync I2C usage
 		rc = mcp9844_read_alarms(data);
 		if (rc) {
-			DEBUG_PRINTF("Error reading alarm\r\n");
+			LOG_PRINTF("Error reading alarm PCB temperature\r\n");
 		}
 		rc = ina3221_read_alarms(data,0);
 		if (rc) {
-			DEBUG_PRINTF("Error reading alarm\r\n");
+			LOG_PRINTF("Error reading INA3221 alarms\r\n");
 		}
 		rc = ina3221_read_alarms(data,1);
 		if (rc) {
-			DEBUG_PRINTF("Error reading alarm\r\n");
+			LOG_PRINTF("Error reading INA3221 alarms\r\n");
 		}
 		rc = ina3221_read_alarms(data,2);
 		if (rc) {
-			DEBUG_PRINTF("Error reading alarm\r\n");
+			LOG_PRINTF("Error reading INA3221 alarms\r\n");
 		}
 		for (int i = 0; i < SFP_NUM; i++){
 			if(sfp_connected[i]){
@@ -1159,7 +1159,7 @@ static void *i2c_alarms_thread(void *arg){
 					write_GPIO(I2C_MUX_RESET,1);
 					usleep(100);
 					write_GPIO(I2C_MUX_RESET,0);
-					DEBUG_PRINTF("Error reading alarm\r\n");
+					LOG_PRINTF("Error reading alarm from SFP %d\r\n",i);
 				}
 			}
 		}
@@ -1202,10 +1202,10 @@ static void *ams_alarms_thread(void *arg){
 
 	sem_wait(&memory->ams_sync);
 
-	printf("AMS Alarms thread period: %3.4fms\n",((float)periods[0])/1000);
+	LOG_PRINTF("AMS Alarms thread period: %3.4fms\n",((float)periods[0])/1000);
 	rc = make_periodic(periods[0], &info);
 	if (rc) {
-		DEBUG_PRINTF("Error\r\n");
+		LOG_PRINTF("Error creating AMS alarm thread\r\n");
 		return NULL;
 	}
 	sem_post(&thread_sync);
@@ -1236,7 +1236,7 @@ static void *ams_alarms_thread(void *arg){
     		rising = fopen(ris_str,"r");
 
     		if((raw==NULL)|(rising==NULL)){
-    			DEBUG_PRINTF("AMS Voltage file could not be opened!!! \n");/*Any of the files could not be opened*/
+    			LOG_PRINTF("AMS Voltage file could not be opened!!! \n");/*Any of the files could not be opened*/
     			}
     		else if(chan >= 7){
     			fseek(raw, 0, SEEK_END);
@@ -1274,7 +1274,7 @@ static void *ams_alarms_thread(void *arg){
             //printf("Chip: AMS. Event type: %s. Timestamp: %lld. Channel type: %s. Channel: %d. Value: %f ºC\n",ev_type,timestamp,ch_type,chan,res[0]);
         }
 		if (rc) {
-			DEBUG_PRINTF("Error\r\n");
+			LOG_PRINTF("Error\r\n");
 		}
 		wait_period(&info);
 	}
@@ -1295,10 +1295,10 @@ static void *command_thread(void *arg){
 	int rc ;
 	struct DPB_I2cSensors *data = static_cast<DPB_I2cSensors *>(arg);
 
-	printf("Command thread period: %3.4fms\n",((float)periods[3])/1000);
+	LOG_PRINTF("Command thread period: %3.4fms\n",((float)periods[3])/1000);
 	rc = make_periodic(periods[3], &info);
 	if (rc) {
-		DEBUG_PRINTF("Error\r\n");
+		LOG_PRINTF("Error creating command thread\r\n");
 		return NULL;
 	}
 	while(1){
@@ -1411,7 +1411,7 @@ int main(int argc, char *argv[]){
 
 	rc = iio_event_monitor_up(); //Initialize iio event monitor
 	if (rc) {
-		DEBUG_PRINTF("Error\r\n");
+		LOG_PRINTF("Error\r\n");
 		return rc;
 	}
 
