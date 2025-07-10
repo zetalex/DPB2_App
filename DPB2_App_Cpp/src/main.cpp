@@ -1355,6 +1355,14 @@ waitmsg:
 	return NULL;
 }
 
+/**
+ * Periodic thread that handles configuration updates by retrieving and parsing configuration data.
+ * This thread runs continuously at a specified period awaiting for configuration changes coming from the  * ZMQ socket in standalone mode and applies them.
+ *
+ * @param arg Thread argument (unused, should be NULL)
+ *
+ * @return NULL (if exits is because of an error).
+ */
 static void *config_thread(void *arg){
 
 	struct periodic_info info;
