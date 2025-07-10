@@ -61,6 +61,8 @@ pthread_t t_2;
 pthread_t t_3;
 /** @brief Command Handling Thread */
 pthread_t t_4;
+/** @brief Configuration Thread */
+pthread_t t_5;
 /** @brief periods for each of the threads in order (1 = AMS alarms 2= Other alarms 3= Monitoring 4 = Command handling) */
 int periods[5];
 
@@ -87,6 +89,7 @@ static void *monitoring_thread(void *);
 static void *i2c_alarms_thread(void *);
 static void *ams_alarms_thread(void *);
 static void *command_thread(void *);
+static void *config_thread(void *);
 
 /************************** IIO_EVENT_MONITOR Functions ******************************/
 /** @defgroup add Additional functions for the application besides libdpb2sc
@@ -1333,6 +1336,11 @@ static void *command_thread(void *arg){
 		json_object_object_get_ex(jmsg, "msg_value", &jcmd);
 		strcpy(buffer,json_object_get_string(jcmd));
 		msg_id = json_object_get_int(jid);
+		// Replace spaces by underscores
+		for(int i = 0; i < strlen(buffer); i++){
+			if(buffer[i] == ' ')
+				buffer[i] = '_';
+		}
 		// Call generic command parse function
 		reply_bis = command_parse((const char *)buffer);
 		strcpy(reply,reply_bis);
@@ -1345,6 +1353,24 @@ waitmsg:
 	}
 
 	return NULL;
+}
+
+static void *config_thread(void *arg){
+
+	struct periodic_info info;
+	LOG_PRINTF("Configuration thread period: %3.4fms\n",((float)periods[3])/1000);
+	int rc = make_periodic(periods[3], &info);
+	if (rc) {
+		LOG_PRINTF("Error creating configuration thread\r\n");
+		return NULL;
+	}
+
+	sem_post(&thread_sync);
+	while(1){
+		config_get();
+		config_parse(config_to_apply);
+		wait_period(&info);
+	}
 }
 #endif
 /** @} */
@@ -1431,6 +1457,8 @@ int main(int argc, char *argv[]){
 	// Create command thread only if we are not running in DAQ Mode
 	#ifndef DAQ_MODE
 	pthread_create(&t_4, NULL, command_thread,(void *)&data);//Create thread 4 - waits and attends commands
+	sem_wait(&thread_sync); //Avoids race conditions
+	pthread_create(&t_5, NULL, config_thread,NULL); //Create thread 5 - waits and attends configuration commands
 	#endif
 
 	while(1){
