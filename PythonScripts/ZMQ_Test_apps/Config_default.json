@@ -259,7 +259,7 @@
         "rmont": "1",
         "channels": [
             {
-                "status":"ON",
+                "chcontrol":0,
                 "disctres": 4018,
                 "inttime": 19.0,
                 "deadtime": 0.0,
@@ -268,7 +268,7 @@
                 "pedtype":"0"
             },
             {
-                "status":"ON",
+                "chcontrol":0,
                 "disctres": 4018,
                 "inttime": 19.0,
                 "deadtime": 0.0,
@@ -277,7 +277,7 @@
                 "pedtype":"0"
             },
             {
-                "status":"ON",
+                "chcontrol":0,
                 "disctres": 4018,
                 "inttime": 19.0,
                 "deadtime": 0.0,
@@ -286,7 +286,7 @@
                 "pedtype":"0"
             },
             {
-                "status":"ON",
+                "chcontrol":0,
                 "disctres": 4018,
                 "inttime": 19.0,
                 "deadtime": 0.0,
@@ -295,7 +295,7 @@
                 "pedtype":"0"
             },
             {
-                "status":"ON",
+                "chcontrol":0,
                 "disctres": 4018,
                 "inttime": 19.0,
                 "deadtime": 0.0,
@@ -304,7 +304,7 @@
                 "pedtype":"0"
             },
             {
-                "status":"ON",
+                "chcontrol":0,
                 "disctres": 4018,
                 "inttime": 19.0,
                 "deadtime": 0.0,
@@ -313,7 +313,7 @@
                 "pedtype":"0"
             },
             {
-                "status":"ON",
+                "chcontrol":0,
                 "disctres": 4018,
                 "inttime": 19.0,
                 "deadtime": 0.0,
@@ -322,7 +322,7 @@
                 "pedtype":"0"
             },
             {
-                "status":"ON",
+                "chcontrol":0,
                 "disctres": 4018,
                 "inttime": 19.0,
                 "deadtime": 0.0,
@@ -331,7 +331,7 @@
                 "pedtype":"0"
             },
             {
-                "status":"ON",
+                "chcontrol":0,
                 "disctres": 4018,
                 "inttime": 19.0,
                 "deadtime": 0.0,
@@ -340,7 +340,7 @@
                 "pedtype":"0"
             },
             {
-                "status":"ON",
+                "chcontrol":0,
                 "disctres": 4018,
                 "inttime": 19.0,
                 "deadtime": 0.0,
@@ -349,7 +349,7 @@
                 "pedtype":"0"
             },
             {
-                "status":"ON",
+                "chcontrol":0,
                 "disctres": 4018,
                 "inttime": 19.0,
                 "deadtime": 0.0,
@@ -358,7 +358,7 @@
                 "pedtype":"0"
             },
             {
-                "status":"ON",
+                "chcontrol":0,
                 "disctres": 4018,
                 "inttime": 19.0,
                 "deadtime": 0.0,
@@ -367,7 +367,7 @@
                 "pedtype":"0"
             },
             {
-                "status":"ON",
+                "chcontrol":0,
                 "disctres": 3700,
                 "inttime": 13.0,
                 "deadtime": 0.0,
@@ -376,7 +376,7 @@
                 "pedtype":"0"
             },
             {
-                "status":"ON",
+                "chcontrol":0,
                 "disctres": 3700,
                 "inttime": 13.0,
                 "deadtime": 0.0,
@@ -385,7 +385,7 @@
                 "pedtype":"0"
             },
             {
-                "status":"ON",
+                "chcontrol":0,
                 "disctres": 3700,
                 "inttime": 13.0,
                 "deadtime": 0.0,
@@ -394,7 +394,7 @@
                 "pedtype":"0"
             },
             {
-                "status":"ON",
+                "chcontrol":0,
                 "disctres": 3700,
                 "inttime": 13.0,
                 "deadtime": 0.0,
@@ -403,7 +403,7 @@
                 "pedtype":"0"
             },
             {
-                "status":"ON",
+                "chcontrol":0,
                 "disctres": 3700,
                 "inttime": 13.0,
                 "deadtime": 0.0,
@@ -412,7 +412,7 @@
                 "pedtype":"0"
             },
             {
-                "status":"ON",
+                "chcontrol":0,
                 "disctres": 3700,
                 "inttime": 13.0,
                 "deadtime": 0.0,
@@ -439,8 +439,8 @@
         "clock": "DPB",
         "rmont": "1",
         "channels": [
-            {
-                "status":"ON",
+             {
+                "chcontrol":0,
                 "disctres": 4018,
                 "inttime": 19.0,
                 "deadtime": 0.0,
@@ -449,7 +449,7 @@
                 "pedtype":"0"
             },
             {
-                "status":"ON",
+                "chcontrol":0,
                 "disctres": 4018,
                 "inttime": 19.0,
                 "deadtime": 0.0,
@@ -458,7 +458,7 @@
                 "pedtype":"0"
             },
             {
-                "status":"ON",
+                "chcontrol":0,
                 "disctres": 4018,
                 "inttime": 19.0,
                 "deadtime": 0.0,
@@ -467,7 +467,7 @@
                 "pedtype":"0"
             },
             {
-                "status":"ON",
+                "chcontrol":0,
                 "disctres": 4018,
                 "inttime": 19.0,
                 "deadtime": 0.0,
@@ -476,7 +476,7 @@
                 "pedtype":"0"
             },
             {
-                "status":"ON",
+                "chcontrol":0,
                 "disctres": 4018,
                 "inttime": 19.0,
                 "deadtime": 0.0,
@@ -485,7 +485,7 @@
                 "pedtype":"0"
             },
             {
-                "status":"ON",
+                "chcontrol":0,
                 "disctres": 4018,
                 "inttime": 19.0,
                 "deadtime": 0.0,
@@ -494,7 +494,7 @@
                 "pedtype":"0"
             },
             {
-                "status":"ON",
+                "chcontrol":0,
                 "disctres": 4018,
                 "inttime": 19.0,
                 "deadtime": 0.0,
@@ -503,7 +503,7 @@
                 "pedtype":"0"
             },
             {
-                "status":"ON",
+                "chcontrol":0,
                 "disctres": 4018,
                 "inttime": 19.0,
                 "deadtime": 0.0,
@@ -512,7 +512,7 @@
                 "pedtype":"0"
             },
             {
-                "status":"ON",
+                "chcontrol":0,
                 "disctres": 4018,
                 "inttime": 19.0,
                 "deadtime": 0.0,
@@ -521,7 +521,7 @@
                 "pedtype":"0"
             },
             {
-                "status":"ON",
+                "chcontrol":0,
                 "disctres": 4018,
                 "inttime": 19.0,
                 "deadtime": 0.0,
@@ -530,7 +530,7 @@
                 "pedtype":"0"
             },
             {
-                "status":"ON",
+                "chcontrol":0,
                 "disctres": 4018,
                 "inttime": 19.0,
                 "deadtime": 0.0,
@@ -539,7 +539,7 @@
                 "pedtype":"0"
             },
             {
-                "status":"ON",
+                "chcontrol":0,
                 "disctres": 4018,
                 "inttime": 19.0,
                 "deadtime": 0.0,
@@ -548,7 +548,7 @@
                 "pedtype":"0"
             },
             {
-                "status":"ON",
+                "chcontrol":0,
                 "disctres": 3700,
                 "inttime": 13.0,
                 "deadtime": 0.0,
@@ -557,7 +557,7 @@
                 "pedtype":"0"
             },
             {
-                "status":"ON",
+                "chcontrol":0,
                 "disctres": 3700,
                 "inttime": 13.0,
                 "deadtime": 0.0,
@@ -566,7 +566,7 @@
                 "pedtype":"0"
             },
             {
-                "status":"ON",
+                "chcontrol":0,
                 "disctres": 3700,
                 "inttime": 13.0,
                 "deadtime": 0.0,
@@ -575,7 +575,7 @@
                 "pedtype":"0"
             },
             {
-                "status":"ON",
+                "chcontrol":0,
                 "disctres": 3700,
                 "inttime": 13.0,
                 "deadtime": 0.0,
@@ -584,7 +584,7 @@
                 "pedtype":"0"
             },
             {
-                "status":"ON",
+                "chcontrol":0,
                 "disctres": 3700,
                 "inttime": 13.0,
                 "deadtime": 0.0,
@@ -593,7 +593,7 @@
                 "pedtype":"0"
             },
             {
-                "status":"ON",
+                "chcontrol":0,
                 "disctres": 3700,
                 "inttime": 13.0,
                 "deadtime": 0.0,
