@@ -1299,6 +1299,7 @@ static void *command_thread(void *arg){
 	struct DPB_I2cSensors *data = static_cast<DPB_I2cSensors *>(arg);
 
 	LOG_PRINTF("Command thread period: %3.4fms\n",((float)periods[3])/1000);
+	sem_post(&thread_sync);
 	rc = make_periodic(periods[3], &info);
 	if (rc) {
 		LOG_PRINTF("Error creating command thread\r\n");
