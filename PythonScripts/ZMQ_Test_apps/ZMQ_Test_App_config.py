@@ -121,9 +121,9 @@ def send_json_via_zmq(ip_address, json_content):
         context = zmq.Context()
         socket = context.socket(zmq.REQ)
         
-        # Set socket timeout (10 seconds)
-        socket.setsockopt(zmq.RCVTIMEO, 30000)
-        socket.setsockopt(zmq.SNDTIMEO, 30000)
+        # Set socket timeout (50 seconds)
+        socket.setsockopt(zmq.RCVTIMEO, 50000)
+        socket.setsockopt(zmq.SNDTIMEO, 50000)
         
         # Connect to the server
         connection_string = f"tcp://{ip_address}:5559"
@@ -142,7 +142,7 @@ def send_json_via_zmq(ip_address, json_content):
         return response
         
     except zmq.Again:
-        print("Error: Timeout - no response received within 10 seconds")
+        print("Error: Timeout - no response received within 50 seconds")
         return None
     except zmq.ZMQError as e:
         print(f"ZMQ Error: {e}")
