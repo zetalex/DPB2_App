@@ -122,8 +122,8 @@ def send_json_via_zmq(ip_address, json_content):
         socket = context.socket(zmq.REQ)
         
         # Set socket timeout (10 seconds)
-        socket.setsockopt(zmq.RCVTIMEO, 10000)
-        socket.setsockopt(zmq.SNDTIMEO, 10000)
+        socket.setsockopt(zmq.RCVTIMEO, 30000)
+        socket.setsockopt(zmq.SNDTIMEO, 30000)
         
         # Connect to the server
         connection_string = f"tcp://{ip_address}:5559"
