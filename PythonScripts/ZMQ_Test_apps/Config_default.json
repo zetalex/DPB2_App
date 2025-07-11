@@ -1,0 +1,655 @@
+{
+    "LV": {
+        "cpumain": "ON",
+        "cpubackup": "ON",
+        "channels": [
+            {
+                "status": "OFF",
+                "voltagelimit": 48.0
+            },
+            {
+                "status": "ON",
+                "voltagelimit": 48.0
+            },
+            {
+                "status": "OFF",
+                "voltagelimit": 48.0,
+                "currentlimit": 300.0
+            },
+            {
+                "status": "ON",
+                "voltagelimit": 48.0,
+                "currentlimit": 300.0
+            },
+            {
+                "status": "ON",
+                "voltagelimit": 48.0,
+                "currentlimit": 100.0
+            },
+            {
+                "status": "OFF",
+                "voltagelimit": 48.0,
+                "currentlimit": 100.0
+            },
+            {
+                "status": "ON",
+                "voltagelimit": 48.0,
+                "currentlimit": 100.0
+            },
+            {
+                "status": "OFF",
+                "voltagelimit": 48.0,
+                "currentlimit": 100.0
+            }
+        ]
+    },
+    "HV": {
+        "cpumain": "ON",
+        "cpubackup": "ON",
+        "channels": [
+            {
+                "status": "OFF",
+                "voltage": 2500.0,
+                "current": 500.0,
+                "rampup": 40.0,
+                "rampdown": 40.0,
+                "trip": 9.0
+            },
+            {
+                "status": "OFF",
+                "voltage": 2500.0,
+                "current": 500.0,
+                "rampup": 40.0,
+                "rampdown": 40.0,
+                "trip": 9.0
+            },
+            {
+                "status": "OFF",
+                "voltage": 2500.0,
+                "current": 500.0,
+                "rampup": 40.0,
+                "rampdown": 40.0,
+                "trip": 9.0
+            },
+            {
+                "status": "OFF",
+                "voltage": 2500.0,
+                "current": 500.0,
+                "rampup": 40.0,
+                "rampdown": 40.0,
+                "trip": 9.0
+            },
+            {
+                "status": "OFF",
+                "voltage": 2500.0,
+                "current": 500.0,
+                "rampup": 40.0,
+                "rampdown": 40.0,
+                "trip": 9.0
+            },
+            {
+                "status": "OFF",
+                "voltage": 2500.0,
+                "current": 500.0,
+                "rampup": 40.0,
+                "rampdown": 40.0,
+                "trip": 9.0
+            },
+            {
+                "status": "OFF",
+                "voltage": 2500.0,
+                "current": 500.0,
+                "rampup": 40.0,
+                "rampdown": 40.0,
+                "trip": 9.0
+            },
+            {
+                "status": "OFF",
+                "voltage": 2500.0,
+                "current": 500.0,
+                "rampup": 40.0,
+                "rampdown": 40.0,
+                "trip": 9.0
+            },
+            {
+                "status": "OFF",
+                "voltage": 2500.0,
+                "current": 500.0,
+                "rampup": 40.0,
+                "rampdown": 40.0,
+                "trip": 9.0
+            },
+            {
+                "status": "OFF",
+                "voltage": 2500.0,
+                "current": 500.0,
+                "rampup": 40.0,
+                "rampdown": 40.0,
+                "trip": 9.0
+            },
+            {
+                "status": "OFF",
+                "voltage": 2500.0,
+                "current": 500.0,
+                "rampup": 40.0,
+                "rampdown": 40.0,
+                "trip": 9.0
+            },
+            {
+                "status": "OFF",
+                "voltage": 2500.0,
+                "current": 500.0,
+                "rampup": 40.0,
+                "rampdown": 40.0,
+                "trip": 9.0
+            },
+            {
+                "status": "OFF",
+                "voltage": 2500.0,
+                "current": 500.0,
+                "rampup": 40.0,
+                "rampdown": 40.0,
+                "trip": 9.0
+            },
+            {
+                "status": "OFF",
+                "voltage": 2500.0,
+                "current": 500.0,
+                "rampup": 40.0,
+                "rampdown": 40.0,
+                "trip": 9.0
+            },
+            {
+                "status": "OFF",
+                "voltage": 2500.0,
+                "current": 500.0,
+                "rampup": 40.0,
+                "rampdown": 40.0,
+                "trip": 9.0
+            },
+            {
+                "status": "OFF",
+                "voltage": 2500.0,
+                "current": 500.0,
+                "rampup": 40.0,
+                "rampdown": 40.0,
+                "trip": 9.0
+            },
+            {
+                "status": "OFF",
+                "voltage": 2500.0,
+                "current": 500.0,
+                "rampup": 40.0,
+                "rampdown": 40.0,
+                "trip": 9.0
+            },
+            {
+                "status": "OFF",
+                "voltage": 2500.0,
+                "current": 500.0,
+                "rampup": 40.0,
+                "rampdown": 40.0,
+                "trip": 9.0
+            },
+            {
+                "status": "OFF",
+                "voltage": 2500.0,
+                "current": 500.0,
+                "rampup": 40.0,
+                "rampdown": 40.0,
+                "trip": 9.0
+            },
+            {
+                "status": "OFF",
+                "voltage": 2500.0,
+                "current": 500.0,
+                "rampup": 40.0,
+                "rampdown": 40.0,
+                "trip": 9.0
+            },
+            {
+                "status": "OFF",
+                "voltage": 2500.0,
+                "current": 500.0,
+                "rampup": 40.0,
+                "rampdown": 40.0,
+                "trip": 9.0
+            },
+            {
+                "status": "OFF",
+                "voltage": 2500.0,
+                "current": 500.0,
+                "rampup": 40.0,
+                "rampdown": 40.0,
+                "trip": 9.0
+            },
+            {
+                "status": "OFF",
+                "voltage": 2500.0,
+                "current": 500.0,
+                "rampup": 40.0,
+                "rampdown": 40.0,
+                "trip": 9.0
+            },
+            {
+                "status": "OFF",
+                "voltage": 2500.0,
+                "current": 500.0,
+                "rampup": 40.0,
+                "rampdown": 40.0,
+                "trip": 9.0
+            }
+           
+        ]
+    },
+    "Dig0": {
+        "calibtype": "0",
+        "calibmute": "0",
+        "calibper": "0",
+        "calibpwr": "0",
+        "demux": "0",
+        "caliblen": "0",
+        "calibamp": "0",
+        "calibpdn": "0",
+        "calibsen": "0",
+        "odsel": "0",
+        "psc": "0",
+        "pedstag": "0",
+        "clock": "DPB",
+        "rmont": "1",
+        "channels": [
+            {
+                "status":"0",
+                "disctres": 4018,
+                "inttime": 19.0,
+                "deadtime": 0.0,
+                "festatus": "ON",
+                "daqstatus": "ON",
+                "pedtype":"0"
+            },
+            {
+                "status":"0",
+                "disctres": 4018,
+                "inttime": 19.0,
+                "deadtime": 0.0,
+                "festatus": "ON",
+                "daqstatus": "ON",
+                "pedtype":"0"
+            },
+            {
+                "status":"0",
+                "disctres": 4018,
+                "inttime": 19.0,
+                "deadtime": 0.0,
+                "festatus": "ON",
+                "daqstatus": "ON",
+                "pedtype":"0"
+            },
+            {
+                "status":"0",
+                "disctres": 4018,
+                "inttime": 19.0,
+                "deadtime": 0.0,
+                "festatus": "ON",
+                "daqstatus": "ON",
+                "pedtype":"0"
+            },
+            {
+                "status":"0",
+                "disctres": 4018,
+                "inttime": 19.0,
+                "deadtime": 0.0,
+                "festatus": "ON",
+                "daqstatus": "ON",
+                "pedtype":"0"
+            },
+            {
+                "status":"0",
+                "disctres": 4018,
+                "inttime": 19.0,
+                "deadtime": 0.0,
+                "festatus": "ON",
+                "daqstatus": "ON",
+                "pedtype":"0"
+            },
+            {
+                "status":"0",
+                "disctres": 4018,
+                "inttime": 19.0,
+                "deadtime": 0.0,
+                "festatus": "ON",
+                "daqstatus": "ON",
+                "pedtype":"0"
+            },
+            {
+                "status":"0",
+                "disctres": 4018,
+                "inttime": 19.0,
+                "deadtime": 0.0,
+                "festatus": "ON",
+                "daqstatus": "ON",
+                "pedtype":"0"
+            },
+            {
+                "status":"0",
+                "disctres": 4018,
+                "inttime": 19.0,
+                "deadtime": 0.0,
+                "festatus": "ON",
+                "daqstatus": "ON",
+                "pedtype":"0"
+            },
+            {
+                "status":"0",
+                "disctres": 4018,
+                "inttime": 19.0,
+                "deadtime": 0.0,
+                "festatus": "ON",
+                "daqstatus": "ON",
+                "pedtype":"0"
+            },
+            {
+                "status":"0",
+                "disctres": 4018,
+                "inttime": 19.0,
+                "deadtime": 0.0,
+                "festatus": "ON",
+                "daqstatus": "ON",
+                "pedtype":"0"
+            },
+            {
+                "status":"0",
+                "disctres": 4018,
+                "inttime": 19.0,
+                "deadtime": 0.0,
+                "festatus": "ON",
+                "daqstatus": "ON",
+                "pedtype":"0"
+            },
+            {
+                "status":"0",
+                "disctres": 3700,
+                "inttime": 13.0,
+                "deadtime": 0.0,
+                "festatus": "ON",
+                "daqstatus": "ON",
+                "pedtype":"0"
+            },
+            {
+                "status":"0",
+                "disctres": 3700,
+                "inttime": 13.0,
+                "deadtime": 0.0,
+                "festatus": "ON",
+                "daqstatus": "ON",
+                "pedtype":"0"
+            },
+            {
+                "status":"0",
+                "disctres": 3700,
+                "inttime": 13.0,
+                "deadtime": 0.0,
+                "festatus": "ON",
+                "daqstatus": "ON",
+                "pedtype":"0"
+            },
+            {
+                "status":"0",
+                "disctres": 3700,
+                "inttime": 13.0,
+                "deadtime": 0.0,
+                "festatus": "ON",
+                "daqstatus": "ON",
+                "pedtype":"0"
+            },
+            {
+                "status":"0",
+                "disctres": 3700,
+                "inttime": 13.0,
+                "deadtime": 0.0,
+                "festatus": "ON",
+                "daqstatus": "ON",
+                "pedtype":"0"
+            },
+            {
+                "status":"0",
+                "disctres": 3700,
+                "inttime": 13.0,
+                "deadtime": 0.0,
+                "festatus": "ON",
+                "daqstatus": "ON",
+                "pedtype":"0"
+            }
+            
+        ]
+    },
+    "Dig1": {
+        "calibtype": "0",
+        "calibmute": "0",
+        "calibper": "0",
+        "calibpwr": "0",
+        "demux": "0",
+        "caliblen": "0",
+        "calibamp": "0",
+        "calibpdn": "0",
+        "calibsen": "0",
+        "odsel": "0",
+        "psc": "0",
+        "pedstag": "0",
+        "clock": "DPB",
+        "rmont": "1",
+        "channels": [
+            {
+                "status":"0",
+                "disctres": 4018,
+                "inttime": 19.0,
+                "deadtime": 0.0,
+                "festatus": "ON",
+                "daqstatus": "ON",
+                "pedtype":"0"
+            },
+            {
+                "status":"0",
+                "disctres": 4018,
+                "inttime": 19.0,
+                "deadtime": 0.0,
+                "festatus": "ON",
+                "daqstatus": "ON",
+                "pedtype":"0"
+            },
+            {
+                "status":"0",
+                "disctres": 4018,
+                "inttime": 19.0,
+                "deadtime": 0.0,
+                "festatus": "ON",
+                "daqstatus": "ON",
+                "pedtype":"0"
+            },
+            {
+                "status":"0",
+                "disctres": 4018,
+                "inttime": 19.0,
+                "deadtime": 0.0,
+                "festatus": "ON",
+                "daqstatus": "ON",
+                "pedtype":"0"
+            },
+            {
+                "status":"0",
+                "disctres": 4018,
+                "inttime": 19.0,
+                "deadtime": 0.0,
+                "festatus": "ON",
+                "daqstatus": "ON",
+                "pedtype":"0"
+            },
+            {
+                "status":"0",
+                "disctres": 4018,
+                "inttime": 19.0,
+                "deadtime": 0.0,
+                "festatus": "ON",
+                "daqstatus": "ON",
+                "pedtype":"0"
+            },
+            {
+                "status":"0",
+                "disctres": 4018,
+                "inttime": 19.0,
+                "deadtime": 0.0,
+                "festatus": "ON",
+                "daqstatus": "ON",
+                "pedtype":"0"
+            },
+            {
+                "status":"0",
+                "disctres": 4018,
+                "inttime": 19.0,
+                "deadtime": 0.0,
+                "festatus": "ON",
+                "daqstatus": "ON",
+                "pedtype":"0"
+            },
+            {
+                "status":"0",
+                "disctres": 4018,
+                "inttime": 19.0,
+                "deadtime": 0.0,
+                "festatus": "ON",
+                "daqstatus": "ON",
+                "pedtype":"0"
+            },
+            {
+                "status":"0",
+                "disctres": 4018,
+                "inttime": 19.0,
+                "deadtime": 0.0,
+                "festatus": "ON",
+                "daqstatus": "ON",
+                "pedtype":"0"
+            },
+            {
+                "status":"0",
+                "disctres": 4018,
+                "inttime": 19.0,
+                "deadtime": 0.0,
+                "festatus": "ON",
+                "daqstatus": "ON",
+                "pedtype":"0"
+            },
+            {
+                "status":"0",
+                "disctres": 4018,
+                "inttime": 19.0,
+                "deadtime": 0.0,
+                "festatus": "ON",
+                "daqstatus": "ON",
+                "pedtype":"0"
+            },
+            {
+                "status":"0",
+                "disctres": 3700,
+                "inttime": 13.0,
+                "deadtime": 0.0,
+                "festatus": "ON",
+                "daqstatus": "ON",
+                "pedtype":"0"
+            },
+            {
+                "status":"0",
+                "disctres": 3700,
+                "inttime": 13.0,
+                "deadtime": 0.0,
+                "festatus": "ON",
+                "daqstatus": "ON",
+                "pedtype":"0"
+            },
+            {
+                "status":"0",
+                "disctres": 3700,
+                "inttime": 13.0,
+                "deadtime": 0.0,
+                "festatus": "ON",
+                "daqstatus": "ON",
+                "pedtype":"0"
+            },
+            {
+                "status":"0",
+                "disctres": 3700,
+                "inttime": 13.0,
+                "deadtime": 0.0,
+                "festatus": "ON",
+                "daqstatus": "ON",
+                "pedtype":"0"
+            },
+            {
+                "status":"0",
+                "disctres": 3700,
+                "inttime": 13.0,
+                "deadtime": 0.0,
+                "festatus": "ON",
+                "daqstatus": "ON",
+                "pedtype":"0"
+            },
+            {
+                "status":"0",
+                "disctres": 3700,
+                "inttime": 13.0,
+                "deadtime": 0.0,
+                "festatus": "ON",
+                "daqstatus": "ON",
+                "pedtype":"0"
+            }
+            
+        ]
+    },
+    "DPB": {
+        "ethmain": "ON",
+        "ethbackup": "ON",
+        "pcbtemplim": 37.25,
+        "lpdcputemplim": 64.357857,
+        "fpdcputemplim": 65.481087,
+        "fpgatemplim": 63.158737,
+        "12Vcurrlim": 1.65,
+        "3V3currlim": 1.6,
+        "1V8currlim": 0.5,
+        "tdmlink": "MAIN",
+        "tdmtxmain": "ON",
+        "tdmtxbackup": "ON",
+        "tdmrxmain": "ON",
+        "tdmrxbackup": "ON",
+        "SFPs": [
+            {
+                "templim": 50.0,
+                "currlim": 0.25,
+                "status": "ON"
+            },
+            {
+                "templim": 50.0,
+                "currlim": 0.25,
+                "status": "ON"
+            },
+            {
+                "templim": 50.0,
+                "currlim": 0.25,
+                "status": "ON"
+            },
+            {
+                "templim": 50.0,
+                "currlim": 0.25,
+                "status": "ON"
+            },
+            {
+                "templim": 50.0,
+                "currlim": 0.25,
+                "status": "ON"
+            },
+            {
+                "templim": 50.0,
+                "currlim": 0.25,
+                "status": "ON"
+            }
+        ]
+    }
+}
