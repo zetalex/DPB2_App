@@ -621,32 +621,32 @@
         "tdmrxbackup": "ON",
         "SFPs": [
             {
-                "templim": 50.0,
+                "templim": 50,
                 "currlim": 0.25,
                 "status": "ON"
             },
             {
-                "templim": 50.0,
+                "templim": 50,
                 "currlim": 0.25,
                 "status": "ON"
             },
             {
-                "templim": 50.0,
+                "templim": 50,
                 "currlim": 0.25,
                 "status": "ON"
             },
             {
-                "templim": 50.0,
+                "templim": 50,
                 "currlim": 0.25,
                 "status": "ON"
             },
             {
-                "templim": 50.0,
+                "templim": 50,
                 "currlim": 0.25,
                 "status": "ON"
             },
             {
-                "templim": 50.0,
+                "templim": 50,
                 "currlim": 0.25,
                 "status": "ON"
             }
