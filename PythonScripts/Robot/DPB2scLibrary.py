@@ -185,7 +185,7 @@ class DPB2scLibrary(object):
         self.modprobe_xvc_rm = subprocess.Popen("rmmod xvc_driver", shell=True,stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         
         # Close dma_proxy process
-        self.modprobe_dma_rm = subprocess.Popen("rmmod dma_proxy", shell=True,stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        # self.modprobe_dma_rm = subprocess.Popen("rmmod dma_proxy", shell=True,stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         
     def initialize_zmq_ethernet_sockets (self):
         """Initializes DPB ZMQ sockets.
@@ -1055,32 +1055,22 @@ class DPB2scLibrary(object):
               raise AssertionError("Aurora Link has not been driven down")  
         return
 
-    def start_aurora_data_rx(self,dig,packet_number,packet_size):
-        # Enable dma_proxy driver module
-        fpath = "/home/petalinux/dma_proxy_module_temp.txt"
-        cmd = "lsmod | grep dma_proxy > " + fpath
-        os.system(cmd)
-        if(os.path.isfile(fpath) and os.path.getsize(fpath) == 0):
-            self.modprobe_dma = subprocess.Popen("modprobe dma_proxy", shell=True,stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-            time.sleep(2)
-            os.system("dmesg | tail -n4 > /home/petalinux/modprobe_dma_temp.txt")
-            with open(r'/home/petalinux/modprobe_dma_temp.txt', 'r') as fp:
-                print(fp.read())
-            os.remove("/home/petalinux/modprobe_dma_temp.txt")       
-        else:
-            print("dma_proxy already initialized")
-        # Start Aurora data taking
-        self.write_gpio(49,"ON") # Select Digitizer as a source
-        time.sleep(1)
-        self.write_gpio(57,"ON") # Enable DMA
-        time.sleep(1)
-        cmd = "dma2tcp " + packet_number + " " + packet_size + " 0"
+    def start_aurora_data_rx(self):
+
+        cmd = "systemctl start daq-readout"
         try:
             self.dma2tcp_proc = subprocess.Popen(cmd, shell=True,stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         except subprocess.CalledProcessError:
-            raise AssertionError("Error calling dma2tcp process")
+            raise AssertionError("Error calling systemd process")
         return
-  
+    def stop_aurora_data_rx(self):
+
+        cmd = "systemctl stop daq-readout"
+        try:
+            os.system(cmd)
+        except subprocess.CalledProcessError:
+            raise AssertionError("Error calling systemd process")
+        return
     #########################################################
     #HV and LV Functions
     #########################################################      
