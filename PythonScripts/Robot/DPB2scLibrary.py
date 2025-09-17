@@ -154,6 +154,8 @@ class DPB2scLibrary(object):
         # Turn on only RS485 Main Driver
         self.write_gpio(68,"ON")
         self.write_gpio(69,"OFF")
+        # Turn off DMA
+        self.write_gpio(57,"OFF")
         # Send termination signal to the libdpb2sc library
         self.dpb2sc.dpbsc_lib_close(self.structure_i2c)
         
@@ -183,7 +185,7 @@ class DPB2scLibrary(object):
             if(poll is None):
                 self.xvc_process_dig1.terminate()
         self.modprobe_xvc_rm = subprocess.Popen("rmmod xvc_driver", shell=True,stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-        
+        self.stop_aurora_data_rx()
         # Close dma_proxy process
         # self.modprobe_dma_rm = subprocess.Popen("rmmod dma_proxy", shell=True,stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         
@@ -527,7 +529,7 @@ class DPB2scLibrary(object):
 
         """
         pin = int(pin_num)
-        if (pin < 0 or pin > 11) and (pin < 48 or pin > 71):
+        if (pin < 0 or pin > 11) and (pin < 48 or pin > 76):
             raise AssertionError('Pin number not in valid range. Pin number = %s' % (pin))
         if value == "ON":
             c_value = c_int(1)
@@ -1048,7 +1050,24 @@ class DPB2scLibrary(object):
     
     def switch_aurora_link(self,dig_str,aurora_wanted_link):
         # Switch to Main or backup Aurora Links on a specific digitizer
-        # TODO
+        if(dig_str=="DIG0"):
+            gpio_address = 72
+        elif(dig_str=="DIG1"):
+            gpio_address = 73
+        else:
+            raise AssertionError("DIG value not valid")
+        
+        if(aurora_wanted_link=="Main"):
+            gpio_value = "OFF"
+        elif(aurora_wanted_link=="Backup"):
+            gpio_value = "ON"
+        else:
+            raise AssertionError("Link type not valid")
+        
+        try:
+            self.write_gpio(gpio_address,gpio_value)
+        except AssertionError as e:
+            raise AssertionError("Error writing GPIO %s" % gpio_address)
         return
     
     def check_aurora_link(self,dig_str,aurora_link,aurora_status):
@@ -1088,7 +1107,7 @@ class DPB2scLibrary(object):
 
         cmd = "systemctl start daq-readout"
         try:
-            self.dma2tcp_proc = subprocess.Popen(cmd, shell=True,stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            os.system(cmd)
         except subprocess.CalledProcessError:
             raise AssertionError("Error calling systemd process")
         return
