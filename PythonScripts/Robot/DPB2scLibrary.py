@@ -1008,9 +1008,42 @@ class DPB2scLibrary(object):
     #########################################################
     #Aurora Functions
     #########################################################
-    def drive_aurora_link(self,dig_str,aurora_link,expected_status):
+    def reset_aurora_link(self,dig_str,aurora_link):
+        """
+        Reset the Aurora link for a given digitizer and link.
+        
+        Args:
+        dig_str (str): Digitizer identifier ('DIG0' or 'DIG1').
+        aurora_link (str): Aurora link type ('Main' or 'Backup').
+
+        This function toggles the corresponding GPIO to force a reset of the Aurora link
+        for the specified digitizer and link. Raises an exception if the parameters are invalid
+        or if an error occurs while writing to the GPIO.
+        """
         # Drive Aurora Link up or down
-        # TODO
+        if(dig_str=="DIG0"):
+            gpio_1 = 0
+        elif(dig_str=="DIG1"):
+            gpio_1 = 2
+        else:
+            raise AssertionError("DIG value not valid")
+        
+        if(aurora_link=="Main"):
+            gpio_2 = 0
+        elif(aurora_link=="Backup"):
+            gpio_2 = 1
+        else:
+            raise AssertionError("Link type not valid")
+        
+        gpio_address = 60 + gpio_1 + gpio_2
+        try:
+            self.write_gpio(gpio_address,"ON")
+        except AssertionError as e:
+            raise AssertionError("Error writing GPIO %s" % gpio_address)
+        try:
+            self.write_gpio(gpio_address,"OFF")
+        except AssertionError as e:
+            raise AssertionError("Error writing GPIO %s" % gpio_address)
         return
     
     def switch_aurora_link(self,dig_str,aurora_wanted_link):
@@ -1043,15 +1076,11 @@ class DPB2scLibrary(object):
         
         # Check Aurora Link status
         gpio_address = 40 + gpio_1 + gpio_2
-        Int_pointer = POINTER(c_int)
-        int_array = (ctypes.c_int * 1) (0)
-        int_ptr = ctypes.cast(int_array, Int_pointer)
-
-        c_pin_num = c_int(gpio_address)
-        self.dpb2sc.read_GPIO(c_pin_num,int_ptr)
-        if((aurora_status == "ON") and (int_array[0] != 1)):
+        aurora_real_status = self.read_gpio(gpio_address)
+               
+        if((aurora_status == "ON") and (aurora_real_status != "1")):
             raise AssertionError("Aurora Link has not been driven up")
-        elif((aurora_status == "OFF") and (int_array[0] != 0)):
+        elif((aurora_status == "OFF") and (aurora_real_status != "0")):
               raise AssertionError("Aurora Link has not been driven down")  
         return
 
@@ -1430,4 +1459,3 @@ def nonblock(stream):
     fcntl.fcntl(stream, fcntl.F_SETFL, fcntl.fcntl(stream, fcntl.F_GETFL) | os.O_NONBLOCK)
 if __name__ == '__main__':
     RobotRemoteServer(DPB2scLibrary(), *sys.argv[1:])
-    
