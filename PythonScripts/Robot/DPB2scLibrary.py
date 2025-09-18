@@ -1112,6 +1112,15 @@ class DPB2scLibrary(object):
             raise AssertionError("Error calling systemd process")
         return
     def stop_aurora_data_rx(self):
+        # Log daq-readout status before stopping
+        try:
+            status_cmd = "systemctl status daq-readout"
+            status_output = os.popen(status_cmd).read()
+            # Usar print que será capturado por Robot Framework en remoto
+            print("*INFO* DAQ Readout Status before stopping:")
+            print(status_output)
+        except Exception as e:
+            print("*WARN* Could not get daq-readout status: " + str(e))
 
         cmd = "systemctl stop daq-readout"
         try:
