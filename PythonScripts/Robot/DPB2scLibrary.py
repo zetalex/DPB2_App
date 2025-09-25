@@ -154,8 +154,7 @@ class DPB2scLibrary(object):
         # Turn on only RS485 Main Driver
         self.write_gpio(68,"ON")
         self.write_gpio(69,"OFF")
-        # Turn off DMA
-        self.write_gpio(57,"OFF")
+
         # Send termination signal to the libdpb2sc library
         self.dpb2sc.dpbsc_lib_close(self.structure_i2c)
         
