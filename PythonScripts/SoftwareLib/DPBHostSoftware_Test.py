@@ -4,7 +4,9 @@ monitoring_port = 5555
 cmd_port = 5557
 config_port = 5559
 data_port = 5570
-instance = DPBHostSoftware.DPBHostSoftware(dpb_ip, monitoring_port, cmd_port, config_port, data_port)
+logging_port = 5558
+# Create an instance of the DPBHostSoftware class
+instance = DPBHostSoftware.DPBHostSoftware(dpb_ip, monitoring_port, cmd_port, config_port, logging_port, data_port,"dpb_logging.txt")
 # Get a command value
 command_value = instance.send_slow_control_command("READ DPB TEMP PCB")
 print(f"PCB Temperature value on the DPB: {command_value} ºC")

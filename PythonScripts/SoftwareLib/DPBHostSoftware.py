@@ -36,22 +36,41 @@ class DPBHostSoftware:
     mutex_lock_data = threading.Lock()
     
     # The constructor method to initialize new objects
-    def __init__(self, dpb_ip, monitoring_port, cmd_port, config_port, data_port):
+    def __init__(self, dpb_ip, monitoring_port=5555, cmd_port=5557, config_port=5559, logging_port=5558, data_port=5570, log_file="dpb_logging.txt"):
+        """
+        Initialize DPBHostSoftware instance and establish connections to DPB.
+        
+        Args:
+            dpb_ip (str): IP address of the DPB device
+            monitoring_port (int): Port for monitoring data (Default 5555)
+            cmd_port (int): Port for command interface (Default 5557)
+            config_port (int): Port for configuration interface (Default 5559)
+            logging_port (int): Port for logging data (Default 5558)
+            data_port (int): Port for data acquisition (Default 5570)
+            log_file (str): File to store logging data from DPB (Default "dpb_logging.txt")
+            
+        Return:
+            DPB HostSoftware instance
+        """
         self.dpb_ip = dpb_ip          # Attribute to store DPB IP address
         self.cmd_port = cmd_port      # Attribute to store command port
         self.config_port = config_port # Attribute to store configuration port
         self.data_port = data_port     # Attribute to store data port
         self.monitoring_port = monitoring_port  # Attribute to store monitoring port
+        self.logging_port = logging_port  # Attribute to store logging port
+        self.log_file = log_file      # Attribute to store log file name
         
         # Initialize ZMQ context and sockets
         self.context = zmq.Context()
         self.socket_cmd = self.context.socket(zmq.REQ)
         self.socket_config = self.context.socket(zmq.REQ)
         self.socket_monitoring = self.context.socket(zmq.SUB)
+        self.socket_logging = self.context.socket(zmq.SUB)
         self.socket_cmd.setsockopt(zmq.RCVTIMEO, -1)
         self.socket_config.setsockopt(zmq.RCVTIMEO, -1)
         self.socket_monitoring.setsockopt(zmq.RCVTIMEO, -1)
         self.socket_monitoring.setsockopt_string(zmq.SUBSCRIBE, "")
+        self.socket_logging.setsockopt_string(zmq.SUBSCRIBE, "")
         
         # Check DPB connectivity
         ping_result = os.system(f"ping -c 5 {self.dpb_ip} > /dev/null 2>&1")
@@ -64,11 +83,19 @@ class DPBHostSoftware:
         
         # Start Slow control software and data taking application on DPB
         self.send_ssh_command("systemctl start dpb-slowcontrolapp")
-        self.send_ssh_command("systemctl start daq-readout")
-        time.sleep(10)  # Wait for the service to start
         self.socket_cmd.connect(f"tcp://{self.dpb_ip}:{self.cmd_port}")
         self.socket_config.connect(f"tcp://{self.dpb_ip}:{self.config_port}")
         self.socket_monitoring.connect(f"tcp://{self.dpb_ip}:{self.monitoring_port}")
+        self.socket_logging.connect(f"tcp://{self.dpb_ip}:{self.logging_port}")
+        # Start logging thread
+        self.log_thread = threading.Thread(
+            target=self.__logging_thread,
+            args=(log_file,),
+            daemon=True
+        )
+        self.log_thread.start()
+        self.send_ssh_command("systemctl start daq-readout")
+        time.sleep(10)  # Wait for the service to start
         
         # Keep sending messages until connection to slow control app is established
         retries = 0
@@ -90,6 +117,21 @@ class DPBHostSoftware:
         self.socket_config.close()
         self.socket_monitoring.close()
         self.context.term()
+
+    def __logging_thread(self):
+        """Thread to handle logging from DPB"""
+        try:
+            with open(self.log_file, 'a') as f:
+                while not self.destroy.is_set():
+                    try:
+                        log_data = self.socket_logging.recv_string(flags=zmq.NOBLOCK)
+                        timestamp = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())
+                        f.write(f"[{timestamp}] {log_data}\n")
+                        f.flush()
+                    except zmq.Again:
+                        time.sleep(0.1)  # No message, wait a bit
+        except Exception as e:
+            print(f"Logging thread error: {e}")
 
     def read_config_json_file(file_path):
         """
