@@ -208,10 +208,7 @@ class DPBHostSoftware:
             return None
         
         # Start data acquisition on DPB
-        topic = "control"
-        payload = "start"
-        self.control_socket.send_string(topic, flags=zmq.SNDMORE)
-        self.control_socket.send_string(payload)
+        self.send_slow_control_command("SET DPB STATUS DMA ON")
         
         # Get digital data from the DPB
         self.running.set()
@@ -219,11 +216,9 @@ class DPBHostSoftware:
         self.running.clear()
         
         # Stop data acquisition on DPB
-        topic = "control"
-        payload = "pause"
-        self.control_socket.send_string(topic, flags=zmq.SNDMORE)
-        self.control_socket.send_string(payload)
+        self.send_slow_control_command("SET DPB STATUS DMA OFF")
         sleep(1)  # Wait to ensure all data is written
+        
         # Read data from file
         with open("temp.bin", 'rb') as f:
             data = f.read()
@@ -337,16 +332,6 @@ class DPBHostSoftware:
         if num_cores is None:
             num_cores = 8  # fallback
 
-        ##
-        # Control socket (PUB) with optimized settings
-        self.control_socket = self.context.socket(zmq.PUB)
-        
-        # Configure control socket buffers
-        self.control_socket.setsockopt(zmq.SNDBUF, self.TCP_SEND_BUFFER_SIZE)
-        self.control_socket.setsockopt(zmq.SNDHWM, self.ZMQ_SEND_HWM)
-
-        self.control_socket.connect("tcp://"+self.dpb_ip+":4444")  # Connect to DPB control port
-
         # Create thread for file writing
         writer_thread = threading.Thread(
             target=self.__file_writer_thread, 
@@ -383,11 +368,5 @@ class DPBHostSoftware:
         # Close output file
         try:
             self.output_file.close()
-        except:
-            pass
-        
-        # Cleanup
-        try:
-            self.control_socket.close()
         except:
             pass
