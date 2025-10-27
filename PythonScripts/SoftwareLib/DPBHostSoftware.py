@@ -165,10 +165,24 @@ class DPBHostSoftware:
         if not mutex_acquired:
             print("Data acquisition is already in progress.")
             return None
+        
+        # Start data acquisition on DPB
+        topic = "control"
+        payload = "start"
+        self.control_socket.send_string(topic, flags=zmq.SNDMORE)
+        self.control_socket.send_string(payload)
+        
         # Get digital data from the DPB
         self.running.set()
         time.sleep(time_ms / 1000.0)
         self.running.clear()
+        
+        # Stop data acquisition on DPB
+        topic = "control"
+        payload = "pause"
+        self.control_socket.send_string(topic, flags=zmq.SNDMORE)
+        self.control_socket.send_string(payload)
+        sleep(1)  # Wait to ensure all data is written
         # Read data from file
         with open("temp.bin", 'rb') as f:
             data = f.read()
@@ -207,7 +221,7 @@ class DPBHostSoftware:
             worker_socket.setsockopt(zmq.TCP_KEEPALIVE_IDLE, 600)  # 10 minutes
             worker_socket.setsockopt(zmq.TCP_KEEPALIVE_INTVL, 60)  # 1 minute
             worker_socket.setsockopt(zmq.TCP_KEEPALIVE_CNT, 3)
-            worker_socket.setsockopt(zmq.RCVTIMEO, 500)  # 500ms timeout
+            worker_socket.setsockopt(zmq.RCVTIMEO, -1)  # Infinite timeout
             
             url = f"tcp://{server_ip}:{server_port}"
             worker_socket.connect(url)
@@ -291,13 +305,6 @@ class DPBHostSoftware:
         self.control_socket.setsockopt(zmq.SNDHWM, self.ZMQ_SEND_HWM)
 
         self.control_socket.connect("tcp://"+self.dpb_ip+":4444")  # Connect to DPB control port
-        topic = "control"
-        payload = "start"
-
-        sleep(1)
-
-        self.control_socket.send_string(topic, flags=zmq.SNDMORE)
-        self.control_socket.send_string(payload)
 
         # Create thread for file writing
         writer_thread = threading.Thread(
