@@ -90,7 +90,6 @@ class DPBHostSoftware:
         # Start logging thread
         self.log_thread = threading.Thread(
             target=self.__logging_thread,
-            args=(log_file,),
             daemon=True
         )
         self.log_thread.start()
