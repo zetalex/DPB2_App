@@ -574,13 +574,19 @@ static void *monitoring_thread(void *arg)
 					case HKDIG_GET_BOARD_I5VA:
 					case HKDIG_GET_BOARD_I3V3A:
 					case HKDIG_GET_BOARD_I12VA:
+					case HKDIG_GET_BOARD_TCH0:
+					case HKDIG_GET_BOARD_TCH11:
+					case HKDIG_GET_BOARD_TCH0R:
+					case HKDIG_GET_BOARD_TCH11R:
+					case HKDIG_GET_BOARD_5VOD:
+					case HKDIG_GET_BOARD_I5VOD:
 						pkt.GetNextFieldAsFLOAT(dig_value);
 						dig_value = dig_value / 1000;  //Convert from mV/mA to V/A
 						parsing_mon_environment_data_into_object(jdig0, dig_monitor_mag_board_names[i],dig_value);
 						break;
-					case HKDIG_GET_BOARD_TU40:
-					case HKDIG_GET_BOARD_TU41:
-					case HKDIG_GET_BOARD_TU45:
+					case HKDIG_GET_BOARD_TFE:
+					case HKDIG_GET_BOARD_TFPGA:
+					case HKDIG_GET_BOARD_TPWR:
 						pkt.GetNextFieldAsFLOAT(dig_value);
 						dig_value = dig_value / 100;  //Convert 100ths of degrees to degrees
 						parsing_mon_environment_data_into_object(jdig0, dig_monitor_mag_board_names[i],dig_value);
@@ -635,6 +641,7 @@ static void *monitoring_thread(void *arg)
 						case HKDIG_GET_CHN_LG_CHG:
 						case HKDIG_GET_CHN_HG_CHG:
 						case HKDIG_GET_PED_ENABLE:
+						case HKDIG_RO_FMON_N:
 							dig_mag_str = pkt.GetNextField();
 							dig_mag_str = pkt.GetNextField();
 							parsing_mon_channel_string_into_object(jdig0channels,j, dig_monitor_mag_chan_names[i],dig_mag_str);
@@ -705,13 +712,19 @@ skip_dig0:
 					case HKDIG_GET_BOARD_I5VA:
 					case HKDIG_GET_BOARD_I3V3A:
 					case HKDIG_GET_BOARD_I12VA:
+					case HKDIG_GET_BOARD_TCH0:
+					case HKDIG_GET_BOARD_TCH11:
+					case HKDIG_GET_BOARD_TCH0R:
+					case HKDIG_GET_BOARD_TCH11R:
+					case HKDIG_GET_BOARD_5VOD:
+					case HKDIG_GET_BOARD_I5VOD:
 						pkt.GetNextFieldAsFLOAT(dig_value);
 						dig_value = dig_value / 1000;  //Convert from mV/mA to V/A
 						parsing_mon_environment_data_into_object(jdig1, dig_monitor_mag_board_names[i],dig_value);
 						break;
-					case HKDIG_GET_BOARD_TU40:
-					case HKDIG_GET_BOARD_TU41:
-					case HKDIG_GET_BOARD_TU45:
+					case HKDIG_GET_BOARD_TFE:
+					case HKDIG_GET_BOARD_TFPGA:
+					case HKDIG_GET_BOARD_TPWR:
 						pkt.GetNextFieldAsFLOAT(dig_value);
 						dig_value = dig_value / 100;  //Convert 100ths of degrees to degrees
 						parsing_mon_environment_data_into_object(jdig1, dig_monitor_mag_board_names[i],dig_value);
@@ -767,6 +780,7 @@ skip_dig0:
 						case HKDIG_GET_CHN_LG_CHG:
 						case HKDIG_GET_CHN_HG_CHG:
 						case HKDIG_GET_PED_ENABLE:
+						case HKDIG_RO_FMON_N:
 							dig_mag_str = pkt.GetNextField();
 							dig_mag_str = pkt.GetNextField();
 							parsing_mon_channel_string_into_object(jdig1channels,j, dig_monitor_mag_chan_names[i],dig_mag_str);
