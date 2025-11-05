@@ -77,7 +77,7 @@ class DPBHostSoftware:
         if(ping_result != 0):
             raise ConnectionError(f"Cannot reach DPB at IP {self.dpb_ip}")
         dpb_ver = self.send_ssh_command("cat /etc/dpb_os_ver")
-        if "HKK ID-DPB" not in dpb_ver:
+        if "Xilinx Petalinux" not in dpb_ver:
             raise EnvironmentError(f"IP {self.dpb_ip} is not a DPB device")
         print(f"DPB found at {self.dpb_ip}: \n{dpb_ver}")
         

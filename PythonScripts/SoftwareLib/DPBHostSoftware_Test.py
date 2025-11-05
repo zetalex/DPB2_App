@@ -14,6 +14,10 @@ print(f"PCB Temperature value on the DPB: {command_value} ºC")
 monitoring_data = instance.get_mon_data()
 print(f"Monitoring Data: {monitoring_data}")
 
+# Use Digitizers as data source
+return_set= instance.send_slow_control_command("SET DPB DMASOURCE DIG")
+if return_set != "OK":
+    print("Error setting DMASOURCE to DIG")
 # Get 4 seconds of data
 data = instance.get_dig_data(4000)
 with open("digital_data_4s.bin", 'wb') as f:
