@@ -536,10 +536,10 @@ static void *monitoring_thread(void *arg)
 				switch(cmdIdx){
 					//String
 					case HKDIG_GET_GW_VER:
+					case HKDIG_GET_GW_DATE:
     				case HKDIG_GET_SW_VER:
     				case HKDIG_GET_BOARD_STATUS:
     				case HKDIG_GET_BOARD_CNTRL:
-					case HKDIG_GET_BOARD_CNTRL2:
 					case HKDIG_GET_UPTIME:
 					case HKDIG_GET_RMON_PER:
 					case HKDIG_GET_TLNK_LOCK:
@@ -549,6 +549,7 @@ static void *monitoring_thread(void *arg)
 					case HKDIG_GET_RMON_RST_N:
 					case HKDIG_GET_PED_STAGGER:
 					case HKDIG_GET_PED_PERIOD:
+					case HKDIG_GET_TB_REG:
 						dig_mag_str=pkt.GetNextField();
 						parsing_mon_environment_string_into_object(jdig0, dig_monitor_mag_board_names[i],dig_mag_str);
 						break;
@@ -674,10 +675,10 @@ skip_dig0:
 				switch(cmdIdx){
 					//String
 					case HKDIG_GET_GW_VER:
+					case HKDIG_GET_GW_DATE:
     				case HKDIG_GET_SW_VER:
     				case HKDIG_GET_BOARD_STATUS:
     				case HKDIG_GET_BOARD_CNTRL:
-					case HKDIG_GET_BOARD_CNTRL2:
 					case HKDIG_GET_UPTIME:
 					case HKDIG_GET_RMON_PER:
 					case HKDIG_GET_TLNK_LOCK:
@@ -687,6 +688,7 @@ skip_dig0:
 					case HKDIG_GET_RMON_RST_N:
 					case HKDIG_GET_PED_STAGGER:
 					case HKDIG_GET_PED_PERIOD:
+					case HKDIG_GET_TB_REG:
 						dig_mag_str=pkt.GetNextField();
 						parsing_mon_environment_string_into_object(jdig1, dig_monitor_mag_board_names[i],dig_mag_str);
 						break;
