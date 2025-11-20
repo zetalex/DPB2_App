@@ -220,6 +220,17 @@ class DPB2scLibrary(object):
         """Exports all DPB GPIOs Addresses.
         """
         self.dpb2sc.init_GPIO() 
+        
+    def get_dpb_serial_number(self):
+        """Gets DPB Serial Number.
+        
+        Returns:
+        str: A string containing the DPB serial number.
+        """ 
+        os.system('dd if=/sys/class/i2c-dev/i2c-0/device/0-0057/eeprom bs=1 count=8 skip=8192 of=/home/petalinux/serial_number.txt')
+        with open(r'/home/petalinux/serial_number.txt', 'r') as fp:
+            serial_number = fp.read()
+        return serial_number
     #########################################################
     #Ethernet Links functions
     #########################################################
