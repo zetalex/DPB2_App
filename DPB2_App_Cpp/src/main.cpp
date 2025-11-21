@@ -264,6 +264,7 @@ static void *monitoring_thread(void *arg)
 	uint8_t sfp_status[SFP_NUM][2];
 
 	char dma_source_str[16];
+	char dpb_multiboot_reg_str[32];
 
 	LOG_PRINTF("Monitoring thread period: %3.4fs\n",((float)periods[2])/1000000);
 	rc = make_periodic(periods[2], &info);
@@ -399,6 +400,8 @@ static void *monitoring_thread(void *arg)
 
 		strcpy(dma_source_str,(dma_source_flag)?"DIG":"COUNTER");
 
+		snprintf(dpb_multiboot_reg_str,32,"0x%08X",dpb_multiboot_reg);
+		
 		// rc = poll_GPIO(dig0_aurora_main_fd,DIG0_MAIN_AURORA_LINK,&dig0_aurora_main_val);
 		// if (rc) {
 		// 	LOG_PRINTF("Reading Error\r\n");
@@ -452,6 +455,10 @@ static void *monitoring_thread(void *arg)
 		// DMA
 		parsing_mon_environment_status_into_object(jdpb,"dmastatus", dma_flag);
 		parsing_mon_environment_string_into_object(jdpb,"dmasource", dma_source_str);
+
+		// DPB properties
+		parsing_mon_environment_string_into_object(jdpb,"serialnumber", dpb_sn);
+		parsing_mon_environment_string_into_object(jdpb,"multibootreg", dpb_multiboot_reg_str);
 
 		//Include SFP data in JSON object if they are connected
 		for(int i = 0; i < SFP_NUM; i++){
