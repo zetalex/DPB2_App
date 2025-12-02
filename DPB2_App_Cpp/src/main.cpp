@@ -234,6 +234,13 @@ static void *monitoring_thread(void *arg)
 	uint8_t tdm_active_link = -1;
 	uint8_t tdm_main_mgt_status = -1;
 	uint8_t tdm_backup_mgt_status = -1;
+	uint32_t dma_packet_size = 0;
+	uint32_t rmon_dig0 = 0;
+	uint32_t rmon_dig1 = 0;
+	uint32_t rmon_dig0_mux = 0;
+	uint32_t rmon_dig1_mux = 0;
+	uint32_t rmon_dma_source = 0;
+	uint32_t rmon_dma = 0;
 	char tdm_active_link_str[12];
 
 	char curr[32] = "12Vcurrent";
@@ -401,7 +408,41 @@ static void *monitoring_thread(void *arg)
 		strcpy(dma_source_str,(dma_source_flag)?"DIG":"COUNTER");
 
 		snprintf(dpb_multiboot_reg_str,32,"0x%08X",dpb_multiboot_reg);
-		
+
+		rc = read_uio(REG_DMA_BUF_SIZE,&dma_packet_size);
+		if (rc) {
+			LOG_PRINTF("Reading Error DMA Buffer Size\r\n");
+		}
+
+		rc = read_uio(REG_RMON_DIG0,&rmon_dig0);
+		if (rc) {
+			LOG_PRINTF("Reading Error RMON DIG0\r\n");
+		}
+
+		rc = read_uio(REG_RMON_DIG1,&rmon_dig1);
+		if (rc) {
+			LOG_PRINTF("Reading Error RMON DIG1\r\n");
+		}
+
+		rc = read_uio(REG_RMON_DIG0_MUX,&rmon_dig0_mux);
+		if (rc) {
+			LOG_PRINTF("Reading Error RMON DIG0 MUX\r\n");
+		}
+
+		rc = read_uio(REG_RMON_DIG1_MUX,&rmon_dig1_mux);
+		if (rc) {
+			LOG_PRINTF("Reading Error RMON DIG1 MUX\r\n");
+		}
+
+		rc = read_uio(REG_RMON_DMA_SOURCE,&rmon_dma_source);
+		if (rc) {
+			LOG_PRINTF("Reading Error RMON DMA SOURCE\r\n");
+		}
+
+		rc = read_uio(REG_RMON_DMA,&rmon_dma);
+		if (rc) {
+			LOG_PRINTF("Reading Error RMON DMA\r\n");
+		}
 		// rc = poll_GPIO(dig0_aurora_main_fd,DIG0_MAIN_AURORA_LINK,&dig0_aurora_main_val);
 		// if (rc) {
 		// 	LOG_PRINTF("Reading Error\r\n");
@@ -455,6 +496,15 @@ static void *monitoring_thread(void *arg)
 		// DMA
 		parsing_mon_environment_status_into_object(jdpb,"dmastatus", dma_flag);
 		parsing_mon_environment_string_into_object(jdpb,"dmasource", dma_source_str);
+		parsing_mon_environment_integer_into_object(jdpb,"dmapktsize", dma_packet_size);
+
+		//RMON
+		parsing_mon_environment_integer_into_object(jdpb,"rmondig0", rmon_dig0);
+		parsing_mon_environment_integer_into_object(jdpb,"rmondig1", rmon_dig1);
+		parsing_mon_environment_integer_into_object(jdpb,"rmondig0mux", rmon_dig0_mux);
+		parsing_mon_environment_integer_into_object(jdpb,"rmondig1mux", rmon_dig1_mux);
+		parsing_mon_environment_integer_into_object(jdpb,"rmondmasource", rmon_dma_source);
+		parsing_mon_environment_integer_into_object(jdpb,"rmondma", rmon_dma);
 
 		// DPB properties
 		parsing_mon_environment_string_into_object(jdpb,"serialnumber", dpb_sn);
