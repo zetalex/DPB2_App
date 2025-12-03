@@ -241,6 +241,7 @@ static void *monitoring_thread(void *arg)
 	uint32_t rmon_dig1_mux = 0;
 	uint32_t rmon_dma_source = 0;
 	uint32_t rmon_dma = 0;
+	uint16_t rmon_timebase = 0;
 	char tdm_active_link_str[12];
 
 	char curr[32] = "12Vcurrent";
@@ -414,35 +415,46 @@ static void *monitoring_thread(void *arg)
 			LOG_PRINTF("Reading Error DMA Buffer Size\r\n");
 		}
 
+		rc = read_uio(REG_RMON_CONFIG_TIMEBASE,&rmon_timebase);
+		if (rc) {
+			LOG_PRINTF("Reading Error RMON TIMEBASE\r\n");
+		}
+
 		rc = read_uio(REG_RMON_DIG0,&rmon_dig0);
 		if (rc) {
 			LOG_PRINTF("Reading Error RMON DIG0\r\n");
 		}
+		rmon_dig0 = rmon_dig0 * (100 / rmon_timebase);
 
 		rc = read_uio(REG_RMON_DIG1,&rmon_dig1);
 		if (rc) {
 			LOG_PRINTF("Reading Error RMON DIG1\r\n");
 		}
+		rmon_dig1 = rmon_dig1 * (100 / rmon_timebase);
 
 		rc = read_uio(REG_RMON_DIG0_MUX,&rmon_dig0_mux);
 		if (rc) {
 			LOG_PRINTF("Reading Error RMON DIG0 MUX\r\n");
 		}
-
+		rmon_dig0_mux = rmon_dig0_mux * (100 / rmon_timebase);
+		
 		rc = read_uio(REG_RMON_DIG1_MUX,&rmon_dig1_mux);
 		if (rc) {
 			LOG_PRINTF("Reading Error RMON DIG1 MUX\r\n");
 		}
+		rmon_dig1_mux = rmon_dig1_mux * (100 / rmon_timebase);
 
 		rc = read_uio(REG_RMON_DMA_SOURCE,&rmon_dma_source);
 		if (rc) {
 			LOG_PRINTF("Reading Error RMON DMA SOURCE\r\n");
 		}
+		rmon_dma_source = rmon_dma_source * (100 / rmon_timebase);
 
 		rc = read_uio(REG_RMON_DMA,&rmon_dma);
 		if (rc) {
 			LOG_PRINTF("Reading Error RMON DMA\r\n");
 		}
+		rmon_dma = rmon_dma * (100 / rmon_timebase);
 		// rc = poll_GPIO(dig0_aurora_main_fd,DIG0_MAIN_AURORA_LINK,&dig0_aurora_main_val);
 		// if (rc) {
 		// 	LOG_PRINTF("Reading Error\r\n");
