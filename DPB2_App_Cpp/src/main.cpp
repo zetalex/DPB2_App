@@ -685,6 +685,14 @@ static void *monitoring_thread(void *arg)
 			json_object *jdig0channels = json_object_new_array();
 			for(int i = 0; i < DIG_MON_CHAN_CODES_SIZE; i++){
 					for(int j = 0; j < 18; j++){
+					if(dig_monitor_mag_chan_codes[i] == HKDIG_GET_OD_SEL_REG){   //Only for OD channels
+						if(j < 12){
+							continue;
+						}
+						else{
+							j = j - 12;
+						} 
+					}
 					pkt.CreatePacket(digcmd, HkDigCmdList.CmdList[dig_monitor_mag_chan_codes[i]].CmdString,(uint32_t) j);
 					rc = dig_command_handling(DIGITIZER_0,digcmd,dig_response);
 					if(rc){ // If the function returns error, we cancel reading on this board until check_board_presence() returns that it is available again
@@ -702,10 +710,8 @@ static void *monitoring_thread(void *arg)
 							break;
 
 						//String
-						case HKDIG_GET_OD_SEL_REG:   //Only for OD channels
-						if(j < 12){
-							break;
-						} 
+						case HKDIG_GET_OD_SEL_REG:   //Only for OD channels, restore real channel number
+						j = j + 12;
 						case HKDIG_GET_THR_NUM:
 						case HKDIG_GET_CHN_STATUS:
 						case HKDIG_GET_CHN_CNTRL:
@@ -828,6 +834,14 @@ skip_dig0:
 			json_object *jdig1channels = json_object_new_array();
 			for(int i = 0; i < DIG_MON_CHAN_CODES_SIZE; i++){
 					for(int j = 0; j < 18; j++){
+					if(dig_monitor_mag_chan_codes[i] == HKDIG_GET_OD_SEL_REG){   //Only for OD channels
+						if(j < 12){
+							continue;
+						}
+						else{
+							j = j - 12;
+						} 
+					}
 					pkt.CreatePacket(digcmd, HkDigCmdList.CmdList[dig_monitor_mag_chan_codes[i]].CmdString,(uint32_t) j);
 					rc = dig_command_handling(DIGITIZER_1,digcmd,dig_response);
 					if(rc){ // If the function returns error, we cancel reading on this board until check_board_presence() returns that it is available again
@@ -846,10 +860,8 @@ skip_dig0:
 							break;
 
 						//String
-						case HKDIG_GET_OD_SEL_REG:   //Only for OD channels
-						if(j < 12){
-							break;
-						} 
+						case HKDIG_GET_OD_SEL_REG:   //Only for OD channels, restore real channel number
+						j = j + 12;
 						case HKDIG_GET_THR_NUM:
 						case HKDIG_GET_CHN_STATUS:
 						case HKDIG_GET_CHN_CNTRL:
