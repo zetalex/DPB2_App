@@ -701,7 +701,11 @@ static void *monitoring_thread(void *arg)
 							parsing_mon_channel_data_into_object(jdig0channels,j, dig_monitor_mag_chan_names[i],dig_value);
 							break;
 
-						//String 
+						//String
+						case HKDIG_GET_OD_SEL_REG:   //Only for OD channels
+						if(j < 12){
+							break;
+						} 
 						case HKDIG_GET_THR_NUM:
 						case HKDIG_GET_CHN_STATUS:
 						case HKDIG_GET_CHN_CNTRL:
@@ -841,7 +845,11 @@ skip_dig0:
 							parsing_mon_channel_data_into_object(jdig1channels,j, dig_monitor_mag_chan_names[i],dig_value);
 							break;
 
-						//String 
+						//String
+						case HKDIG_GET_OD_SEL_REG:   //Only for OD channels
+						if(j < 12){
+							break;
+						} 
 						case HKDIG_GET_THR_NUM:
 						case HKDIG_GET_CHN_STATUS:
 						case HKDIG_GET_CHN_CNTRL:
