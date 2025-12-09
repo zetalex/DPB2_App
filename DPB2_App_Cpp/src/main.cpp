@@ -604,6 +604,7 @@ static void *monitoring_thread(void *arg)
 				int16_t cmdIdx = pkt.GetNextFiedlAsCOMMAND(HkDigCmdList);
 				switch(cmdIdx){
 					//String
+					case HKDIG_GET_HW_VER:
 					case HKDIG_GET_GW_VER:
 					case HKDIG_GET_GW_DATE:
     				case HKDIG_GET_SW_VER:
@@ -744,6 +745,7 @@ skip_dig0:
 				int16_t cmdIdx = pkt.GetNextFiedlAsCOMMAND(HkDigCmdList);
 				switch(cmdIdx){
 					//String
+					case HKDIG_GET_HW_VER:
 					case HKDIG_GET_GW_VER:
 					case HKDIG_GET_GW_DATE:
     				case HKDIG_GET_SW_VER:
