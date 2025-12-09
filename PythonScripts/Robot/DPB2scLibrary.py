@@ -80,13 +80,21 @@ class DPB2scLibrary(object):
     }
     
     uio_axireg_names = [
-    "DPB_COMMIT_SHA",
     "DPB_VER",
+    "DPB_COMMIT_SHA",
     "DPB_COMMIT_DATE",
     "DMA_BUF_SIZE",
     "TIMING_LINK_SWITCH",
     "TIMING_MGT_MAIN_SWITCH",
-    "TIMING_MGT_BACKUP_SWITCH"
+    "TIMING_MGT_BACKUP_SWITCH",
+    "RMON_CONFIG_TIMEBASE",
+    "RMON_CONFIG_START",  
+    "RMON_DIG0",          
+    "RMON_DIG1",          
+    "RMON_DIG0_MUX",      
+    "RMON_DIG1_MUX",      
+    "RMON_DMA_SOURCE",    
+    "RMON_DMA"           
     ]
     #########################################################
     # Initialization functions
