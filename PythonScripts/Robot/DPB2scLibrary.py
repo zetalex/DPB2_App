@@ -235,10 +235,49 @@ class DPB2scLibrary(object):
         Returns:
         str: A string containing the DPB serial number.
         """ 
-        os.system('dd if=/sys/class/i2c-dev/i2c-0/device/0-0057/eeprom bs=1 count=8 skip=8192 of=/home/petalinux/serial_number.txt')
-        with open(r'/home/petalinux/serial_number.txt', 'r') as fp:
-            serial_number = fp.read()
-        return serial_number
+        try:
+            eeprom_path = '/sys/class/i2c-dev/i2c-0/device/0-0057/eeprom'
+            offset = 8192  # skip=8192 in dd command
+            count = 8      # count=8 in dd command
+            
+            with open(eeprom_path, 'rb') as f:
+                f.seek(offset)
+                serial_data = f.read(count)
+            
+            # Convert bytes to string, removing any null bytes
+            serial_number = serial_data.decode('ascii', errors='ignore').strip('\x00')
+            
+            return serial_number
+            
+        except FileNotFoundError:
+            raise AssertionError(f"EEPROM file not found at {eeprom_path}")
+        except Exception as e:
+            raise AssertionError(f"Error reading serial number: {str(e)}")
+
+    def get_pll_configuration(self):
+        """Gets DPB PLL Configuration.
+        
+        Returns:
+        str: A string containing the DPB PLL configuration.
+        """ 
+        try:
+            eeprom_path = '/sys/class/i2c-dev/i2c-0/device/0-0057/eeprom'
+            offset = 0      # No skip in dd command
+            count = 8192    # count=8192 in dd command
+            
+            with open(eeprom_path, 'rb') as f:
+                f.seek(offset)
+                pll_data = f.read(count)
+            
+            # Convert bytes to string, removing any null bytes
+            pll_configuration = pll_data.decode('ascii', errors='ignore').strip('\x00')
+            
+            return pll_configuration
+            
+        except FileNotFoundError:
+            raise AssertionError(f"EEPROM file not found at {eeprom_path}")
+        except Exception as e:
+            raise AssertionError(f"Error reading PLL configuration: {str(e)}")
     #########################################################
     #Ethernet Links functions
     #########################################################
