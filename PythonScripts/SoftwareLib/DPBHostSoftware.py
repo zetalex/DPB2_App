@@ -36,13 +36,14 @@ class DPBHostSoftware:
     mutex_lock_data = threading.Lock()
     
     # The constructor method to initialize new objects
-    def __init__(self, dpb_ip, monitoring_port=5555, cmd_port=5557, config_port=5559, logging_port=5558, data_port=5570, log_file="dpb_logging.txt"):
+    def __init__(self, dpb_ip, monitoring_port=5555, alarm_port=5556, cmd_port=5557, config_port=5559, logging_port=5558, data_port=5570, log_file="dpb_logging.txt"):
         """
         Initialize DPBHostSoftware instance and establish connections to DPB.
         
         Args:
             dpb_ip (str): IP address of the DPB device
             monitoring_port (int): Port for monitoring data (Default 5555)
+            alarm_port (int): Port for alarm triggering (Default 5556)
             cmd_port (int): Port for command interface (Default 5557)
             config_port (int): Port for configuration interface (Default 5559)
             logging_port (int): Port for logging data (Default 5558)
@@ -54,6 +55,7 @@ class DPBHostSoftware:
         """
         self.dpb_ip = dpb_ip          # Attribute to store DPB IP address
         self.cmd_port = cmd_port      # Attribute to store command port
+        self.alarm_port = alarm_port  # Attribute to store alarm port
         self.config_port = config_port # Attribute to store configuration port
         self.data_port = data_port     # Attribute to store data port
         self.monitoring_port = monitoring_port  # Attribute to store monitoring port
@@ -67,11 +69,14 @@ class DPBHostSoftware:
         self.socket_monitoring = self.context.socket(zmq.SUB)
         self.socket_logging = self.context.socket(zmq.SUB)
         self.socket_cmd.setsockopt(zmq.RCVTIMEO, -1)
+        self.socket_alarm = self.context.socket(zmq.SUB)
+        self.socket_alarm.setsockopt(zmq.RCVTIMEO, -1)
         self.socket_config.setsockopt(zmq.RCVTIMEO, -1)
         self.socket_monitoring.setsockopt(zmq.RCVTIMEO, -1)
         self.socket_monitoring.setsockopt_string(zmq.SUBSCRIBE, "")
         self.socket_logging.setsockopt_string(zmq.SUBSCRIBE, "")
-        
+        self.socket_alarm.setsockopt_string(zmq.SUBSCRIBE, "")
+
         # Check DPB connectivity
         ping_result = os.system(f"ping -c 5 {self.dpb_ip} > /dev/null 2>&1")
         if(ping_result != 0):
@@ -87,12 +92,20 @@ class DPBHostSoftware:
         self.socket_config.connect(f"tcp://{self.dpb_ip}:{self.config_port}")
         self.socket_monitoring.connect(f"tcp://{self.dpb_ip}:{self.monitoring_port}")
         self.socket_logging.connect(f"tcp://{self.dpb_ip}:{self.logging_port}")
+        self.socket_alarm.connect(f"tcp://{self.dpb_ip}:{self.alarm_port}")
         # Start logging thread
         self.log_thread = threading.Thread(
             target=self.__logging_thread,
             daemon=True
         )
+
+        # Start alarm thread
+        self.alarm_thread = threading.Thread(
+            target=self.__alarm_thread,
+            daemon=True
+        )
         self.log_thread.start()
+        self.alarm_thread.start()
         self.send_ssh_command("systemctl start daq-readout")
         time.sleep(10)  # Wait for the service to start
         
@@ -131,6 +144,22 @@ class DPBHostSoftware:
                         time.sleep(0.1)  # No message, wait a bit
         except Exception as e:
             print(f"Logging thread error: {e}")
+            
+    def __alarm_thread(self):
+        """Thread to handle alarms from DPB"""
+        try:
+            with open(self.log_file, 'a') as f:
+                while not self.destroy.is_set():
+                    try:
+                        timestamp = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())
+                        alarm_data = self.socket_alarm.recv_string(flags=zmq.NOBLOCK)
+                        print(f"Alarm received at {timestamp}!")
+                        f.write(f"[{timestamp}] {alarm_data}\n")
+                        f.flush()
+                    except zmq.Again:
+                        time.sleep(0.1)  # No message, wait a bit
+        except Exception as e:
+            print(f"Alarm thread error: {e}")
 
     def read_config_json_file(file_path):
         """
