@@ -138,7 +138,7 @@ class DPBHostSoftware:
                     try:
                         log_data = self.socket_logging.recv_string(flags=zmq.NOBLOCK)
                         timestamp = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())
-                        f.write(f"[{timestamp}] {log_data}\n")
+                        f.write(f"[{timestamp}] {log_data}")
                         f.flush()
                     except zmq.Again:
                         time.sleep(0.1)  # No message, wait a bit
@@ -153,7 +153,7 @@ class DPBHostSoftware:
                     try:
                         timestamp = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())
                         alarm_data = self.socket_alarm.recv_string(flags=zmq.NOBLOCK)
-                        print(f"Alarm received at {timestamp}!")
+                        print(f"Alarm received at {timestamp}: {time.time()}")
                         f.write(f"[{timestamp}] {alarm_data}\n")
                         f.flush()
                     except zmq.Again:
@@ -161,7 +161,7 @@ class DPBHostSoftware:
         except Exception as e:
             print(f"Alarm thread error: {e}")
 
-    def read_config_json_file(file_path):
+    def read_config_json_file(self, file_path):
         """
         Read and validate JSON content from the specified file.
         

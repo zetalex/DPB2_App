@@ -6,7 +6,7 @@ import matplotlib.dates as md
 import sys
 import dateutil
 import datetime
-
+import time
 
 def get_environment_magnitude(json_data,board,magnitude):
     # Parse JSON
@@ -67,7 +67,10 @@ def main():
     datestrings = ["" for x in range(num_points)]
     
     for i in range(0, num_points):
+        tstart = time.time()
         json_data = socket.recv_string()
+        tend = time.time()
+        print(f"Data reception time: {(tend - tstart) * 1000} ms")
         magnitude[i] = get_environment_magnitude(json_data,"DPB","fpgatemp")
         #magnitude[i] = get_channel_magnitude(json_data,"HV",1,"temperature")
         datestrings[i] = str(datetime.datetime.now())

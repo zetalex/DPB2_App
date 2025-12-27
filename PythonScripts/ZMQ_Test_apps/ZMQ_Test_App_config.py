@@ -14,7 +14,7 @@ import sys
 import json
 import os
 import glob
-
+import time
 
 def scan_json_files():
     """
@@ -134,11 +134,12 @@ def send_json_via_zmq(ip_address, json_content):
         # Send JSON content as string
         print("Sending JSON content...")
         socket.send_string(json_content)
-        
+        tstart = time.time()
         # Receive response
         print("Waiting for response...")
         response = socket.recv_string()
-        
+        tend = time.time()
+        print(f"Response time: {(tend - tstart) * 1000} ms")
         return response
         
     except zmq.Again:

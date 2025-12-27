@@ -1,7 +1,7 @@
 import zmq
 import json
 import sys
-
+import time
 
 def process_json(json_data):
     # Parse JSON
@@ -23,6 +23,8 @@ def main():
     
     while True:
         json_data = socket.recv_string()
+        tend = time.time()
+        print(f"PC Alarm reception time: {tend  * 1000} ms")
         process_json(json_data)
 
 

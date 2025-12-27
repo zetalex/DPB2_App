@@ -16,8 +16,11 @@ def main():
     while True:
         command = input("Type a command: ")
         msg = "{'msg_id':0, 'msg_time':'2021-11-19T17:54:30.691Z', 'msg_type':'Command', 'msg_value':'" + command + "', 'uuid': '931fbc9d-b2b3-c248-87d6ae33f9a62'}"
+        tstart = time.time()
         socket.send_string(msg)
         response = socket.recv_string()
+        tend = time.time()
+        print(f"Response time: {(tend - tstart) * 1000} ms")
         json_obj = json.loads(response)
         value = json_obj["msg_value"]
         print(value)
