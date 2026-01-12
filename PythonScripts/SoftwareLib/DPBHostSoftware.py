@@ -124,6 +124,11 @@ class DPBHostSoftware:
         print(f"DPB at {self.dpb_ip} is ready")
 
     def __del__(self):
+        """
+        Destructor to cleanup resources and close connections.
+        
+        @return None
+        """
         self.__stop_data_threads()
         self.socket_cmd.close()
         self.socket_config.close()
@@ -131,7 +136,14 @@ class DPBHostSoftware:
         self.context.term()
 
     def __logging_thread(self):
-        """Thread to handle logging from DPB"""
+        """
+        Thread to handle logging messages from DPB.
+        
+        Continuously receives logging messages from the DPB via ZMQ socket and writes them
+        to the log file with timestamps. Runs until destroy event is set.
+        
+        @return None
+        """
         try:
             with open(self.log_file, 'a') as f:
                 while not self.destroy.is_set():
@@ -146,7 +158,14 @@ class DPBHostSoftware:
             print(f"Logging thread error: {e}")
             
     def __alarm_thread(self):
-        """Thread to handle alarms from DPB"""
+        """
+        Thread to handle alarm messages from DPB.
+        
+        Continuously receives alarm messages from the DPB via ZMQ socket and writes them
+        to the log file with timestamps. Runs until destroy event is set.
+        
+        @return None
+        """
         try:
             with open(self.log_file, 'a') as f:
                 while not self.destroy.is_set():
@@ -165,11 +184,10 @@ class DPBHostSoftware:
         """
         Read and validate JSON content from the specified file.
         
-        Args:
-            filename (str): Name of the JSON file to read
-            
-        Returns:
-            str: JSON content as string, or None if error occurred
+        Opens and reads a JSON file, validates its format and returns the content as a string.
+        
+        @param file_path Path to the JSON configuration file to read
+        @return JSON content as string, or None if error occurred
         """
         try:
             with open(file_path, 'r', encoding='utf-8') as file:
@@ -190,10 +208,29 @@ class DPBHostSoftware:
             return None
     
     def send_ssh_command(self, command):
+        """
+        Execute a command on the DPB via SSH.
+        
+        Connects to the DPB using SSH with sshpass and executes the specified command.
+        Uses root credentials for authentication.
+        
+        @param command Shell command string to execute on the DPB
+        @return Command output as string
+        """
         print(f"Executing '{command}' on {self.dpb_ip} via SSH.")
         return subprocess.getoutput(f"sshpass -p root ssh root@{self.dpb_ip} '{command}'")
 
     def send_slow_control_command(self, command):
+        """
+        Send a slow control command to the DPB via ZMQ socket.
+        
+        Wraps the command in a JSON message structure and sends it via ZMQ REQ socket.
+        Waits for and returns the response value.
+        
+        @param command Slow control command string to send to the DPB
+        @return Response value from the DPB, or raises TimeoutError if no response received
+        @throws TimeoutError If timeout occurs waiting for DPB response
+        """
         msg = "{'msg_id':0, 'msg_time':'2021-11-19T17:54:30.691Z', 'msg_type':'Command', 'msg_value':'" + command + "', 'uuid': '931fbc9d-b2b3-c248-87d6ae33f9a62'}"
         try: 
             self.socket_cmd.send_string(msg)
@@ -205,6 +242,16 @@ class DPBHostSoftware:
         return value
 
     def send_configuration_json(self, config_json):
+        """
+        Send a JSON configuration file to the DPB.
+        
+        Reads the specified JSON configuration file, validates it and sends it to the DPB
+        via the configuration ZMQ socket. Waits for confirmation response.
+        
+        @param config_json Path to the JSON configuration file to send
+        @return Response string from the DPB
+        @throws TimeoutError If timeout occurs waiting for DPB response
+        """
         try:
             print("Reading JSON content...")
             json_content = self.read_config_json_file(config_json)
@@ -222,6 +269,14 @@ class DPBHostSoftware:
             return response
 
     def get_mon_data(self):
+        """
+        Retrieve monitoring data from the DPB.
+        
+        Receives the latest monitoring data JSON from the DPB via the monitoring ZMQ socket
+        and returns it formatted with indentation.
+        
+        @return Formatted JSON string with monitoring data, or -1 if no data available
+        """
         try:
             json_data = self.socket_monitoring.recv_string()
             response = json.dumps(json.loads(json_data), indent=4)
@@ -230,6 +285,16 @@ class DPBHostSoftware:
             return -1
     
     def get_dig_data(self, time_ms):
+        """
+        Acquire digitizer data from the DPB for a specified duration.
+        
+        Enables DMA on the DPB, collects data for the specified time period, then stops DMA
+        and retrieves the collected binary data. Uses mutex to ensure only one acquisition
+        runs at a time.
+        
+        @param time_ms Duration in milliseconds to collect data
+        @return Binary data as bytes object, or None if acquisition already in progress
+        """
         # Get semaphore to use this function only once at a time
         mutex_acquired = self.mutex_lock_data.acquire(blocking=False)
         if not mutex_acquired:
@@ -256,7 +321,20 @@ class DPBHostSoftware:
         return data
 
     def __worker_thread(self, thread_id, cpu_core, data_queue, server_ip, server_port):
-        """Function that executes each worker thread"""
+        """
+        Worker thread function for receiving data from DPB.
+        
+        Each worker thread connects to the DPB data port via ZMQ ROUTER socket, sets CPU
+        affinity to a specific core for performance, and continuously receives data messages
+        while the running flag is set. Received data is placed in the shared queue for writing.
+        
+        @param thread_id Unique identifier for this worker thread
+        @param cpu_core CPU core number to bind this thread to for affinity
+        @param data_queue Thread-safe queue to store received data for file writing
+        @param server_ip IP address of the DPB server
+        @param server_port Port number for data connection
+        @return None
+        """
         # Set CPU affinity for this thread
         if PSUTIL_AVAILABLE:
             # Get current process
@@ -320,7 +398,16 @@ class DPBHostSoftware:
             print(f"Thread {thread_id}: Terminated correctly")
 
     def __file_writer_thread(self, data_queue):
-        """Dedicated thread for writing to file"""
+        """
+        Dedicated thread for writing received data to file.
+        
+        Continuously retrieves data from the queue and writes it to the output file.
+        Runs while the running flag is set or until the queue is empty. Ensures data
+        is flushed to disk after each write.
+        
+        @param data_queue Thread-safe queue containing binary data to write
+        @return None
+        """
         try:
             while not self.destroy.is_set():
                 while self.running.is_set() or not data_queue.empty():
@@ -338,14 +425,16 @@ class DPBHostSoftware:
             self.output_file.close()
 
     def __start_data_threads(self):
+        """
+        Initialize and start data acquisition threads.
         
-        # Parse command line arguments
-        # parser = argparse.ArgumentParser(description='High-performance ZMQ event receiver')
-        # parser.add_argument('--dpb-ip', required=True, help='DPB server IP address', dest='server_ip')
-        # parser.add_argument('--port', required=True, help='DPB server port', dest='server_port')
-        # parser.add_argument('--out', required=True, help='Output file to write received data', dest='output_file')
-        # args = parser.parse_args()
+        Creates a temporary binary output file, initializes a thread-safe queue for data,
+        and launches one file writer thread plus 8 worker threads for receiving data from
+        the DPB. Each worker thread is assigned to a specific CPU core for performance.
         
+        @return None
+        """
+
         # Open output file for writing
         try:
             self.output_file = open("temp.bin", 'wb')  # Open in binary mode
@@ -385,6 +474,14 @@ class DPBHostSoftware:
             self.threads.append(thread)
 
     def __stop_data_threads(self):
+        """
+        Stop all data acquisition threads and cleanup resources.
+        
+        Clears the running flag, sets the destroy event, and waits for all threads to
+        terminate gracefully with a timeout. Closes the output file after all threads finish.
+        
+        @return None
+        """
         self.running.clear()
         self.destroy.set()   
         # Wait for threads to finish
