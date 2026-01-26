@@ -896,8 +896,11 @@ skip_dig1:
 			//Send Serial number
 			parsing_mon_environment_string_into_object(jlv, lv_mag_names[0],LV_SN);
 
+			//Send Firmware
+			parsing_mon_environment_string_into_object(jlv, lv_mag_names[1],LV_FW);
+
 			//Read Environment Parameters
-			for(int i = 1 ; i < 6; i++){
+			for(int i = 2 ; i < 7; i++){
 				strcpy(lv_mon_cmd,lv_mon_root);
 				strcat(lv_mon_cmd,lv_board_words[i]);
 				strcat(lv_mon_cmd,"\r\n");
@@ -931,14 +934,14 @@ skip_dig1:
 					strcpy(mag_str,"ERROR");
 				}
 				switch(i){
-					case 1: // Temperature
-					case 2: // BCM Temperature
-					case 3: // Relative Humidity
-					case 4: // Pressure
+					case 2: // Temperature
+					case 3: // BCM Temperature
+					case 4: // Relative Humidity
+					case 5: // Pressure
 						mag_value=(float) atoi(mag_str);
 						parsing_mon_environment_data_into_object(jlv,lv_mag_names[i], mag_value);
 						break;
-					case 5: // Water Leak
+					case 6: // Water Leak
 						if(!strcmp(mag_str,"YES"))
 							mag_value = 1;
 						else
@@ -1027,6 +1030,9 @@ skip_lv:
 			//Read Serial Number
 			parsing_mon_environment_string_into_object(jhv,hv_mag_names[0], HV_SN);
 
+			// Read Firmware Version
+			parsing_mon_environment_string_into_object(jhv,hv_mag_names[1], HV_FW);
+
 			//Read Board Temperature
 			strcpy(hv_mon_cmd,"$BD:1,$CMD:MON,PAR:BDTEMP\r\n");
 			rc = hv_lv_command_handling(board_dev,hv_mon_cmd,response);
@@ -1059,12 +1065,12 @@ skip_lv:
 				strcpy(mag_str,"ERROR");
 			}
 			mag_value = atof(mag_str);
-			parsing_mon_environment_data_into_object(jhv,hv_mag_names[1], mag_value);
+			parsing_mon_environment_data_into_object(jhv,hv_mag_names[2], mag_value);
 
 			//Read Channel Parameters
 			strcpy(hv_mon_root,"$BD:1,$CMD:MON,CH:");
 			for(int i = 0; i < 24; i++){
-				for(int j = 2; j < HV_CMD_TABLE_SIZE; j++){
+				for(int j = 3; j < HV_CMD_TABLE_SIZE; j++){
 					strcpy(hv_mon_cmd,hv_mon_root);
 					sprintf(channel_str,"%d",i);
 					strcat(hv_mon_cmd,channel_str);
@@ -1103,28 +1109,33 @@ skip_lv:
 						strcpy(mag_str,"ERROR");
 					}
 
-					switch(j-2) {
+					switch(j-3) {
 						case 0:
 						// If it is status, we strip the least significant bit from the string
 						mag_status = atoi(mag_str) & 0x1;
 						parsing_mon_channel_status_into_object(jhvchannels,i,hv_mag_names[j],mag_status);
 						break;
 						case 1:  //Voltage Monitor
-						case 2:	 //Current Monitor
-						case 3:  // Temperature
-						case 4:  //Rampup Speed
-						case 5:  // Rampdown Speed
-						case 6: // Trip Time
+						case 2: // Voltage Set
+						case 3:	 //Current Monitor
+						case 4: // Current Limit
+						case 6:  // Temperature
+						case 7:  //Rampup Speed
+						case 8:  // Rampdown Speed
+						case 9: // Trip Time
 						mag_value = atof(mag_str);
 						parsing_mon_channel_data_into_object(jhvchannels,i,hv_mag_names[j],mag_value);
 						break;
-						case 7:
+						case 5: //Power Status
+						parsing_mon_channel_string_into_object(jhvchannels,i,hv_mag_names[j],mag_str);
+						break;
+						case 10:
 						// If it is the channel error, we strip the most significant bit
 						mag_status = (atoi(mag_str) & (0x1 << 13)) >> 13;
 						parsing_mon_channel_status_into_object(jhvchannels,i,hv_mag_names[j],mag_status);
 						break;
-						case 8:
-						case 9:
+						case 11:
+						case 12:
 						if(inList(i,hv_sd_channels,8)){
 							mag_value = atof(mag_str);
 							parsing_mon_channel_data_into_object(jhvchannels,i,hv_mag_names[j],mag_value);
