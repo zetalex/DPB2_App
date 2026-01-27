@@ -955,9 +955,9 @@ skip_dig1:
 
 			//Read Channel Parameters
 			strcpy(lv_mon_root,"$BD:0,$CMD:MON,CH:");
-			for(int i = 0; i <= 7; i++){
+			for(int i = 0; i < 8; i++){
 			//Status Voltage and Current
-				for(int j = 6; j < (LV_CMD_TABLE_SIZE-1); j++){  // We can't read CPU status
+				for(int j = 7; j < (LV_CMD_TABLE_SIZE-1); j++){  // We can't read CPU status
 					strcpy(lv_mon_cmd,lv_mon_root);
 					sprintf(channel_str,"%d",i);
 					strcat(lv_mon_cmd,channel_str);
@@ -998,7 +998,7 @@ skip_dig1:
 					else {
 						strcpy(mag_str,"ERROR");
 					}
-					switch (j-6){
+					switch (j-7){
 						case 0: //Output Status
 						if(!strcmp(mag_str,"ON"))
 							mag_value = 1;
