@@ -1242,7 +1242,7 @@ static void *i2c_alarms_thread(void *arg){
 		if (rc) {
 			LOG_PRINTF("Error reading alarm PLL\r\n");
 		}
-		rc = tdm_not_locked_alarm();
+		rc = tdm_not_locked_alarm(data);
 		if (rc) {
 			LOG_PRINTF("Error reading alarm TDM Lock\r\n");
 		}

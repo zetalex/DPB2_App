@@ -28,7 +28,8 @@ class DPB_I2cSensors(ctypes.Structure):
         ('dev_sfp3_5_volt', I2cDevice),
         ('dev_som_volt', I2cDevice),
         ('dev_sfp_A0', I2cDevice * 6),
-        ('dev_sfp_A2', I2cDevice * 6)
+        ('dev_sfp_A2', I2cDevice * 6),
+        ('dev_pll_si5345', I2cDevice)
         ]
 
 ctype_map = {
