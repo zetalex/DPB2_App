@@ -26,11 +26,12 @@ class DPBHostSoftware:
     destroy = threading.Event()
     destroy.clear()  # Set to False initially
 
-    # TCP Buffer sizes (in bytes)
-    TCP_RECV_BUFFER_SIZE = 2 * 1024 * 1024  # 2MB receive buffer
-    TCP_SEND_BUFFER_SIZE = 2 * 1024 * 1024  # 2MB send buffer
-    ZMQ_RECV_HWM = 10000  # High water mark for receiving
-    ZMQ_SEND_HWM = 10000  # High water mark for sending
+    # TCP Buffer sizes (in bytes) - Optimized for high throughput
+    TCP_RECV_BUFFER_SIZE = 16 * 1024 * 1024  # 16MB receive buffer
+    TCP_SEND_BUFFER_SIZE = 16 * 1024 * 1024  # 16MB send buffer
+    ZMQ_RECV_HWM = 100000  # High water mark for receiving (increased 10x)
+    ZMQ_SEND_HWM = 100000  # High water mark for sending (increased 10x)
+    BATCH_SIZE = 100  # Number of messages to batch before writing
     
     output_file = None
     mutex_lock_data = threading.Lock()
@@ -360,24 +361,39 @@ class DPBHostSoftware:
             worker_socket.setsockopt(zmq.SNDBUF, self.TCP_SEND_BUFFER_SIZE)
             worker_socket.setsockopt(zmq.RCVHWM, self.ZMQ_RECV_HWM)
             worker_socket.setsockopt(zmq.SNDHWM, self.ZMQ_SEND_HWM)
+            
+            # TCP Keepalive settings
             worker_socket.setsockopt(zmq.TCP_KEEPALIVE, 1)
-            worker_socket.setsockopt(zmq.TCP_KEEPALIVE_IDLE, 600)  # 10 minutes
-            worker_socket.setsockopt(zmq.TCP_KEEPALIVE_INTVL, 60)  # 1 minute
+            worker_socket.setsockopt(zmq.TCP_KEEPALIVE_IDLE, 600)
+            worker_socket.setsockopt(zmq.TCP_KEEPALIVE_INTVL, 60)
             worker_socket.setsockopt(zmq.TCP_KEEPALIVE_CNT, 3)
-            worker_socket.setsockopt(zmq.RCVTIMEO, -1)  # Infinite timeout
+            worker_socket.setsockopt(zmq.RCVTIMEO, -1)
+            
+            # Set linger to 0 for faster cleanup
+            worker_socket.setsockopt(zmq.LINGER, 0)
             
             url = f"tcp://{server_ip}:{server_port}"
             worker_socket.connect(url)
+            
+            batch = []  # Batch messages for better queue performance
+            
             while not self.destroy.is_set():
                 while self.running.is_set():
                     try:
-                        message = worker_socket.recv_multipart()
+                        # Use copy=False to avoid unnecessary memory copies (zero-copy)
+                        # recv_multipart with copy=False is faster for large messages
+                        message = worker_socket.recv_multipart(copy=False)
                         
-                        # Only write the payload, not all frames
+                        # Extract payload from frames
                         if len(message) > 0:
-                            # Usually the last frame contains the actual data
-                            payload = message[-1]  # Take only the last frame
-                            data_queue.put(payload)
+                            # Last frame contains actual data - convert Frame to bytes
+                            payload = bytes(message[-1])
+                            batch.append(payload)
+                            
+                            # Put batch into queue when it reaches BATCH_SIZE
+                            if len(batch) >= self.BATCH_SIZE:
+                                data_queue.put(batch)
+                                batch = []
                             
                     except zmq.Again:
                         continue
@@ -390,6 +406,9 @@ class DPBHostSoftware:
         except Exception as e:
             print(f"Thread {thread_id}: Connection error - {e}")
         finally:
+            # Flush any remaining batched messages
+            if batch:
+                data_queue.put(batch)
             try:
                 if worker_socket:
                     worker_socket.close()
@@ -401,36 +420,55 @@ class DPBHostSoftware:
         """
         Dedicated thread for writing received data to file.
         
-        Continuously retrieves data from the queue and writes it to the output file.
-        Runs while the running flag is set or until the queue is empty. Ensures data
-        is flushed to disk after each write.
+        Continuously retrieves batches of data from the queue and writes them to file.
+        Uses buffered writes and periodic flushing for better performance.
         
-        @param data_queue Thread-safe queue containing binary data to write
+        @param data_queue Thread-safe queue containing lists of binary data to write
         @return None
         """
         try:
+            write_count = 0
+            flush_interval = 1000  # Flush every N batches for better performance
+            
             while not self.destroy.is_set():
                 while self.running.is_set() or not data_queue.empty():
                     try:
-                        data = data_queue.get(timeout=0.1)
-                        self.output_file.write(data)
-                        self.output_file.flush()
+                        # Get batch of messages
+                        batch = data_queue.get(timeout=0.1)
+                        
+                        # Write all messages in batch
+                        for data in batch:
+                            self.output_file.write(data)
+                        
+                        write_count += 1
+                        
+                        # Periodic flush instead of flushing after every write
+                        if write_count >= flush_interval:
+                            self.output_file.flush()
+                            write_count = 0
+                        
                         data_queue.task_done()
                     except queue.Empty:
+                        # Flush on timeout to ensure data is written
+                        if write_count > 0:
+                            self.output_file.flush()
+                            write_count = 0
                         continue
                     except Exception as e:
                         print(f"File writer error: {e}")
                         break
         finally:
+            # Final flush before closing
+            self.output_file.flush()
             self.output_file.close()
 
     def __start_data_threads(self):
         """
-        Initialize and start data acquisition threads.
+        Initialize and start data acquisition thread.
         
         Creates a temporary binary output file, initializes a thread-safe queue for data,
-        and launches one file writer thread plus 8 worker threads for receiving data from
-        the DPB. Each worker thread is assigned to a specific CPU core for performance.
+        and launches one receiver thread plus one file writer thread.
+        Uses a single ZMQ socket to maintain FIFO message ordering automatically.
         
         @return None
         """
@@ -444,12 +482,16 @@ class DPBHostSoftware:
         
         # Thread-safe queue for data
         data_queue = queue.Queue(maxsize=10000)
-        
-        # Get available CPU cores
-        num_cores = os.cpu_count()
-        if num_cores is None:
-            num_cores = 8  # fallback
 
+        # Create single receiver thread
+        receiver_thread = threading.Thread(
+            target=self.__worker_thread, 
+            args=(1, 0, data_queue, self.dpb_ip, self.data_port), 
+            daemon=True
+        )
+        receiver_thread.start()
+        self.threads.append(receiver_thread)
+        
         # Create thread for file writing
         writer_thread = threading.Thread(
             target=self.__file_writer_thread, 
@@ -458,20 +500,6 @@ class DPBHostSoftware:
         )
         writer_thread.start()
         self.threads.append(writer_thread)
-        
-        ##
-        # Create and launch 8 worker threads
-        
-        for i in range(8):
-            # Assign each thread to a different CPU core (round-robin)
-            cpu_core = i % num_cores
-            thread = threading.Thread(
-                target=self.__worker_thread, 
-                args=(i+1, cpu_core, data_queue, self.dpb_ip, self.data_port), 
-                daemon=True
-            )
-            thread.start()
-            self.threads.append(thread)
 
     def __stop_data_threads(self):
         """
