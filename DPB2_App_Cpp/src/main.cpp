@@ -592,7 +592,7 @@ static void *monitoring_thread(void *arg)
 		char *dig_mag_str;
 		float dig_value;
 		int32_t tf;
-		if(dig0_connected){
+		if(dig0_connected && dig0_used){
 			// Board parameters
 			for(int i = 0; i < DIG_MON_BOARD_CODES_SIZE; i++){
 				pkt.CreatePacket(digcmd, HkDigCmdList.CmdList[dig_monitor_mag_board_codes[i]].CmdString);
@@ -733,7 +733,7 @@ static void *monitoring_thread(void *arg)
 
 skip_dig0:
 		//Digitizer 1 Slow Control Monitoring
-		if(dig1_connected){
+		if(dig1_connected && dig1_used){
 			// Board parameters
 			for(int i = 0; i < DIG_MON_BOARD_CODES_SIZE; i++){
 				pkt.CreatePacket(digcmd, HkDigCmdList.CmdList[dig_monitor_mag_board_codes[i]].CmdString);
@@ -884,7 +884,7 @@ skip_dig1:
 		char mag_str[32];
 		float mag_value;
 
-		if(lv_connected){
+		if(lv_connected && hv_lv_used){
 			json_object *jlvchannels = json_object_new_array();
 			strcpy(lv_mon_root,"$BD:0,$CMD:MON,PAR:");
 			#ifdef HVLV_NORESISTORS
@@ -1022,7 +1022,7 @@ skip_lv:
 		char hv_mon_root[80];
 		char hv_mon_cmd[80];
 		int mag_status;
-		if(hv_connected){
+		if(hv_connected && hv_lv_used){
 
 			json_object *jhvchannels = json_object_new_array();
 			strcpy(board_dev,"/dev/ttyUL3");
@@ -1279,7 +1279,7 @@ static void *i2c_alarms_thread(void *arg){
 
 		//HV alarm parsing only each certain period multiple of alarm thread period
 		hv_count++;
-		if(hv_connected && hv_count == hv_alarms_period ){
+		if(hv_connected && hv_lv_used && (hv_count == hv_alarms_period) ){
 			hv_count = 0;
 			hv_read_alarms();
 		}
@@ -1520,7 +1520,7 @@ int main(int argc, char *argv[]){
 	int	n;
 	CCOPacket pkt(COPKT_DEFAULT_START, COPKT_DEFAULT_STOP, COPKT_DEFAULT_SEP);
 
-	for(int i = 1 ; i < 6; i++) {
+	for(int i = 1 ; i < 9; i++) {
 		if(argc <= i)
 			switch(i){
 				case 1:
@@ -1538,11 +1538,23 @@ int main(int argc, char *argv[]){
 				case 5:
 				periods[i-1] = HV_LV_SLEEP_DELAY_DEFAULT;
 				break;
+				case 6:
+				dig0_used = 1;
+				break;
+				case 7:
+				dig1_used = 1;
+				break;
+				case 8:
+				hv_lv_used = 1;
+				break;
 			}
 		else
 			periods[i-1] = atoi(argv[i]);
 	}
 	hv_lv_sleep_delay = periods[4];
+	dig0_used = periods[5];
+	dig1_used = periods[6];
+	hv_lv_used = periods[7];
 
 	/* Block all real time signals so they can be used for the timers.
 	Note: this has to be done in main() before any threads are created
