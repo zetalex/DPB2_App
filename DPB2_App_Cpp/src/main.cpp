@@ -1515,6 +1515,8 @@ waitmsg:
 			rc = dig_command_handling(DIGITIZER_1,cmd_raw,reply);
 		}
 		else if(((!strncmp(buffer,"HV ",3) && hv_connected) || (!strncmp(buffer,"LV ",3) && lv_connected)) && hv_lv_used){
+			//Add \r\n at the end of the buffer
+			strcat(buffer, "\r\n");
 			// Copy the rest of the string excluding the HV or LV start
 			strcpy(cmd_raw, buffer + 3);
 			rc = hv_lv_command_handling(hv_lv_uart,cmd_raw,reply);
