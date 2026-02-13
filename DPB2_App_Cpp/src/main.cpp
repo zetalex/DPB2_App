@@ -63,8 +63,10 @@ pthread_t t_3;
 pthread_t t_4;
 /** @brief Configuration Thread */
 pthread_t t_5;
-/** @brief periods for each of the threads in order (1 = AMS alarms 2= Other alarms 3= Monitoring 4 = Command handling) */
-int periods[5];
+/** @brief Bypass Command Thread */
+pthread_t t_6;
+/** @brief periods for each of the threads in order (1 = AMS alarms 2= Other alarms 3= Monitoring 4 = Command handling 5 = Configuration) */
+int periods[8];
 
 /** @} */
 
@@ -89,6 +91,7 @@ static void *monitoring_thread(void *);
 static void *i2c_alarms_thread(void *);
 static void *ams_alarms_thread(void *);
 static void *command_thread(void *);
+static void *bypass_command_thread(void *);
 static void *config_thread(void *);
 
 /************************** IIO_EVENT_MONITOR Functions ******************************/
@@ -1465,6 +1468,70 @@ waitmsg:
 	return NULL;
 }
 
+/** Command bypass thread to directly send command to digitizers, HV and LV
+ * 
+ * @param arg Thread argument (unused, should be NULL)
+ *
+ * @return NULL (if exits is because of an error).
+ */
+
+ static void *bypass_command_thread(void *arg){
+
+	struct periodic_info info;
+	LOG_PRINTF("Bypass Command thread period: %3.4fms\n",((float)periods[3])/1000);
+	int rc = make_periodic(periods[3], &info);
+	if (rc) {
+		LOG_PRINTF("Error creating bypass command thread\r\n");
+		return NULL;
+	}
+
+	sem_post(&thread_sync);
+	while(1){
+		char aux_buff[256];
+		int size;
+		char buffer[256];
+		char reply[256];
+		const char *serialized_json_msg;
+		char *reply_bis;
+		char cmd_raw[128];
+		char hv_lv_uart[32];
+		size = zmq_recv(bypass_cmd_router, aux_buff, 255, 0);
+		if (size == -1)
+		  return NULL;
+		if (size > 255)
+		  size = 255;
+		aux_buff[size] = '\0';
+		strcpy(buffer,aux_buff);
+		strcpy(hv_lv_uart,"/dev/ttyUL3");
+
+		if(!strncmp(buffer,"DIG0 ",5) && dig0_connected && dig0_used){
+			// Copy the rest of the string excluding the DIG0 start
+			strcpy(cmd_raw, buffer + 5);
+			rc = dig_command_handling(DIGITIZER_0,cmd_raw,reply);
+		}
+		else if(!strncmp(buffer,"DIG1 ",5) && dig1_connected && dig1_used){
+			// Copy the rest of the string excluding the DIG1 start
+			strcpy(cmd_raw, buffer + 5);
+			rc = dig_command_handling(DIGITIZER_1,cmd_raw,reply);
+		}
+		else if(((!strncmp(buffer,"HV ",3) && hv_connected) || (!strncmp(buffer,"LV ",3) && lv_connected)) && hv_lv_used){
+			// Copy the rest of the string excluding the HV or LV start
+			strcpy(cmd_raw, buffer + 3);
+			rc = hv_lv_command_handling(hv_lv_uart,cmd_raw,reply);
+		}
+		else {
+			strcpy(reply,"ERROR: Command not valid or board not connected");
+		}
+
+		waitmsg:
+		const char* msg_sent = (const char*) reply;
+		zmq_send(bypass_cmd_router,msg_sent, strlen(msg_sent), 0);
+
+		wait_period(&info);
+	}
+	return NULL;
+ }
+
 /**
  * Periodic thread that handles configuration updates by retrieving and parsing configuration data.
  * This thread runs continuously at a specified period awaiting for configuration changes coming from the  * ZMQ socket in standalone mode and applies them.
@@ -1595,6 +1662,9 @@ int main(int argc, char *argv[]){
 	pthread_create(&t_4, NULL, command_thread,(void *)&data);//Create thread 4 - waits and attends commands
 	sem_wait(&thread_sync); //Avoids race conditions
 	pthread_create(&t_5, NULL, config_thread,NULL); //Create thread 5 - waits and attends configuration commands
+	sem_wait(&thread_sync); //Avoids race conditions
+	pthread_create(&t_6, NULL, bypass_command_thread,NULL); //Create thread 6 - bypass command thread
+	sem_wait(&thread_sync); //Avoids race conditions
 	#endif
 
 	while(1){
