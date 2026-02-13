@@ -65,8 +65,8 @@ pthread_t t_4;
 pthread_t t_5;
 /** @brief Bypass Command Thread */
 pthread_t t_6;
-/** @brief arguments for the application (1 = AMS alarms 2= Other alarms 3= Monitoring 4 = Command handling 5 = Configuration) */
-int args[8];
+/** @brief periods for each of the threads in order (1 = AMS alarms 2= Other alarms 3= Monitoring 4 = Command handling 5 = Configuration) */
+int periods[8];
 
 /** @} */
 
@@ -277,8 +277,8 @@ static void *monitoring_thread(void *arg)
 	char dma_source_str[16];
 	char dpb_multiboot_reg_str[32];
 
-	LOG_PRINTF("Monitoring thread period: %3.4fs\n",((float)args[2])/1000000);
-	rc = make_periodic(args[2], &info);
+	LOG_PRINTF("Monitoring thread period: %3.4fs\n",((float)periods[2])/1000000);
+	rc = make_periodic(periods[2], &info);
 	if (rc) {
 		LOG_PRINTF("Error creating monitoring thread\r\n");
 		return NULL;
@@ -1188,13 +1188,13 @@ static void *i2c_alarms_thread(void *arg){
 	int rc ;
 	//struct DPB_I2cSensors *data = i2c_data;
 	struct DPB_I2cSensors *data = static_cast<DPB_I2cSensors *>(arg);
-	LOG_PRINTF("Alarms thread period: %3.4fms\n",((float)args[1])/1000);
-	rc = make_periodic(args[1], &info);
+	LOG_PRINTF("Alarms thread period: %3.4fms\n",((float)periods[1])/1000);
+	rc = make_periodic(periods[1], &info);
 	if (rc) {
 		LOG_PRINTF("Error\r\n");
 		return NULL;
 	}
-	int hv_alarms_period = 700000/args[1]; //in us
+	int hv_alarms_period = 700000/periods[1]; //in us
 	int hv_count = 0;
 	sem_post(&thread_sync);
 
@@ -1317,8 +1317,8 @@ static void *ams_alarms_thread(void *arg){
 
 	sem_wait(&memory->ams_sync);
 
-	LOG_PRINTF("AMS Alarms thread period: %3.4fms\n",((float)args[0])/1000);
-	rc = make_periodic(args[0], &info);
+	LOG_PRINTF("AMS Alarms thread period: %3.4fms\n",((float)periods[0])/1000);
+	rc = make_periodic(periods[0], &info);
 	if (rc) {
 		LOG_PRINTF("Error creating AMS alarm thread\r\n");
 		return NULL;
@@ -1410,9 +1410,9 @@ static void *command_thread(void *arg){
 	int rc ;
 	struct DPB_I2cSensors *data = static_cast<DPB_I2cSensors *>(arg);
 
-	LOG_PRINTF("Command thread period: %3.4fms\n",((float)args[3])/1000);
+	LOG_PRINTF("Command thread period: %3.4fms\n",((float)periods[3])/1000);
 	sem_post(&thread_sync);
-	rc = make_periodic(args[3], &info);
+	rc = make_periodic(periods[3], &info);
 	if (rc) {
 		LOG_PRINTF("Error creating command thread\r\n");
 		return NULL;
@@ -1478,8 +1478,8 @@ waitmsg:
  static void *bypass_command_thread(void *arg){
 
 	struct periodic_info info;
-	LOG_PRINTF("Bypass Command thread period: %3.4fms\n",((float)args[3])/1000);
-	int rc = make_periodic(args[3], &info);
+	LOG_PRINTF("Bypass Command thread period: %3.4fms\n",((float)periods[3])/1000);
+	int rc = make_periodic(periods[3], &info);
 	if (rc) {
 		LOG_PRINTF("Error creating bypass command thread\r\n");
 		return NULL;
@@ -1543,8 +1543,8 @@ waitmsg:
 static void *config_thread(void *arg){
 
 	struct periodic_info info;
-	LOG_PRINTF("Configuration thread period: %3.4fms\n",((float)args[3])/1000);
-	int rc = make_periodic(args[3], &info);
+	LOG_PRINTF("Configuration thread period: %3.4fms\n",((float)periods[3])/1000);
+	int rc = make_periodic(periods[3], &info);
 	if (rc) {
 		LOG_PRINTF("Error creating configuration thread\r\n");
 		return NULL;
@@ -1591,19 +1591,19 @@ int main(int argc, char *argv[]){
 		if(argc <= i)
 			switch(i){
 				case 1:
-				args[i-1] = AMS_ALARMS_THREAD_PERIOD_DEFAULT;
+				periods[i-1] = AMS_ALARMS_THREAD_PERIOD_DEFAULT;
 				break;
 				case 2:
-				args[i-1] = ALARMS_THREAD_PERIOD_DEFAULT;
+				periods[i-1] = ALARMS_THREAD_PERIOD_DEFAULT;
 				break;
 				case 3:
-				args[i-1] = MONIT_THREAD_PERIOD_DEFAULT;
+				periods[i-1] = MONIT_THREAD_PERIOD_DEFAULT;
 				break;
 				case 4:
-				args[i-1] = COMMAND_THREAD_PERIOD_DEFAULT;
+				periods[i-1] = COMMAND_THREAD_PERIOD_DEFAULT;
 				break;
 				case 5:
-				args[i-1] = HV_LV_SLEEP_DELAY_DEFAULT;
+				periods[i-1] = HV_LV_SLEEP_DELAY_DEFAULT;
 				break;
 				case 6:
 				dig0_used = 1;
@@ -1614,18 +1614,14 @@ int main(int argc, char *argv[]){
 				case 8:
 				hv_lv_used = 1;
 				break;
-				case 9:
-				command_validation_flag = 1;
-				break;
 			}
 		else
-			args[i-1] = atoi(argv[i]);
+			periods[i-1] = atoi(argv[i]);
 	}
-	hv_lv_sleep_delay = args[4];
-	dig0_used = args[5];
-	dig1_used = args[6];
-	hv_lv_used = args[7];
-	command_validation_flag = args[8];
+	hv_lv_sleep_delay = periods[4];
+	dig0_used = periods[5];
+	dig1_used = periods[6];
+	hv_lv_used = periods[7];
 
 	/* Block all real time signals so they can be used for the timers.
 	Note: this has to be done in main() before any threads are created
