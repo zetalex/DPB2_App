@@ -1163,7 +1163,8 @@ skip_hv:
 		const char *serialized_json = json_object_to_json_string(jdata);
 
 		 #ifdef DAQ_MODE
-		 	DAQ_Inter->SendMonitoringData(serialized_json);
+		 std::string monitoring_subject = "Monitoring";
+		 	DAQ_Inter->SendMonitoringData(serialized_json,monitoring_subject);
 		 #else
 			rc2 = zmq_send(mon_publisher, serialized_json, strlen(serialized_json), 0);
 			if (rc2 < 0) {
