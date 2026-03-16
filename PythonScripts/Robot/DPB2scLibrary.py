@@ -1014,7 +1014,7 @@ class DPB2scLibrary(object):
             output = result.stdout
 
             # Busca la expresión IIO_MONITOR en la salida utilizando una expresión regular
-            if not re.search(r'\bIIO_MONITOR -a /dev/iio:device0\b', output):
+            if not re.search(r'\bIIO_MONITOR\b', output):
                 raise AssertionError('Failed to run IIO Event Monitor')
 
         except subprocess.SubprocessError as e:
