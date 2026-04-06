@@ -716,7 +716,6 @@ static void *monitoring_thread(void *arg)
 						case HKDIG_GET_CHN_LG_CHG:
 						case HKDIG_GET_CHN_HG_CHG:
 						case HKDIG_GET_PED_ENABLE:
-						case HKDIG_RO_FMON_N:
 							dig_mag_str = pkt.GetNextField();
 							dig_mag_str = pkt.GetNextField();
 							parsing_mon_channel_string_into_object(jdig0channels,j, dig_monitor_mag_chan_names[i],dig_mag_str);
@@ -858,7 +857,6 @@ skip_dig0:
 						case HKDIG_GET_CHN_LG_CHG:
 						case HKDIG_GET_CHN_HG_CHG:
 						case HKDIG_GET_PED_ENABLE:
-						case HKDIG_RO_FMON_N:
 							dig_mag_str = pkt.GetNextField();
 							dig_mag_str = pkt.GetNextField();
 							parsing_mon_channel_string_into_object(jdig1channels,j, dig_monitor_mag_chan_names[i],dig_mag_str);
