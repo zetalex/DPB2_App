@@ -235,8 +235,8 @@ class DPB2scLibrary(object):
         Returns:
         str: A string containing the DPB serial number.
         """ 
+        eeprom_path = '/sys/class/i2c-dev/i2c-0/device/0-0057/eeprom'
         try:
-            eeprom_path = '/sys/class/i2c-dev/i2c-0/device/0-0057/eeprom'
             offset = 8192  # skip=8192 in dd command
             count = 8      # count=8 in dd command
             
@@ -260,8 +260,8 @@ class DPB2scLibrary(object):
         Returns:
         str: A string containing the DPB PLL configuration.
         """ 
+        eeprom_path = '/sys/class/i2c-dev/i2c-0/device/0-0057/eeprom'
         try:
-            eeprom_path = '/sys/class/i2c-dev/i2c-0/device/0-0057/eeprom'
             offset = 0      # No skip in dd command
             count = 8192    # count=8192 in dd command
             
@@ -278,6 +278,15 @@ class DPB2scLibrary(object):
             raise AssertionError(f"EEPROM file not found at {eeprom_path}")
         except Exception as e:
             raise AssertionError(f"Error reading PLL configuration: {str(e)}")
+        
+    def reset_pll(self):
+        """Resets DPB PLL through I2C command.
+
+        """
+        rc = self.dpb2sc.reset_PLL_Si5345(self.structure_i2c)
+        if rc != 0:
+            raise AssertionError("Failed to reset DPB PLL")
+        time.sleep(1)
     #########################################################
     #Ethernet Links functions
     #########################################################
@@ -357,10 +366,14 @@ class DPB2scLibrary(object):
             c_eth_interface = c_char_p(b"ETH0")
         elif eth_interface == "Backup": 
             c_eth_interface = c_char_p(b"eth1")
+        else:
+            raise AssertionError("Invalid Ethernet interface %s" % eth_interface)
         if value == "ON":
             c_value = c_int(1)
         elif value == "OFF": 
             c_value = c_int(0)
+        else:
+            raise AssertionError("Invalid Ethernet link status value %s" % value)
         self.dpb2sc.eth_link_status_config(c_eth_interface,c_value)
         time.sleep(2)
 
@@ -877,6 +890,8 @@ class DPB2scLibrary(object):
         elif eth_interface == "Backup":
             c_interface = c_char_p(b"eth1")
             c_flag = "eth1_flag"
+        else:
+            raise AssertionError("Invalid Ethernet interface %s" % eth_interface)
 
         ethernet_flag = c_int.in_dll(self.dpb2sc, c_flag)
         self.dpb2sc.eth_down_alarm(c_interface ,byref(ethernet_flag))
