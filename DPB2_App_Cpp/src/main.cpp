@@ -594,6 +594,7 @@ static void *monitoring_thread(void *arg)
 		char bme_data[32];
 		char *dig_mag_str;
 		float dig_value;
+		uint16_t dig_value_uint;
 		int32_t tf;
 		if(dig0_connected && dig0_used){
 			// Board parameters
@@ -611,22 +612,26 @@ static void *monitoring_thread(void *arg)
 					case HKDIG_GET_GW_VER:
 					case HKDIG_GET_GW_DATE:
     				case HKDIG_GET_SW_VER:
-    				case HKDIG_GET_BOARD_STATUS:
-    				case HKDIG_GET_BOARD_CNTRL:
-					case HKDIG_GET_UPTIME:
-					case HKDIG_GET_RMON_PER:
-					case HKDIG_GET_TLNK_LOCK:
-					case HKDIG_GET_EEPROM_OUI:			// Returns EEPROM OUI code
-					case HKDIG_GET_EEPROM_EID:
 					case HKDIG_GET_RMON_MUX_N:
 					case HKDIG_GET_RMON_RST_N:
-					case HKDIG_GET_PED_STAGGER:
-					case HKDIG_GET_PED_PERIOD:
+    				case HKDIG_GET_BOARD_STATUS:
+    				case HKDIG_GET_BOARD_CNTRL:
+					case HKDIG_GET_EEPROM_OUI:			// Returns EEPROM OUI code
+					case HKDIG_GET_EEPROM_EID:
 					case HKDIG_GET_TB_REG:
 					case HKDIG_GET_OD_SEL_REG:
 						dig_mag_str=pkt.GetNextField();
 						parsing_mon_environment_string_into_object(jdig0, dig_monitor_mag_board_names[i],dig_mag_str);
 						break;
+					// Integer
+					case HKDIG_GET_UPTIME:
+					case HKDIG_GET_RMON_PER:
+					case HKDIG_GET_PED_STAGGER:
+					case HKDIG_GET_PED_PERIOD:
+						pkt.GetNextFieldAsUINT16(dig_value_uint);
+						parsing_mon_environment_integer_into_object(jdig0, dig_monitor_mag_board_names[i],dig_value_uint);
+						break;
+
 					// BME280 commands
 					case HKDIG_GET_BME_DATA:
 						// Just copy data for next iterations
@@ -665,6 +670,16 @@ static void *monitoring_thread(void *arg)
 						pkt.GetNextFieldAsFLOAT(dig_value);
 						dig_value = dig_value / 100;  //Convert 100ths of degrees to degrees
 						parsing_mon_environment_data_into_object(jdig0, dig_monitor_mag_board_names[i],dig_value);
+						break;
+					// Tlock
+					case HKDIG_GET_TLNK_LOCK:
+						if(!strcmp(dig_mag_str,"0")){
+							strcpy(dig_mag_str,"OFF");
+						}
+						else{
+							strcpy(dig_mag_str,"ON");
+						}
+						parsing_mon_environment_string_into_object(jdig0, dig_monitor_mag_board_names[i],dig_mag_str);
 						break;				
 					//Clock
 					case HKDIG_GET_CLOCK:
@@ -707,17 +722,34 @@ static void *monitoring_thread(void *arg)
 							break;
 
 						//String
-						case HKDIG_GET_THR_NUM:
-						case HKDIG_GET_CHN_STATUS:
 						case HKDIG_GET_CHN_CNTRL:
 						case HKDIG_GET_RMON_ADC_N:
 						case HKDIG_GET_RMON_TDC_N:
 						case HKDIG_GET_RMON_FMT_N:
+							dig_mag_str = pkt.GetNextField();
+							dig_mag_str = pkt.GetNextField();
+							parsing_mon_channel_string_into_object(jdig0channels,j, dig_monitor_mag_chan_names[i],dig_mag_str);
+							break;
+						
+						// Integer
+						case HKDIG_GET_THR_NUM:
 						case HKDIG_GET_CHN_LG_CHG:
 						case HKDIG_GET_CHN_HG_CHG:
+							pkt.GetNextFieldAsUINT16(dig_value_uint);
+							parsing_mon_channel_integer_into_object(jdig0channels,j, dig_monitor_mag_chan_names[i],dig_value_uint);
+							break;
+
+
+						// ON/OFF String
+						case HKDIG_GET_CHN_STATUS:
 						case HKDIG_GET_PED_ENABLE:
 							dig_mag_str = pkt.GetNextField();
-							dig_mag_str = pkt.GetNextField();
+							if(!strcmp(dig_mag_str,"0")){
+								strcpy(dig_mag_str,"OFF");
+							}
+							else{
+								strcpy(dig_mag_str,"ON");
+							}
 							parsing_mon_channel_string_into_object(jdig0channels,j, dig_monitor_mag_chan_names[i],dig_mag_str);
 							break;
 						//Error
@@ -751,22 +783,26 @@ skip_dig0:
 					case HKDIG_GET_GW_VER:
 					case HKDIG_GET_GW_DATE:
     				case HKDIG_GET_SW_VER:
-    				case HKDIG_GET_BOARD_STATUS:
-    				case HKDIG_GET_BOARD_CNTRL:
-					case HKDIG_GET_UPTIME:
-					case HKDIG_GET_RMON_PER:
-					case HKDIG_GET_TLNK_LOCK:
-					case HKDIG_GET_EEPROM_OUI:			// Returns EEPROM OUI code
-					case HKDIG_GET_EEPROM_EID:
 					case HKDIG_GET_RMON_MUX_N:
 					case HKDIG_GET_RMON_RST_N:
-					case HKDIG_GET_PED_STAGGER:
-					case HKDIG_GET_PED_PERIOD:
+    				case HKDIG_GET_BOARD_STATUS:
+    				case HKDIG_GET_BOARD_CNTRL:
+					case HKDIG_GET_EEPROM_OUI:			// Returns EEPROM OUI code
+					case HKDIG_GET_EEPROM_EID:
 					case HKDIG_GET_TB_REG:
 					case HKDIG_GET_OD_SEL_REG:
 						dig_mag_str=pkt.GetNextField();
 						parsing_mon_environment_string_into_object(jdig1, dig_monitor_mag_board_names[i],dig_mag_str);
 						break;
+					// Integer
+					case HKDIG_GET_UPTIME:
+					case HKDIG_GET_RMON_PER:
+					case HKDIG_GET_PED_STAGGER:
+					case HKDIG_GET_PED_PERIOD:
+						pkt.GetNextFieldAsUINT16(dig_value_uint);
+						parsing_mon_environment_integer_into_object(jdig1, dig_monitor_mag_board_names[i],dig_value_uint);
+						break;
+
 					// BME280 commands
 					case HKDIG_GET_BME_DATA:
 						// Just copy data for next iterations
@@ -805,6 +841,16 @@ skip_dig0:
 						pkt.GetNextFieldAsFLOAT(dig_value);
 						dig_value = dig_value / 100;  //Convert 100ths of degrees to degrees
 						parsing_mon_environment_data_into_object(jdig1, dig_monitor_mag_board_names[i],dig_value);
+						break;
+					// Tlock
+					case HKDIG_GET_TLNK_LOCK:
+						if(!strcmp(dig_mag_str,"0")){
+							strcpy(dig_mag_str,"OFF");
+						}
+						else{
+							strcpy(dig_mag_str,"ON");
+						}
+						parsing_mon_environment_string_into_object(jdig1, dig_monitor_mag_board_names[i],dig_mag_str);
 						break;				
 					//Clock
 					case HKDIG_GET_CLOCK:
@@ -838,7 +884,6 @@ skip_dig0:
 					pktError = pkt.LoadString(dig_response);
 					int16_t cmdIdx = pkt.GetNextFiedlAsCOMMAND(HkDigCmdList);
 					switch(cmdIdx){
-
 						//Float
 						case HKDIG_GET_IT_NUM:
 						case HKDIG_GET_DT_NUM:
@@ -848,17 +893,34 @@ skip_dig0:
 							break;
 
 						//String
-						case HKDIG_GET_THR_NUM:
-						case HKDIG_GET_CHN_STATUS:
 						case HKDIG_GET_CHN_CNTRL:
 						case HKDIG_GET_RMON_ADC_N:
 						case HKDIG_GET_RMON_TDC_N:
 						case HKDIG_GET_RMON_FMT_N:
+							dig_mag_str = pkt.GetNextField();
+							dig_mag_str = pkt.GetNextField();
+							parsing_mon_channel_string_into_object(jdig1channels,j, dig_monitor_mag_chan_names[i],dig_mag_str);
+							break;
+						
+						// Integer
+						case HKDIG_GET_THR_NUM:
 						case HKDIG_GET_CHN_LG_CHG:
 						case HKDIG_GET_CHN_HG_CHG:
+							pkt.GetNextFieldAsUINT16(dig_value_uint);
+							parsing_mon_channel_integer_into_object(jdig1channels,j, dig_monitor_mag_chan_names[i],dig_value_uint);
+							break;
+
+
+						// ON/OFF String
+						case HKDIG_GET_CHN_STATUS:
 						case HKDIG_GET_PED_ENABLE:
 							dig_mag_str = pkt.GetNextField();
-							dig_mag_str = pkt.GetNextField();
+							if(!strcmp(dig_mag_str,"0")){
+								strcpy(dig_mag_str,"OFF");
+							}
+							else{
+								strcpy(dig_mag_str,"ON");
+							}
 							parsing_mon_channel_string_into_object(jdig1channels,j, dig_monitor_mag_chan_names[i],dig_mag_str);
 							break;
 						//Error
