@@ -951,18 +951,12 @@ skip_dig1:
 		char lv_mon_cmd[80];
 		char response[80];
 		char channel_str[4];
-		char board_dev[32];
 		char mag_str[32];
 		float mag_value;
 
 		if(lv_connected && hv_lv_used){
 			json_object *jlvchannels = json_object_new_array();
 			strcpy(lv_mon_root,"$BD:0,$CMD:MON,PAR:");
-			#ifdef HVLV_NORESISTORS
-			strcpy(board_dev,"/dev/ttyUL4");
-			#else
-			strcpy(board_dev,"/dev/ttyUL3");
-			#endif
 
 			//Send Serial number
 			parsing_mon_environment_string_into_object(jlv, lv_mag_names[0],LV_SN);
@@ -970,12 +964,24 @@ skip_dig1:
 			//Send Firmware
 			parsing_mon_environment_string_into_object(jlv, lv_mag_names[1],LV_FW);
 
+			// Send Active RS485 driver
+			if(!strcmp(lv_rs485_driver,"/dev/ttyUL3")){
+				strcpy(mag_str,"MAIN");
+			}
+			else if(!strcmp(lv_rs485_driver,"/dev/ttyUL4")){
+				strcpy(mag_str,"BACKUP");
+			}
+			else{
+				strcpy(mag_str,"ERROR");
+			}
+			parsing_mon_environment_string_into_object(jlv, "rs485driver",mag_str);
+
 			//Read Environment Parameters
 			for(int i = 2 ; i < 7; i++){
 				strcpy(lv_mon_cmd,lv_mon_root);
 				strcat(lv_mon_cmd,lv_board_words[i]);
 				strcat(lv_mon_cmd,"\r\n");
-				rc = hv_lv_command_handling(board_dev,lv_mon_cmd,response);
+				rc = hv_lv_command_handling(lv_rs485_driver,lv_mon_cmd,response);
 				if(rc){
 					goto skip_lv;
 				}
@@ -1028,7 +1034,7 @@ skip_dig1:
 			strcpy(lv_mon_root,"$BD:0,$CMD:MON,CH:");
 			for(int i = 0; i < 8; i++){
 			//Status Voltage and Current
-				for(int j = 7; j < (LV_CMD_TABLE_SIZE-1); j++){  // We can't read CPU status
+				for(int j = 7; j < LV_CMD_TABLE_SIZE; j++){  // We can't read CPU status
 					strcpy(lv_mon_cmd,lv_mon_root);
 					sprintf(channel_str,"%d",i);
 					strcat(lv_mon_cmd,channel_str);
@@ -1044,7 +1050,7 @@ skip_dig1:
 						strcat(lv_mon_cmd,lv_board_words[j]);
 					}
 					strcat(lv_mon_cmd,"\r\n");
-					rc = hv_lv_command_handling(board_dev,lv_mon_cmd,response);
+					rc = hv_lv_command_handling(lv_rs485_driver,lv_mon_cmd,response);
 					if(rc){
 						goto skip_lv;
 					}
@@ -1096,7 +1102,6 @@ skip_lv:
 		if(hv_connected && hv_lv_used){
 
 			json_object *jhvchannels = json_object_new_array();
-			strcpy(board_dev,"/dev/ttyUL3");
 
 			//Read Serial Number
 			parsing_mon_environment_string_into_object(jhv,hv_mag_names[0], HV_SN);
@@ -1104,9 +1109,21 @@ skip_lv:
 			// Read Firmware Version
 			parsing_mon_environment_string_into_object(jhv,hv_mag_names[1], HV_FW);
 
+			// Read Active RS485 driver
+			if(!strcmp(hv_rs485_driver,"/dev/ttyUL3")){
+				strcpy(mag_str,"MAIN");
+			}
+			else if(!strcmp(hv_rs485_driver,"/dev/ttyUL4")){
+				strcpy(mag_str,"BACKUP");
+			}
+			else{
+				strcpy(mag_str,"ERROR");
+			}
+			parsing_mon_environment_string_into_object(jhv,"rs485driver",mag_str);
+
 			//Read Board Temperature
 			strcpy(hv_mon_cmd,"$BD:1,$CMD:MON,PAR:BDTEMP\r\n");
-			rc = hv_lv_command_handling(board_dev,hv_mon_cmd,response);
+			rc = hv_lv_command_handling(hv_rs485_driver,hv_mon_cmd,response);
 			if(rc){
 				goto skip_hv;
 			}
@@ -1148,7 +1165,7 @@ skip_lv:
 					strcat(hv_mon_cmd,",PAR:");
 					strcat(hv_mon_cmd,hv_board_words[j]);
 					strcat(hv_mon_cmd,"\r\n");
-					rc = hv_lv_command_handling(board_dev,hv_mon_cmd,response);
+					rc = hv_lv_command_handling(hv_rs485_driver,hv_mon_cmd,response);
 					if(rc){
 						goto skip_hv;
 					}
@@ -1583,12 +1600,19 @@ waitmsg:
 			strcpy(cmd_raw, buffer + 5);
 			rc = dig_command_handling(DIGITIZER_1,cmd_raw,reply);
 		}
-		else if(((!strncmp(buffer,"HV ",3) && hv_connected) || (!strncmp(buffer,"LV ",3) && lv_connected)) && hv_lv_used){
+		else if(!strncmp(buffer,"HV ",3) && hv_connected && hv_lv_used){
 			//Add \r\n at the end of the buffer
 			strcat(buffer, "\r\n");
-			// Copy the rest of the string excluding the HV or LV start
+			// Copy the rest of the string excluding the HV start
 			strcpy(cmd_raw, buffer + 3);
-			rc = hv_lv_command_handling(hv_lv_uart,cmd_raw,reply);
+			rc = hv_lv_command_handling(hv_rs485_driver,cmd_raw,reply);
+		}
+		else if ((!strncmp(buffer,"LV ",3) && lv_connected) && hv_lv_used){
+			//Add \r\n at the end of the buffer
+			strcat(buffer, "\r\n");
+			// Copy the rest of the string excluding the LV start
+			strcpy(cmd_raw, buffer + 3);
+			rc = hv_lv_command_handling(lv_rs485_driver,cmd_raw,reply);
 		}
 		else {
 			strcpy(reply,"ERROR: Command not valid or board not connected");
