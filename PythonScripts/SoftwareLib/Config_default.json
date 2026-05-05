@@ -2,6 +2,7 @@
     "LV": {
         "cpumain": "ON",
         "cpubackup": "ON",
+        "rs485driver": "MAIN",
         "channels": [
             {
                 "status": "OFF",
@@ -46,6 +47,7 @@
     "HV": {
         "cpumain": "ON",
         "cpubackup": "ON",
+        "rs485driver": "MAIN",
         "channels": [
             {
                 "status": "OFF",
