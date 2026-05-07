@@ -233,6 +233,10 @@ static void *monitoring_thread(void *arg)
 	//struct DPB_I2cSensors *data = i2c_data;
 	struct DPB_I2cSensors *data = static_cast<DPB_I2cSensors *>(arg);
 
+	#ifdef USE_TIMERS
+	struct timespec start_dig, start_hv, start_lv, start_dpb;
+	struct timespec stop_dig, stop_hv, stop_lv, stop_dpb;
+	#endif
 	int eth_status[2];
 	uint8_t tdm_active_link = -1;
 	uint8_t tdm_main_mgt_status = -1;
@@ -298,6 +302,9 @@ static void *monitoring_thread(void *arg)
 			LOG_PRINTF("Reading Error PCB Temperature\r\n");
 		}
 		// SFP monitoring
+		#ifdef USE_TIMERS
+		clock_gettime(CLOCK_MONOTONIC, &start_dpb);
+		#endif
 		for(int i = 0; i < SFP_NUM;i++){
 				if(sfp_connected[i]){
 				rc = sfp_avago_read_temperature(data,i,&sfp_temp[i]);
@@ -585,8 +592,14 @@ static void *monitoring_thread(void *arg)
 			parsing_mon_environment_data_into_object(jdpb,curr, curr_som[l]);
 			parsing_mon_environment_data_into_object(jdpb,pwr, curr_som[l]*volt_som[l]);
 		}
-
+		#ifdef USE_TIMERS
+		clock_gettime(CLOCK_MONOTONIC, &stop_dpb);
+		LOG_PRINTF("DPB monitoring execution time: %3.4fms\n",((float)(stop_dpb.tv_sec - start_dpb.tv_sec)*1e3 + (float)(stop_dpb.tv_nsec - start_dpb.tv_nsec)/1e6));
+		#endif
 		//Digitizer 0 Slow Control Monitoring
+		#ifdef USE_TIMERS
+		clock_gettime(CLOCK_MONOTONIC, &start_dig);
+		#endif
 		CCOPacket pkt(COPKT_DEFAULT_START, COPKT_DEFAULT_STOP, COPKT_DEFAULT_SEP);
 		COPacketResponse_type	pktError=COPACKET_NOERR;
 		char digcmd[32];
@@ -768,7 +781,10 @@ static void *monitoring_thread(void *arg)
 			}
 			json_object_object_add(jdig0,"channels",jdig0channels);
 		}
-
+		#ifdef USE_TIMERS
+			clock_gettime(CLOCK_MONOTONIC, &stop_dig);
+			LOG_PRINTF("Digitizer 0 monitoring execution time: %3.4fms\n",((float)(stop_dig.tv_sec - start_dig.tv_sec)*1e3 + (float)(stop_dig.tv_nsec - start_dig.tv_nsec)/1e6));
+		#endif	
 skip_dig0:
 		//Digitizer 1 Slow Control Monitoring
 		if(dig1_connected && dig1_used){
@@ -945,7 +961,9 @@ skip_dig0:
 		}
 
 skip_dig1:
-
+		#ifdef USE_TIMERS
+		clock_gettime(CLOCK_MONOTONIC, &start_lv);
+		#endif
 		//LV Slow Control Monitoring
 		char lv_mon_root[80];
 		char lv_mon_cmd[80];
@@ -1094,8 +1112,15 @@ skip_dig1:
 			}
 			json_object_object_add(jlv,"channels",jlvchannels);
 		}
+		#ifdef USE_TIMERS
+		clock_gettime(CLOCK_MONOTONIC, &stop_lv);
+		LOG_PRINTF("LV monitoring execution time: %3.4fms\n",((float)(stop_lv.tv_sec - start_lv.tv_sec)*1e3 + (float)(stop_lv.tv_nsec - start_lv.tv_nsec)/1e6));
+		#endif
 skip_lv:
 		// HV Slow Control Monitoring
+		#ifdef USE_TIMERS
+		clock_gettime(CLOCK_MONOTONIC, &start_hv);
+		#endif
 		char hv_mon_root[80];
 		char hv_mon_cmd[80];
 		int mag_status;
@@ -1236,6 +1261,10 @@ skip_lv:
 			}
 			json_object_object_add(jhv,"channels",jhvchannels);
 		}
+		#ifdef USE_TIMERS
+		clock_gettime(CLOCK_MONOTONIC, &stop_hv);
+		LOG_PRINTF("HV monitoring execution time: %3.4fms\n",((float)(stop_hv.tv_sec - start_hv.tv_sec)*1e3 + (float)(stop_hv.tv_nsec - start_hv.tv_nsec)/1e6));
+		#endif
 skip_hv:
 		json_object_object_add(jdpb,"SFPs",jsfps);
 
