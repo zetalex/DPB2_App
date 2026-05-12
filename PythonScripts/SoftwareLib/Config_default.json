@@ -1,4 +1,5 @@
 {
+    "interval_ms": 500,
     "LV": {
         "cpumain": "ON",
         "cpubackup": "ON",

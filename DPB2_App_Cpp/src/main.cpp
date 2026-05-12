@@ -1677,7 +1677,7 @@ static void *config_thread(void *arg){
 	sem_post(&thread_sync);
 	while(1){
 		config_get();
-		int rc = config_parse(config_to_apply);
+		int rc = config_parse_ordered(config_to_apply);
 		if(rc){
 			zmq_send(config_router,"Error in reading configuration",strlen("Error in reading configuration"),0);
 		}
