@@ -6,42 +6,28 @@
         "rs485driver": "MAIN",
         "channels": [
             {
-                "status": "OFF",
-                "voltagelimit": 48
+                "status": "OFF"
             },
             {
-                "status": "ON",
-                "voltagelimit": 48
+                "status": "ON"
             },
             {
-                "status": "OFF",
-                "voltagelimit": 48,
-                "currentlimit": 300
+                "status": "OFF"
             },
             {
-                "status": "ON",
-                "voltagelimit": 48,
-                "currentlimit": 300
+                "status": "ON"
             },
             {
-                "status": "ON",
-                "voltagelimit": 48,
-                "currentlimit": 100
+                "status": "ON"
             },
             {
-                "status": "OFF",
-                "voltagelimit": 48,
-                "currentlimit": 100
+                "status": "OFF"
             },
             {
-                "status": "ON",
-                "voltagelimit": 48.0,
-                "currentlimit": 100
+                "status": "ON"
             },
             {
-                "status": "OFF",
-                "voltagelimit": 48.0,
-                "currentlimit": 100
+                "status": "OFF"
             }
         ]
     },
