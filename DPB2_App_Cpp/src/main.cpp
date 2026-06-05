@@ -143,7 +143,7 @@ int iio_event_monitor_up() {
     if (child_pid == 0) {
         // Child process
         // Path of the .elf file and arguments
-        char *args[] = {str, "-a", "/dev/iio:device0", NULL};
+        char *const args[] = {str, "-a", "/dev/iio:device0", NULL};
 
         // Execute the .elf file
         if (execvp(args[0], args) == -1) {
