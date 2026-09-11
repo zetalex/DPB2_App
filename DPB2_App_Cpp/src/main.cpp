@@ -180,6 +180,8 @@ void sighandler(int signum) {
 	pthread_cancel(t_2);
 	#ifndef DAQ_MODE
 	pthread_cancel(t_4);
+	pthread_cancel(t_5);
+	pthread_cancel(t_6);
 	#endif
 	pthread_cancel(t_3);
 
@@ -188,6 +190,8 @@ void sighandler(int signum) {
 	pthread_join(t_3,NULL);
 	#ifndef DAQ_MODE
 	pthread_join(t_4,NULL);
+	pthread_join(t_5,NULL);
+	pthread_join(t_6,NULL);
 	#endif
 
 	dpbsc_lib_close(&data);
