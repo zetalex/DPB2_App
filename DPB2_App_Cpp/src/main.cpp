@@ -469,6 +469,9 @@ static void *monitoring_thread(void *arg)
 			LOG_PRINTF("Reading Error RMON DMA\r\n");
 		}
 		rmon_dma = rmon_dma * (100 / rmon_timebase);
+
+		// TODO: Add the shared memory variables to communicate with daq-readout application
+		
 		// rc = poll_GPIO(dig0_aurora_main_fd,DIG0_MAIN_AURORA_LINK,&dig0_aurora_main_val);
 		// if (rc) {
 		// 	LOG_PRINTF("Reading Error\r\n");
