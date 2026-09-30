@@ -1582,7 +1582,6 @@ static void *command_thread(void *arg){
 		json_object_put(jmsg);
 waitmsg:
 	const char* msg_sent = (const char*) reply;
-	//FIXME: DAQ Function HERE. Use whole command_thread function as callback function for DAQ library and parse string into DPB command format
 	zmq_send(cmd_router,msg_sent, strlen(msg_sent), 0);
 	wait_period(&info);
 	}
